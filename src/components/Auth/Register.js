@@ -119,7 +119,7 @@ const Register = () => {
 					color='primary'
 					variant='contained'
 					fullWidth>
-					Sign in
+					Sign Up
 				</Button>
 			</form>
 			<Typography style={{ textAlign: 'center' }}>
