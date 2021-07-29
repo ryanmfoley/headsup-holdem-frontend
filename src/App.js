@@ -1,7 +1,11 @@
+import { useState } from 'react'
+import { Route } from 'react-router-dom'
 import { Grid } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import Header from './components/Header/Header'
+import Home from './components/Home/Home'
+import Register from './components/Auth/Register'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -21,6 +25,8 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const App = () => {
+	const [loggedIn, setLoggedIn] = useState(false)
+
 	const classes = useStyles()
 
 	return (
@@ -29,7 +35,10 @@ const App = () => {
 				<Grid item>
 					<Header />
 				</Grid>
-				<Grid item container></Grid>
+				<Grid item container>
+					<Route path='/home' component={Home} />
+					<Route path='/register' component={Register} />
+				</Grid>
 			</Grid>
 		</div>
 	)
