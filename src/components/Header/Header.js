@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import {
 	AppBar,
 	Button,
@@ -25,7 +26,8 @@ const useStyles = makeStyles((theme) => ({
 		fontWeight: 700,
 	},
 	loginButton: {
-		background: '#990100',
+		color: 'white',
+		border: '1px solid white',
 	},
 }))
 
@@ -46,12 +48,19 @@ const Header = () => {
 				<Typography variant='h6' className={classes.title}>
 					HU HOLD'EM
 				</Typography>
-				<Button color='inherit' variant='outlined'>
-					Login
-				</Button>
-				<Button color='primary' variant='contained'>
-					Register
-				</Button>
+				<Link to='/login' style={{ textDecoration: 'none' }}>
+					<Button variant='outlined' className={classes.loginButton}>
+						Login
+					</Button>
+				</Link>
+				<Link to='/register' style={{ textDecoration: 'none' }}>
+					<Button
+						color='primary'
+						variant='contained'
+						style={{ marginLeft: 10 }}>
+						Register
+					</Button>
+				</Link>
 			</Toolbar>
 		</AppBar>
 	)

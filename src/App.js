@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import Header from './components/Header/Header'
 import Home from './components/Home/Home'
+import Login from './components/Auth/Login'
 import Register from './components/Auth/Register'
 
 const useStyles = makeStyles((theme) => ({
@@ -38,6 +39,7 @@ const App = () => {
 				<Grid item container>
 					<Route path='/home' component={Home} />
 					<Route path='/register' component={Register} />
+					<Route path='/login' component={Login} />
 				</Grid>
 			</Grid>
 		</div>
