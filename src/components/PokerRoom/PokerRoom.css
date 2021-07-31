@@ -1,4 +1,5 @@
 .table {
+	position: relative;
 	display: flex;
 	background: #193024;
 	width: 700px;
@@ -10,16 +11,34 @@
 	box-shadow: 0 0 10px #9ecaed;
 }
 
-/* background: '#35654d',
-		background: '#333333',
-		background: '#193024', */
-
 .community-cards {
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	width: 400px;
 	margin: auto;
+}
+
+.players-hud {
+	position: absolute;
+	left: 0;
+	right: 0;
+	width: 150px;
+	margin: auto;
+}
+
+.hole-cards {
+	display: flex;
+}
+
+.name-display {
+	margin: 0;
+	padding: 0;
+	background: black;
+	text-align: center;
+	color: white;
+	border: 2px solid black;
+	border-radius: 10px;
 }
 
 .card {
@@ -44,6 +63,14 @@
 	text-align: center;
 	margin: 0;
 	font-size: 2em;
+}
+
+.top {
+	top: -30%;
+}
+
+.bottom {
+	bottom: -20%;
 }
 
 .red {

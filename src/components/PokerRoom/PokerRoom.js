@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
-import { Grid } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import io from 'socket.io-client'
 
 import ENDPOINT from '../../config/config'
+import Table from './Table'
 import './PokerRoom.css'
 
 let socket
@@ -40,12 +40,17 @@ const PokerRoom = ({ match, isLoggedIn, setIsLoggedIn }) => {
 		socket.emit('joinGame', { id, player })
 
 		socket.on('startGame', () => {
+			console.log('startGame')
 			socket.emit('getPlayersInfo')
 		})
 
 		socket.on('getPlayersInfo', (player) => {
-			if (isSubscribed)
+			// if (isSubscribed)
+			// 	player.id === id ? setPlayerOne(player) : setPlayerTwo(player)
+			if (isSubscribed) {
 				player.id === id ? setPlayerOne(player) : setPlayerTwo(player)
+				console.log(player, playerOne, playerTwo)
+			}
 		})
 
 		// Cancel subscription to useEffect //
@@ -54,37 +59,14 @@ const PokerRoom = ({ match, isLoggedIn, setIsLoggedIn }) => {
 			socket.emit('logout')
 			socket.offAny()
 		}
-	}, [player, match.paramsid])
+	}, [player, playerOne, playerTwo, match.params.id])
 
 	if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
-		<Grid container justifyContent='center' className={classes.cardRoom}>
-			<div class='table'>
-				<div class='community-cards'>
-					<div class='card'>
-						<p class='card-text red'>10</p>
-						<p class='card-img red'>&diams;</p>
-					</div>
-					<div class='card'>
-						<p class='card-text black'>J</p>
-						<p class='card-img black'>&clubs;</p>
-					</div>
-					<div class='card'>
-						<p class='card-text red'>Q</p>
-						<p class='card-img red'>&hearts;</p>
-					</div>
-					<div class='card'>
-						<p class='card-text red'>K</p>
-						<p class='card-img red'>&diams;</p>
-					</div>
-					<div class='card'>
-						<p class='card-text black'>A</p>
-						<p class='card-img black'>&spades;</p>
-					</div>
-				</div>
-			</div>
-		</Grid>
+		<>
+			<Table playerOne={playerOne} playerTwo={playerTwo} />
+		</>
 	)
 }
 
