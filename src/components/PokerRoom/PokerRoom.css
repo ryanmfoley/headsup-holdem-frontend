@@ -1,0 +1,55 @@
+.table {
+	display: flex;
+	background: #193024;
+	width: 700px;
+	height: 350px;
+	border-radius: 50%;
+	margin: 150px auto;
+	border: 2px solid gray;
+	border-radius: 30% / 60%;
+	box-shadow: 0 0 10px #9ecaed;
+}
+
+/* background: '#35654d',
+		background: '#333333',
+		background: '#193024', */
+
+.community-cards {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 400px;
+	margin: auto;
+}
+
+.card {
+	height: 80px;
+	width: 56px; /*70% of height*/
+	margin: 4px;
+	background: white;
+	border: 0.2em solid black;
+	border-radius: 10%;
+}
+
+.card-text {
+	margin: 0;
+	margin-top: 15%;
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: bold;
+	/* padding: 0; */
+}
+
+.card-img {
+	text-align: center;
+	margin: 0;
+	font-size: 2em;
+}
+
+.red {
+	color: red;
+}
+
+.black {
+	color: black;
+}

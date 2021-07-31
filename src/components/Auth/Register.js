@@ -17,9 +17,8 @@ import ENDPOINT from '../../config/config'
 
 const useStyles = makeStyles((theme) => ({
 	registerContainer: {
-		width: 280,
-		margin: '50px auto',
-		padding: 20,
+		height: '100vh',
+		margin: 'auto',
 	},
 	formControl: {
 		margin: theme.spacing(1),
@@ -35,12 +34,9 @@ const useStyles = makeStyles((theme) => ({
 	submitButton: {
 		margin: '15px 0',
 	},
-	myBorder: {
-		border: '2px solid purple',
-	},
 	paperStyle: {
 		width: 280,
-		margin: '40px auto',
+		marginTop: 60,
 		padding: 20,
 	},
 	avatarStyle: { backgroundColor: 'green' },
@@ -60,7 +56,7 @@ const Register = () => {
 			password: e.target.password.value,
 		}
 
-		const url = ENDPOINT + '/register'
+		const url = ENDPOINT + '/api/users/register'
 
 		axios
 			.post(url, data)
@@ -73,59 +69,61 @@ const Register = () => {
 	}
 
 	return (
-		<Paper elevation={10} className={classes.paperStyle}>
-			<Grid align='center'>
-				<Avatar color='secondary'>
-					<LockOutlinedIcon />
-				</Avatar>
-				<Typography variant='h5'>Sign Up!</Typography>
-			</Grid>
-			<form onSubmit={handleSubmit}>
-				{usernameError ? (
+		<div className={classes.registerContainer}>
+			<Paper elevation={10} className={classes.paperStyle}>
+				<Grid align='center'>
+					<Avatar color='secondary'>
+						<LockOutlinedIcon />
+					</Avatar>
+					<Typography variant='h5'>Sign Up!</Typography>
+				</Grid>
+				<form onSubmit={handleSubmit}>
+					{usernameError ? (
+						<TextField
+							id='username'
+							label='Username'
+							placeholder='Enter username'
+							type='text'
+							fullWidth
+							required
+							error
+						/>
+					) : (
+						<TextField
+							id='username'
+							label='Username'
+							placeholder='Enter username'
+							fullWidth
+							required
+						/>
+					)}
+					{usernameError && (
+						<FormHelperText error id='username-error'>
+							Username already exists!
+						</FormHelperText>
+					)}
 					<TextField
-						id='username'
-						label='Username'
-						placeholder='Enter username'
-						type='text'
+						id='password'
+						label='Password'
+						placeholder='Enter password'
+						type='password'
 						fullWidth
 						required
-						error
 					/>
-				) : (
-					<TextField
-						id='username'
-						label='Username'
-						placeholder='Enter username'
-						fullWidth
-						required
-					/>
-				)}
-				{usernameError && (
-					<FormHelperText error id='username-error'>
-						Username already exists!
-					</FormHelperText>
-				)}
-				<TextField
-					id='password'
-					label='Password'
-					placeholder='Enter password'
-					type='password'
-					fullWidth
-					required
-				/>
-				<Button
-					className={classes.submitButton}
-					type='submit'
-					color='primary'
-					variant='contained'
-					fullWidth>
-					Sign Up
-				</Button>
-			</form>
-			<Typography style={{ textAlign: 'center' }}>
-				Already a member? <Link to='/login'>Login</Link>
-			</Typography>
-		</Paper>
+					<Button
+						className={classes.submitButton}
+						type='submit'
+						color='primary'
+						variant='contained'
+						fullWidth>
+						Sign Up
+					</Button>
+				</form>
+				<Typography style={{ textAlign: 'center' }}>
+					Already a member? <Link to='/login'>Login</Link>
+				</Typography>
+			</Paper>
+		</div>
 	)
 }
 
