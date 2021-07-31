@@ -1,0 +1,118 @@
+.card-room-container {
+	width: 100vw;
+	height: 100vh;
+	background: #242173;
+}
+
+.table {
+	position: relative;
+	display: flex;
+	background: #193024;
+	width: 700px;
+	height: 350px;
+	border-radius: 50%;
+	margin: 150px auto;
+	border: 2px solid gray;
+	border-radius: 30% / 60%;
+	box-shadow: 0 0 10px #9ecaed;
+}
+
+.waiting-display {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 600px;
+	border-radius: 10px;
+}
+
+.waiting-text {
+	margin: auto;
+	padding: 10px;
+	font-size: 38px;
+	text-align: center;
+}
+
+.waiting-text:after {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: bottom;
+	animation: loading-ellipsis steps(4, end) 3s infinite;
+	content: '...';
+	width: 0px;
+}
+
+.community-cards {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 400px;
+	margin: auto;
+}
+
+.players-hud {
+	position: absolute;
+	left: 0;
+	right: 0;
+	width: 150px;
+	margin: auto;
+}
+
+.hole-cards {
+	display: flex;
+}
+
+.name-display {
+	margin: 0;
+	padding: 0;
+	background: black;
+	text-align: center;
+	color: white;
+	border: 2px solid black;
+	border-radius: 10px;
+}
+
+.card {
+	height: 80px;
+	width: 56px; /*70% of height*/
+	margin: 4px;
+	background: white;
+	border: 0.2em solid black;
+	border-radius: 10%;
+}
+
+.card-text {
+	margin: 0;
+	margin-top: 15%;
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.card-img {
+	text-align: center;
+	margin: 0;
+	font-size: 2em;
+}
+
+.top {
+	top: -30%;
+}
+
+.bottom {
+	bottom: -20%;
+}
+
+.red {
+	color: red;
+}
+
+.black {
+	color: black;
+}
+
+@keyframes loading-ellipsis {
+	to {
+		width: 1em;
+	}
+}

@@ -14,7 +14,7 @@ import pokerIcon from '../../assets/images/poker-chips.png'
 const useStyles = makeStyles((theme) => ({
 	root: {
 		flexGrow: 1,
-		backgroundColor: '#333333',
+		background: '#333333',
 	},
 	menuButton: {
 		marginRight: theme.spacing(2),

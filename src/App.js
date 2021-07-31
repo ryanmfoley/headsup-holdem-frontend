@@ -7,26 +7,18 @@ import Header from './components/Header/Header'
 import Home from './components/Home/Home'
 import Login from './components/Auth/Login'
 import Register from './components/Auth/Register'
+import Lobby from './components/Lobby/Lobby'
+import PokerRoom from './components/PokerRoom/PokerRoom'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
-		border: '2px solid pink',
+		height: '100vh',
 		background: 'pink',
-	},
-	container: {
-		border: '2px solid black',
-	},
-	header: {
-		width: '100%',
-		border: '2px solid red',
-	},
-	content: {
-		border: '2px solid blue',
 	},
 }))
 
 const App = () => {
-	const [loggedIn, setLoggedIn] = useState(false)
+	const [isLoggedIn, setIsLoggedIn] = useState(false)
 
 	const classes = useStyles()
 
@@ -37,9 +29,24 @@ const App = () => {
 					<Header />
 				</Grid>
 				<Grid item container>
-					<Route path='/home' component={Home} />
+					<Route exact path='/' component={Home} />
 					<Route path='/register' component={Register} />
-					<Route path='/login' component={Login} />
+					<Route path='/login'>
+						<Login setIsLoggedIn={setIsLoggedIn} />
+					</Route>
+					<Route path='/lobby'>
+						<Lobby isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+					</Route>
+					<Route
+						path='/poker-room/:id'
+						render={(routerProps) => (
+							<PokerRoom
+								match={routerProps.match}
+								isLoggedIn={isLoggedIn}
+								setIsLoggedIn={setIsLoggedIn}
+							/>
+						)}
+					/>
 				</Grid>
 			</Grid>
 		</div>
