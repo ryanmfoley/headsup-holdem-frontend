@@ -59,20 +59,25 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		// Clean up controller //
 		let isSubscribed = true
 
-		socket = io(ENDPOINT)
+		if (isSubscribed) {
+			socket = io(ENDPOINT)
 
-		const username = JSON.parse(window.localStorage.getItem('username'))
+			const username = JSON.parse(localStorage.getItem('username'))
 
-		socket.emit('enterLobby', username)
-		socket.on('enterLobby', (player) => {
-			isSubscribed && setPlayer(player)
-			localStorage.setItem('player', JSON.stringify(player))
-		})
+			socket.emit('enterLobby', username)
+			socket.on('enterLobby', (player) => {
+				if (player.username === username) {
+					setPlayer(player)
+					localStorage.setItem('player', JSON.stringify(player))
+				}
+			})
 
-		socket.on(
-			'playersWaiting',
-			(players) => isSubscribed && setPlayersWaiting(players)
-		)
+			socket.on('playersWaiting', (players) => setPlayersWaiting(players))
+			socket.on(
+				'playersWaiting',
+				(players) => isSubscribed && setPlayersWaiting(players)
+			)
+		}
 
 		// Cancel subscription to useEffect //
 		return () => {

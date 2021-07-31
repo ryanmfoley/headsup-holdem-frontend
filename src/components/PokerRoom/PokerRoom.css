@@ -1,3 +1,9 @@
+.card-room-container {
+	width: 100vw;
+	height: 100vh;
+	background: #242173;
+}
+
 .table {
 	position: relative;
 	display: flex;
@@ -9,6 +15,31 @@
 	border: 2px solid gray;
 	border-radius: 30% / 60%;
 	box-shadow: 0 0 10px #9ecaed;
+}
+
+.waiting-display {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 600px;
+	border-radius: 10px;
+}
+
+.waiting-text {
+	margin: auto;
+	padding: 10px;
+	font-size: 38px;
+	text-align: center;
+}
+
+.waiting-text:after {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: bottom;
+	animation: loading-ellipsis steps(4, end) 3s infinite;
+	content: '...';
+	width: 0px;
 }
 
 .community-cards {
@@ -56,7 +87,6 @@
 	text-align: center;
 	font-size: 1.5em;
 	font-weight: bold;
-	/* padding: 0; */
 }
 
 .card-img {
@@ -79,4 +109,10 @@
 
 .black {
 	color: black;
+}
+
+@keyframes loading-ellipsis {
+	to {
+		width: 1em;
+	}
 }

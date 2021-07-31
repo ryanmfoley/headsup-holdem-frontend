@@ -1,4 +1,11 @@
-const Table = () => {
+import { useState } from 'react'
+import { Paper } from '@material-ui/core'
+
+const Table = ({ startGame, playerOne, playerTwo }) => {
+	const player = JSON.parse(localStorage.getItem('player'))
+	const opponent =
+		player.username !== playerOne.username ? playerOne : playerTwo
+
 	return (
 		<div className='table'>
 			<div className='players-hud top'>
@@ -12,7 +19,7 @@ const Table = () => {
 						<p className='card-img red'>&diams;</p>
 					</div>
 				</div>
-				<h2 className='name-display'>ryan</h2>
+				<h2 className='name-display'>{opponent.username}</h2>
 			</div>
 			<div className='community-cards'>
 				<div className='card'>
@@ -47,8 +54,13 @@ const Table = () => {
 						<p className='card-img red'>&diams;</p>
 					</div>
 				</div>
-				<h2 className='name-display'>foley</h2>
+				<h2 className='name-display'>{player.username}</h2>
 			</div>
+			{!startGame && (
+				<Paper className='waiting-display'>
+					<h5 className='waiting-text'>WAITING FOR OPPONENT</h5>
+				</Paper>
+			)}
 		</div>
 	)
 }
