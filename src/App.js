@@ -37,16 +37,9 @@ const App = () => {
 					<Route path='/lobby'>
 						<Lobby isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
 					</Route>
-					<Route
-						path='/poker-room/:id'
-						render={(routerProps) => (
-							<PokerRoom
-								match={routerProps.match}
-								isLoggedIn={isLoggedIn}
-								setIsLoggedIn={setIsLoggedIn}
-							/>
-						)}
-					/>
+					<Route path='/poker-room/:id'>
+						<PokerRoom isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+					</Route>
 				</Grid>
 			</Grid>
 		</div>
