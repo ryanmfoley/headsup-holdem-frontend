@@ -1,64 +1,75 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
-import io from 'socket.io-client'
+import { Button } from '@material-ui/core'
 
-import ENDPOINT from '../../config/config'
+import socket from '../../config/socketConfig'
 import Table from './Table'
 import './PokerRoom.css'
 
-let socket
-
 const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
+	////////////// TURN REDIRECT BACK ON //////////////
+
 	const { id } = useParams()
 
+	// Player data //
 	const [playerOne, setPlayerOne] = useState({})
 	const [playerTwo, setPlayerTwo] = useState({})
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
+	const [chips, setChips] = useState(10000)
 	const [holeCards, setHoleCards] = useState([])
+	const playerData = {
+		playerOne,
+		setPlayerOne,
+		playerTwo,
+		setPlayerTwo,
+		playersName,
+		setPlayersName,
+		opponentsName,
+		setOpponentsName,
+		chips,
+		setChips,
+		holeCards,
+		setHoleCards,
+	}
+
+	// Game variables //
 	const [startGame, setStartGame] = useState(false)
 	const [communityCards, setCommunityCards] = useState([])
+	const [pot, setPot] = useState([])
+	const [fold, setFold] = useState(false)
+	const [check, setCheck] = useState(false)
+	const [call, setCall] = useState(false)
+	const [bet, setBet] = useState(false)
+	const [raise, setRaise] = useState(false)
+	const gameVariables = {
+		startGame,
+		setStartGame,
+		communityCards,
+		setCommunityCards,
+		pot,
+		setPot,
+		fold,
+		setFold,
+		check,
+		setCheck,
+		call,
+		setCall,
+		bet,
+		setBet,
+		raise,
+		setRaise,
+	}
 
 	useEffect(() => {
 		// Clean up controller //
 		let isSubscribed = true
 
-		// Establish socket connection //
-		socket = io(ENDPOINT)
-
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
 		setPlayersName(currentPlayer.username)
 
+		// Join socket to given room //
 		socket.emit('enterPokerRoom', { id, currentPlayer })
-
-		// Listen for opponent to enter the room //
-		socket.on('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
-
-		socket.on('getPlayersInfo', (player) => {
-			if (!isSubscribed) return null
-
-			// Player who created the game is playerOne //
-			player.id === id ? setPlayerOne(player) : setPlayerTwo(player)
-
-			// Set opponents name //
-			if (currentPlayer.username !== player.username)
-				setOpponentsName(player.username)
-			setStartGame(true)
-
-			socket.emit('deal')
-		})
-
-		socket.on('dealHoleCards', (cards) => {
-			if (!isSubscribed) return null
-
-			setHoleCards(cards)
-		})
-
-		socket.on('dealCommunityCards', (cards) => {
-			if (!isSubscribed) return null
-
-			setCommunityCards(cards)
-		})
 
 		// Cancel subscription to useEffect //
 		return () => {
@@ -67,20 +78,69 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 	}, [id])
 
-	if (!isLoggedIn) return <Redirect to='/login' />
+	useEffect(() => {
+		// Clean up controller //
+		let isSubscribed = true
+
+		const currentPlayer = JSON.parse(localStorage.getItem('player'))
+		const isPlayerOne = currentPlayer.id === id
+
+		// Listen for opponent to enter the room //
+		socket.once('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
+
+		socket.on('getPlayersInfo', (opponent) => {
+			if (!isSubscribed) return null
+
+			// Set opponents name //
+			setOpponentsName(opponent.username)
+
+			// Player who created the game is playerOne //
+			setPlayerOne(isPlayerOne ? currentPlayer : opponent)
+			setPlayerTwo(!isPlayerOne ? currentPlayer : opponent)
+
+			// playerOne emits deal to server //
+			if (isPlayerOne) socket.emit('deal')
+
+			setStartGame(true)
+		})
+
+		// socket.on('deal', (cards) => {
+		// 	if (!isSubscribed) return null
+
+		// 	setCommunityCards(cards)
+
+		// 	socket.emit('dealHoleCards', currentPlayer)
+		// })
+
+		socket.on(
+			'deal',
+			({ playerOneHoleCards, playerTwoHoleCards, communityCards }) => {
+				if (!isSubscribed) return null
+
+				setHoleCards(isPlayerOne ? playerOneHoleCards : playerTwoHoleCards)
+				setCommunityCards(communityCards)
+			}
+		)
+
+		// Cancel subscription to useEffect //
+		return () => {
+			isSubscribed = false
+			socket.offAny()
+		}
+	}, [])
+
+	// useEffect(() => {
+	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
+	// }, [])
+
+	// if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
 		<div className='card-room-container'>
 			<Link to='/lobby'>
-				<button>Lobby</button>
+				<Button variant='contained'>Lobby</Button>
 			</Link>
-			<Table
-				startGame={startGame}
-				playersName={playersName}
-				opponentsName={opponentsName}
-				holeCards={holeCards}
-				communityCards={communityCards}
-			/>
+			<Table playerData={playerData} gameVariables={gameVariables} />
 		</div>
 	)
 }

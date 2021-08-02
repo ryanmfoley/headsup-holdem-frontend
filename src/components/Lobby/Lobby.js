@@ -11,9 +11,8 @@ import {
 	TableHead,
 	TableRow,
 } from '@material-ui/core'
-import io from 'socket.io-client'
 
-import ENDPOINT from '../../config/config'
+import socket from '../../config/socketConfig'
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -42,9 +41,9 @@ const useStyles = makeStyles({
 	},
 })
 
-let socket
-
 const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
+	////////////// TURN REDIRECT BACK ON //////////////
+
 	const classes = useStyles()
 
 	const [player, setPlayer] = useState({})
@@ -58,8 +57,6 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 	useEffect(() => {
 		// Clean up controller //
 		let isSubscribed = true
-
-		socket = io(ENDPOINT)
 
 		const username = JSON.parse(localStorage.getItem('username'))
 
@@ -85,7 +82,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 	}, [setPlayersWaiting])
 
-	if (!isLoggedIn) return <Redirect to='/login' />
+	// if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
 		<div className={classes.lobbyContainer}>

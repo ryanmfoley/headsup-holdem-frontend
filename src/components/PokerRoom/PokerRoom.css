@@ -12,7 +12,7 @@
 	width: 700px;
 	height: 350px;
 	border-radius: 50%;
-	margin: 150px auto;
+	margin: 100px auto;
 	border: 2px solid gray;
 	border-radius: 30% / 60%;
 	/* border-radius: 60%; */
@@ -56,22 +56,26 @@
 	position: absolute;
 	left: 0;
 	right: 0;
-	width: 150px;
+	width: 30%;
 	margin: auto;
+	/* outline: 2px solid white; */
 }
 
 .hole-cards {
 	display: flex;
+	justify-content: center;
+	padding: 15px;
 }
 
-.name-display {
-	margin: 0;
-	padding: 0;
+.player-data {
+	margin-bottom: 10px;
+	/* padding: 0; */
 	background: black;
 	text-align: center;
 	color: white;
 	border: 2px solid black;
 	border-radius: 10px;
+	/* outline: 2px solid red; */
 }
 
 .card {
@@ -106,7 +110,7 @@
 }
 
 .bottom {
-	bottom: -20%;
+	bottom: -45%;
 }
 
 .red {
