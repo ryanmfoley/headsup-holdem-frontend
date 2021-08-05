@@ -1,3 +1,5 @@
+import React from 'react'
+
 const HoleCards = ({ holeCards }) => {
 	return (
 		<div className='hole-cards'>

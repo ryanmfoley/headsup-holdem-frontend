@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import {
 	Avatar,
@@ -16,7 +16,7 @@ import axios from 'axios'
 import ENDPOINT from '../../config/config'
 
 const useStyles = makeStyles((theme) => ({
-	loginContainer: {
+	registerContainer: {
 		height: '100vh',
 		margin: 'auto',
 	},
@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
 	selectEmpty: {
 		marginTop: theme.spacing(2),
 	},
-	loginHeading: {
+	registerHeading: {
 		margin: 10,
 		outline: '1px solid red',
 	},
@@ -42,10 +42,9 @@ const useStyles = makeStyles((theme) => ({
 	avatarStyle: { backgroundColor: 'green' },
 }))
 
-const Login = ({ setIsLoggedIn }) => {
+const Register = () => {
 	const [redirect, setRedirect] = useState(false)
 	const [usernameError, setUsernameError] = useState(false)
-	const [passwordError, setPasswordError] = useState(false)
 
 	const classes = useStyles()
 
@@ -57,50 +56,26 @@ const Login = ({ setIsLoggedIn }) => {
 			password: e.target.password.value,
 		}
 
-		const url = ENDPOINT + '/api/users/login'
+		const url = ENDPOINT + '/api/users/register'
 
 		axios
 			.post(url, data)
-			.then((res) => {
-				// Get token //
-				const { token } = res.data
-
-				if (token) {
-					// Store username to localStorage //
-					localStorage.setItem('username', JSON.stringify(data.username))
-
-					// Set token to localStorage //
-					localStorage.setItem('jwtToken', token)
-
-					// Set token to Auth header //
-					axios.defaults.headers.common['Authorizatioin'] = token
-					setIsLoggedIn(true)
-					setRedirect(true)
-				} else {
-					// Delete Auth header //
-					delete axios.defaults.headers.common['Authorization']
-				}
-			})
-			.catch((err) => {
-				const { userNotFound, invalidPassword } = err.response.data
-
-				if (userNotFound) return setUsernameError(true)
-				if (invalidPassword) return setPasswordError(true)
-			})
+			.then((res) => setRedirect(true))
+			.catch(() => setUsernameError(true))
 	}
 
 	if (redirect) {
-		return <Redirect to='/lobby' />
+		return <Redirect to='/home' />
 	}
 
 	return (
-		<div className={classes.loginContainer}>
+		<div className={classes.registerContainer}>
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
 					<Avatar color='secondary'>
 						<LockOutlinedIcon />
 					</Avatar>
-					<Typography variant='h5'>Login</Typography>
+					<Typography variant='h5'>Sign Up!</Typography>
 				</Grid>
 				<form onSubmit={handleSubmit}>
 					{usernameError ? (
@@ -108,6 +83,7 @@ const Login = ({ setIsLoggedIn }) => {
 							id='username'
 							label='Username'
 							placeholder='Enter username'
+							type='text'
 							fullWidth
 							required
 							error
@@ -123,49 +99,32 @@ const Login = ({ setIsLoggedIn }) => {
 					)}
 					{usernameError && (
 						<FormHelperText error id='username-error'>
-							Username not found!
+							Username already exists!
 						</FormHelperText>
 					)}
-					{passwordError ? (
-						<TextField
-							id='password'
-							type='password'
-							label='Password'
-							placeholder='Enter password'
-							fullWidth
-							required
-							error
-						/>
-					) : (
-						<TextField
-							id='password'
-							type='password'
-							label='Password'
-							placeholder='Enter password'
-							fullWidth
-							required
-						/>
-					)}
-					{passwordError && (
-						<FormHelperText error id='username-error'>
-							Password is incorrect!
-						</FormHelperText>
-					)}
+					<TextField
+						id='password'
+						label='Password'
+						placeholder='Enter password'
+						type='password'
+						fullWidth
+						required
+					/>
 					<Button
 						className={classes.submitButton}
 						type='submit'
 						color='primary'
 						variant='contained'
 						fullWidth>
-						Log In
+						Sign Up
 					</Button>
 				</form>
 				<Typography style={{ textAlign: 'center' }}>
-					New? <Link to='/register'>Sign up - it's FREE!</Link>
+					Already a member? <Link to='/login'>Login</Link>
 				</Typography>
 			</Paper>
 		</div>
 	)
 }
 
-export default Login
+export default Register

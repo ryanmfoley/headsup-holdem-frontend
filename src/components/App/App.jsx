@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Route } from 'react-router-dom'
 import { Grid } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
-import Header from './components/Header/Header'
-import Home from './components/Home/Home'
-import Login from './components/Auth/Login'
-import Register from './components/Auth/Register'
-import Lobby from './components/Lobby/Lobby'
-import PokerRoom from './components/PokerRoom/PokerRoom'
+import Header from '../Header/Header'
+import Home from '../Home/Home'
+import Login from '../Auth/Login'
+import Register from '../Auth/Register'
+import Lobby from '../Lobby/Lobby'
+import PokerRoom from '../PokerRoom/PokerRoom'
 
 const useStyles = makeStyles((theme) => ({
 	root: {

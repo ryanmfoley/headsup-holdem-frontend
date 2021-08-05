@@ -1,3 +1,4 @@
+import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 import pokerBanner from '../../assets/images/poker-banner.jpg'

@@ -1,3 +1,5 @@
+import React from 'react'
+
 const CommunityCards = ({ communityCards }) => {
 	return (
 		communityCards.length > 0 && (
