@@ -1,29 +1,55 @@
+import { makeStyles } from '@material-ui/core/styles'
+
+const useStyles = makeStyles({
+	holeCards: {
+		display: 'flex',
+		justifyContent: 'center',
+		padding: '15px',
+	},
+	card: {
+		height: 80,
+		width: 56 /*70% of height*/,
+		margin: 4,
+		background: 'white',
+		border: '0.2em solid black',
+		borderRadius: '10%',
+	},
+	cardText: {
+		margin: 0,
+		marginTop: '15%',
+		textAlign: 'center',
+		fontSize: '1.5em',
+		fontWeight: 'bold',
+	},
+	cardImg: {
+		textAlign: 'center',
+		margin: 0,
+		fontSize: '2em',
+	},
+})
+
 const HoleCards = ({ holeCards }) => {
+	const classes = useStyles()
+
 	return (
-		<div className='hole-cards'>
+		<div className={classes.holeCards}>
 			{holeCards && holeCards.length >= 2 ? (
 				<>
-					<div className='card'>
-						<p className={`card-text ${holeCards[0].color}`}>
-							{holeCards[0].rank}
-						</p>
-						<p className={`card-img ${holeCards[0].color}`}>
-							{holeCards[0].symbol}
-						</p>
-					</div>
-					<div className='card'>
-						<p className={`card-text ${holeCards[1].color}`}>
-							{holeCards[1].rank}
-						</p>
-						<p className={`card-img ${holeCards[1].color}`}>
-							{holeCards[1].symbol}
-						</p>
-					</div>
+					{holeCards.map((card) => (
+						<div key={card.rank + card.suit} className={classes.card}>
+							<p className={classes.cardText} style={{ color: card.color }}>
+								{card.rank}
+							</p>
+							<p className={classes.cardImg} style={{ color: card.color }}>
+								{card.symbol}
+							</p>
+						</div>
+					))}
 				</>
 			) : (
 				<>
-					<div className='card card-back'></div>
-					<div className='card card-back'></div>
+					<div style={{ background: 'salmon' }}></div>
+					<div style={{ background: 'salmon' }}></div>
 				</>
 			)}
 		</div>
