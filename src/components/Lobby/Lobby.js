@@ -45,7 +45,6 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 	////////////// TURN REDIRECT BACK ON //////////////
 
 	const classes = useStyles()
-
 	const [player, setPlayer] = useState({})
 	const [playersWaiting, setPlayersWaiting] = useState([])
 
@@ -61,13 +60,12 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		const username = JSON.parse(localStorage.getItem('username'))
 
 		socket.emit('enterLobby', username)
-		socket.on('enterLobby', (player) => {
+
+		socket.once('enterLobby', (player) => {
 			if (!isSubscribed) return null
 
-			if (player.username === username) {
-				setPlayer(player)
-				localStorage.setItem('player', JSON.stringify(player))
-			}
+			setPlayer(player)
+			localStorage.setItem('player', JSON.stringify(player))
 		})
 
 		socket.on(
@@ -80,7 +78,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 			isSubscribed = false
 			socket.offAny()
 		}
-	}, [setPlayersWaiting])
+	}, [])
 
 	// if (!isLoggedIn) return <Redirect to='/login' />
 
@@ -102,7 +100,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 								</StyledTableCell>
 								<StyledTableCell align='right'>
 									<Link
-										to={`/poker-room/${player.id}`}
+										to={`/rooms/${player.id}`}
 										style={{ textDecoration: 'none' }}>
 										<Button
 											color='primary'
@@ -128,9 +126,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 						</StyledTableRow>
 					</TableBody>
 				</Table>
-				<Link
-					to={`/poker-room/${player.id}`}
-					style={{ textDecoration: 'none' }}>
+				<Link to={`/rooms/${player.id}`} style={{ textDecoration: 'none' }}>
 					<Button
 						variant='contained'
 						size='large'
