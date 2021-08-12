@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
 import { Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
@@ -74,16 +74,22 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	////////////// TURN REDIRECT BACK ON //////////////
 	const classes = useStyles()
 	const { roomId } = useParams()
+	const streets = useRef(['preflop', 'flop', 'turn', 'river'])
 	const [startGame, setStartGame] = useState(false)
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
 	const [isTurn, setIsTurn] = useState(false)
-	const [holeCards, setHoleCards] = useState([])
+	const [playersHoleCards, setPlayersHoleCards] = useState([])
+	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
 	const [communityCards, setCommunityCards] = useState([])
 	const [playersChips, setPlayersChips] = useState(10000)
 	const [opponentsChips, setOpponentsChips] = useState(10000)
 	const [pot, setPot] = useState(0)
 	const [bet, setBet] = useState(false)
+	const [showHands, setShowHands] = useState(false)
+
+	// const showDown = () => {}
+	// const newHand = () => {}
 
 	useEffect(() => {
 		// Clean up controller //
@@ -112,34 +118,34 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				socket.emit('deal') // playerOne emits deal to server //
 		})
 
-		socket.on(
-			'deal',
-			(playerOneHoleCards, playerTwoHoleCards, communityCards) => {
-				if (!isSubscribed) return null
+		socket.on('dealPreFlop', (playerOneHoleCards, playerTwoHoleCards) => {
+			if (!isSubscribed) return null
 
-				setHoleCards(
-					currentPlayer.id === roomId ? playerOneHoleCards : playerTwoHoleCards
-				)
-				setCommunityCards(communityCards)
-			}
-		)
+			setCommunityCards([])
+			setPlayersHoleCards(
+				currentPlayer.id === roomId ? playerOneHoleCards : playerTwoHoleCards
+			)
+			setOpponentsHoleCards(
+				currentPlayer.id !== roomId ? playerOneHoleCards : playerTwoHoleCards
+			)
+		})
 
-		// Cancel subscription to useEffect //
-		return () => {
-			isSubscribed = false
-			socket.offAny()
-		}
-	}, [roomId])
+		socket.once('dealFlop', (flop) => {
+			if (!isSubscribed) return null
 
-	useEffect(() => {
-		// Clean up controller //
-		let isSubscribed = true
+			setCommunityCards(flop)
+		})
 
-		socket.on('action', (action, bet) => {
-			// add bet to pot here
-			setBet(action === 'bet' ? bet : 0)
-			setPot(bet + pot)
-			setIsTurn(!isTurn)
+		socket.once('dealTurn', (turn) => {
+			if (!isSubscribed) return null
+
+			setCommunityCards([...communityCards, turn[0]])
+		})
+
+		socket.once('dealRiver', (river) => {
+			if (!isSubscribed) return null
+
+			setCommunityCards([...communityCards, river[0]])
 		})
 
 		// Cancel subscription to useEffect //
@@ -147,7 +153,39 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			isSubscribed = false
 			socket.offAny()
 		}
-	}, [isTurn, pot])
+	}, [roomId, communityCards])
+
+	useEffect(() => {
+		// Clean up controller //
+		let isSubscribed = true
+
+		socket.on('action', (action, bet) => {
+			if (action === 'call') {
+				if (streets.current[0] === 'river') {
+					// Hand is over //
+					setShowHands(true)
+				}
+
+				streets.current.shift()
+
+				if (streets.current[0] === 'flop') return socket.emit('dealFlop')
+				if (streets.current[0] === 'turn') return socket.emit('dealTurn')
+				if (streets.current[0] === 'river') return socket.emit('dealRiver')
+			}
+
+			// add bet to pot here
+			// setBet(action === 'bet' ? bet : 0)
+			// setPot(bet + pot)
+			// setIsTurn(!isTurn)
+		})
+
+		// Cancel subscription to useEffect //
+		return () => {
+			isSubscribed = false
+			socket.offAny()
+		}
+		// }, [isTurn, pot])
+	}, [])
 
 	// useEffect(() => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
@@ -162,13 +200,17 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			</Link>
 			<div className={classes.table}>
 				<div className={`${classes.playersHudContainer} ${classes.top}`}>
-					<HoleCards />
+					{showHands ? (
+						<HoleCards holeCards={opponentsHoleCards} />
+					) : (
+						<HoleCards />
+					)}
 					<PlayersHud playersName={opponentsName} chips={opponentsChips} />
 				</div>
 				<CommunityCards communityCards={communityCards} />
 				<h2>{pot}</h2>
 				<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
-					<HoleCards holeCards={holeCards} />
+					<HoleCards holeCards={playersHoleCards} />
 					<PlayersHud playersName={playersName} chips={playersChips} />
 				</div>
 				{isTurn && (
