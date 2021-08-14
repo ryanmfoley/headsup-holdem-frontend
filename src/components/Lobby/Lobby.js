@@ -55,14 +55,14 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 
 	useEffect(() => {
 		// Clean up controller //
-		let isSubscribed = true
+		let isMounted = true
 
 		const username = JSON.parse(localStorage.getItem('username'))
 
 		socket.emit('enterLobby', username)
 
 		socket.once('enterLobby', (player) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
 
 			setPlayer(player)
 			localStorage.setItem('player', JSON.stringify(player))
@@ -70,12 +70,12 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		socket.on(
 			'playersWaiting',
-			(players) => isSubscribed && setPlayersWaiting(players)
+			(players) => isMounted && setPlayersWaiting(players)
 		)
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isSubscribed = false
+			isMounted = false
 			socket.offAny()
 		}
 	}, [])

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
@@ -11,7 +12,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const PlayersHud = ({ playersName, chips }) => {
+const PlayersHud = ({ playersName, chips, position }) => {
 	const classes = useStyles()
 
 	return (
@@ -22,4 +23,4 @@ const PlayersHud = ({ playersName, chips }) => {
 	)
 }
 
-export default PlayersHud
+export default memo(PlayersHud)

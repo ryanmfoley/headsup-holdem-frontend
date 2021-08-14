@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
@@ -56,4 +57,4 @@ const HoleCards = ({ holeCards }) => {
 	)
 }
 
-export default HoleCards
+export default memo(HoleCards)

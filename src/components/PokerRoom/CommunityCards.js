@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
@@ -51,4 +52,4 @@ const CommunityCards = ({ communityCards }) => {
 	)
 }
 
-export default CommunityCards
+export default memo(CommunityCards)

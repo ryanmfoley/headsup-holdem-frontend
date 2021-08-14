@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
 import { Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
@@ -74,10 +74,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	////////////// TURN REDIRECT BACK ON //////////////
 	const classes = useStyles()
 	const { roomId } = useParams()
-	const streets = useRef(['preflop', 'flop', 'turn', 'river'])
+	const bettingRound = useRef('preflop')
+	const smallBlind = useRef(10)
+	const isPlayerOne = useRef(null)
+	const [amountToCall, setAmountToCall] = useState(0)
 	const [startGame, setStartGame] = useState(false)
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
+	const [position, setPosition] = useState(null)
 	const [isTurn, setIsTurn] = useState(false)
 	const [playersHoleCards, setPlayersHoleCards] = useState([])
 	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
@@ -88,15 +92,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [bet, setBet] = useState(false)
 	const [showHands, setShowHands] = useState(false)
 
-	// const showDown = () => {}
-	// const newHand = () => {}
-
 	useEffect(() => {
 		// Clean up controller //
-		let isSubscribed = true
+		let isMounted = true
 
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
-		const isPlayerOne = currentPlayer.id === roomId
+		isPlayerOne.current = currentPlayer.id === roomId
 
 		// Join socket to given room //
 		socket.emit('enterPokerRoom', roomId, currentPlayer)
@@ -105,83 +106,131 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.once('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
 
 		socket.on('getPlayersInfo', ({ username }) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
 
 			currentPlayer.username === username
 				? setPlayersName(username)
 				: setOpponentsName(username)
 
 			setStartGame(true)
-			setIsTurn(isPlayerOne)
 
-			if (isPlayerOne && currentPlayer.username !== username)
-				socket.emit('deal') // playerOne emits deal to server //
+			setPosition(isPlayerOne.current ? 0 : 1)
+			setIsTurn(isPlayerOne.current ? true : false)
+			setAmountToCall(isPlayerOne.current ? smallBlind : 0)
+
+			if (isPlayerOne.current && currentPlayer.username !== username)
+				socket.emit('deal') // Player 1 emits deal to server //
 		})
 
-		socket.on('dealPreFlop', (playerOneHoleCards, playerTwoHoleCards) => {
-			if (!isSubscribed) return null
+		// Cancel subscription to useEffect //
+		return () => {
+			isMounted = false
+			socket.offAny()
+		}
+	}, [roomId])
 
-			setCommunityCards([])
+	useEffect(() => {
+		// Clean up controller //
+		let isMounted = true
+
+		socket.once('dealPreFlop', (playerOneHoleCards, playerTwoHoleCards) => {
 			setPlayersHoleCards(
-				currentPlayer.id === roomId ? playerOneHoleCards : playerTwoHoleCards
+				isPlayerOne.current ? playerOneHoleCards : playerTwoHoleCards
 			)
 			setOpponentsHoleCards(
-				currentPlayer.id !== roomId ? playerOneHoleCards : playerTwoHoleCards
+				!isPlayerOne.current ? playerTwoHoleCards : playerOneHoleCards
 			)
 		})
 
 		socket.once('dealFlop', (flop) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
+
+			// Change betting round to flop //
+			bettingRound.current = 'flop'
+
+			// Player in position 1 goes first postflop //
+			setIsTurn((isTurn) => !isTurn)
 
 			setCommunityCards(flop)
 		})
 
 		socket.once('dealTurn', (turn) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
 
-			setCommunityCards([...communityCards, turn[0]])
+			// Change betting round to turn //
+			bettingRound.current = 'turn'
+
+			setCommunityCards((communityCards) => [...communityCards, turn[0]])
 		})
 
 		socket.once('dealRiver', (river) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
 
-			setCommunityCards([...communityCards, river[0]])
+			// Change betting round to river //
+			bettingRound.current = 'river'
+
+			setCommunityCards((communityCards) => [...communityCards, river[0]])
 		})
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isSubscribed = false
+			isMounted = false
 			socket.offAny()
 		}
-	}, [roomId, communityCards])
+	}, [])
 
 	useEffect(() => {
 		// Clean up controller //
-		let isSubscribed = true
+		let isMounted = true
 
-		socket.on('action', (action, bet) => {
-			if (action === 'call') {
-				if (streets.current[0] === 'river') {
-					// Hand is over //
-					setShowHands(true)
+		socket.on('action', (position, action, bet) => {
+			// Change turn //
+			setIsTurn((isTurn) => !isTurn)
+
+			////////// Preflop //////////
+			if (bettingRound.current === 'preflop') {
+				if (action === 'call' && position === 1) {
+					// End of preflop betting round //
+					socket.emit('dealFlop')
 				}
+			}
 
-				streets.current.shift()
+			////////// Flop //////////
+			else if (bettingRound.current === 'flop') {
+				if (action === 'call' && position === 0) {
+					// End of flop betting round //
+					socket.emit('dealTurn')
+				}
+			}
 
-				if (streets.current[0] === 'flop') return socket.emit('dealFlop')
-				if (streets.current[0] === 'turn') return socket.emit('dealTurn')
-				if (streets.current[0] === 'river') return socket.emit('dealRiver')
+			////////// Turn //////////
+			else if (bettingRound.current === 'turn') {
+				if (action === 'call' && position === 0) {
+					// End of flop betting round //
+					socket.emit('dealRiver')
+				}
+			}
+
+			////////// River //////////
+			else if (bettingRound.current === 'river') {
+				if (action === 'call' && position === 0) {
+					// End of flop betting round //
+					socket.emit('handIsOver')
+				}
 			}
 
 			// add bet to pot here
 			// setBet(action === 'bet' ? bet : 0)
 			// setPot(bet + pot)
-			// setIsTurn(!isTurn)
+		})
+
+		socket.once('handIsOver', () => {
+			console.log('handIsOver')
 		})
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isSubscribed = false
+			isMounted = false
 			socket.offAny()
 		}
 		// }, [isTurn, pot])
@@ -211,10 +260,19 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				<h2>{pot}</h2>
 				<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
 					<HoleCards holeCards={playersHoleCards} />
-					<PlayersHud playersName={playersName} chips={playersChips} />
+					<PlayersHud
+						playersName={playersName}
+						chips={playersChips}
+						position={position}
+					/>
 				</div>
 				{isTurn && (
-					<BettingOptions bet={bet} setBet={setBet} chips={playersChips} />
+					<BettingOptions
+						position={position}
+						bet={bet}
+						setBet={setBet}
+						chips={playersChips}
+					/>
 				)}
 				{!startGame && (
 					<Paper className={classes.waitingDisplay}>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, memo } from 'react'
 import { Button, ButtonGroup, Grid, Input, Slider } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 
@@ -43,13 +43,13 @@ const BetSlider = withStyles({
 	},
 })(Slider)
 
-const BettingOptions = ({ bet, setBet, chips }) => {
+const BettingOptions = ({ position, bet, setBet, chips }) => {
 	const classes = useStyles()
 
 	const handleClick = (e) => {
 		const { action } = e.currentTarget.dataset
 
-		socket.emit('action', action, bet)
+		socket.emit('action', position, action, bet)
 	}
 
 	const handleSliderChange = (event, newValue) => {
@@ -68,16 +68,16 @@ const BettingOptions = ({ bet, setBet, chips }) => {
 		}
 	}
 
-	useEffect(() => {
-		// Clean up controller //
-		let isSubscribed = true
+	// useEffect(() => {
+	// 	// Clean up controller //
+	// 	let isMounted = true
 
-		// Cancel subscription to useEffect //
-		return () => {
-			isSubscribed = false
-			socket.offAny()
-		}
-	}, [])
+	// 	// Cancel subscription to useEffect //
+	// 	return () => {
+	// 		isMounted = false
+	// 		socket.offAny()
+	// 	}
+	// }, [])
 
 	return (
 		<div className={classes.playerOptions}>
@@ -128,4 +128,4 @@ const BettingOptions = ({ bet, setBet, chips }) => {
 	)
 }
 
-export default BettingOptions
+export default memo(BettingOptions)
