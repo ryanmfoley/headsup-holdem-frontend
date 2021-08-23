@@ -6,10 +6,8 @@ const useStyles = makeStyles({
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		// width: 400,
+		width: 300,
 		height: 100,
-		// margin: 'auto',
-		border: '1px solid white',
 	},
 	card: {
 		height: 80,
@@ -36,22 +34,38 @@ const useStyles = makeStyles({
 const CommunityCards = ({ communityCards }) => {
 	const classes = useStyles()
 
-	return (
-		communityCards.length > 0 && (
-			<div className={classes.root}>
-				{communityCards.map((card) => (
-					<div key={card.rank + card.suit} className={classes.card}>
-						<p className={classes.cardText} style={{ color: card.color }}>
-							{card.rank}
-						</p>
-						<p className={classes.cardImg} style={{ color: card.color }}>
-							{card.symbol}
-						</p>
-					</div>
-				))}
-			</div>
-		)
+	return communityCards.length > 0 ? (
+		<div className={classes.root}>
+			{communityCards.map((card) => (
+				<div key={card.rank + card.suit} className={classes.card}>
+					<p className={classes.cardText} style={{ color: card.color }}>
+						{card.rank}
+					</p>
+					<p className={classes.cardImg} style={{ color: card.color }}>
+						{card.symbol}
+					</p>
+				</div>
+			))}
+		</div>
+	) : (
+		<div className={classes.root}></div>
 	)
+	// return (
+	// 	communityCards.length > 0 && (
+	// 		<div className={classes.root}>
+	// 			{communityCards.map((card) => (
+	// 				<div key={card.rank + card.suit} className={classes.card}>
+	// 					<p className={classes.cardText} style={{ color: card.color }}>
+	// 						{card.rank}
+	// 					</p>
+	// 					<p className={classes.cardImg} style={{ color: card.color }}>
+	// 						{card.symbol}
+	// 					</p>
+	// 				</div>
+	// 			))}
+	// 		</div>
+	// 	)
+	// )
 }
 
 export default memo(CommunityCards)

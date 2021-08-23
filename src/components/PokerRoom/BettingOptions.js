@@ -4,30 +4,23 @@ import { makeStyles, withStyles } from '@material-ui/core/styles'
 
 import socket from '../../config/socketConfig'
 
-// Fold - Check - Bet
-// Fold - Call - Raise
-// Fold - Call // facing allin
-
 const useStyles = makeStyles({
 	root: {
 		width: 250,
 	},
 	bettingOptions: {
 		position: 'absolute',
-		// top: 0,
-		right: '3%',
-		bottom: '8%',
-		// left: 0,
+		right: '-10%',
+		bottom: '-35%',
 		display: 'flex',
 		flexDirection: 'column',
 		width: '35%',
 		height: '80px',
-		// margin: 'auto',
-		// outline: '2px solid yellow',
 	},
-	// betSlider: { width:  },
 	input: {
 		width: 52,
+		background: 'rgba(255, 255, 255, 0.3)',
+		borderRadius: '5px',
 	},
 })
 
@@ -63,43 +56,39 @@ const BetSlider = withStyles({
 
 const BettingOptions = ({
 	isPlayerOnBtn,
-	betOrRaiseAmount,
-	setBetOrRaiseAmount,
+	betAmount,
+	setBetAmount,
 	amountToCall,
 	setAmountToCall,
 	chips,
 }) => {
 	const classes = useStyles()
 
-	// const handleClick = (e) => {
-	// 	const { action } = e.currentTarget.dataset
-
-	// 	socket.emit('action', isPlayerOnBtn, action, bet)
-	// }
-
-	const handleFold = () => socket.emit('fold')
+	const handleFold = () => socket.emit('handIsOver')
 
 	const handleCheck = () => socket.emit('check')
 
-	const handleCall = () => socket.emit('call')
+	const handleCall = () => {
+		socket.emit('call', amountToCall)
+	}
 
 	const handleBetOrRaise = () => {
-		socket.emit('betOrRaise', betOrRaiseAmount)
+		socket.emit('bet', { betAmount })
 	}
 
 	const handleSliderChange = (e, newValue) => {
-		setBetOrRaiseAmount(newValue)
+		setBetAmount(newValue)
 	}
 
 	const handleInputChange = (e) => {
-		setBetOrRaiseAmount(e.target.value === '' ? '' : Number(e.target.value))
+		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 	}
 
 	const handleBlur = () => {
-		if (betOrRaiseAmount < 0) {
-			setBetOrRaiseAmount(0)
-		} else if (betOrRaiseAmount > 100) {
-			setBetOrRaiseAmount(100)
+		if (betAmount < 0) {
+			setBetAmount(0)
+		} else if (betAmount > 100) {
+			setBetAmount(100)
 		}
 	}
 
@@ -141,14 +130,10 @@ const BettingOptions = ({
 					</Button>
 				</ButtonGroup>
 			)}
-			<Grid
-				container
-				spacing={2}
-				alignItems='center'
-				className={classes.betSlider}>
+			<Grid container spacing={2} alignItems='center'>
 				<Grid item xs>
 					<BetSlider
-						value={typeof betOrRaiseAmount === 'number' ? betOrRaiseAmount : 0}
+						value={typeof betAmount === 'number' ? betAmount : 0}
 						step={50}
 						max={chips}
 						onChange={handleSliderChange}
@@ -157,7 +142,7 @@ const BettingOptions = ({
 				<Grid item>
 					<Input
 						className={classes.input}
-						value={betOrRaiseAmount}
+						value={betAmount}
 						margin='dense'
 						onChange={handleInputChange}
 						onBlur={handleBlur}
