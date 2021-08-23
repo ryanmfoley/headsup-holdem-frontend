@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
-	playerData: {
+	root: {
 		marginBottom: '10px',
 		background: 'black',
 		textAlign: 'center',
@@ -12,11 +12,11 @@ const useStyles = makeStyles({
 	},
 })
 
-const PlayersHud = ({ playersName, chips, position }) => {
+const PlayersHud = ({ playersName, chips, isPlayerOnBtn }) => {
 	const classes = useStyles()
 
 	return (
-		<div className={classes.playerData}>
+		<div className={classes.root}>
 			<h2 style={{ margin: 0 }}>{playersName}</h2>
 			<h2 style={{ margin: 0 }}>${chips}</h2>
 		</div>

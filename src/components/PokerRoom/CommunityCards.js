@@ -2,12 +2,14 @@ import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
-	communityCards: {
+	root: {
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		width: 400,
-		margin: 'auto',
+		// width: 400,
+		height: 100,
+		// margin: 'auto',
+		border: '1px solid white',
 	},
 	card: {
 		height: 80,
@@ -36,7 +38,7 @@ const CommunityCards = ({ communityCards }) => {
 
 	return (
 		communityCards.length > 0 && (
-			<div className={classes.communityCards}>
+			<div className={classes.root}>
 				{communityCards.map((card) => (
 					<div key={card.rank + card.suit} className={classes.card}>
 						<p className={classes.cardText} style={{ color: card.color }}>

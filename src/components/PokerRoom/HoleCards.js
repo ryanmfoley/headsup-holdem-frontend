@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles({
-	holeCards: {
+	root: {
 		display: 'flex',
 		justifyContent: 'center',
 		padding: '15px',
@@ -33,7 +33,7 @@ const HoleCards = ({ holeCards }) => {
 	const classes = useStyles()
 
 	return (
-		<div className={classes.holeCards}>
+		<div className={classes.root}>
 			{holeCards && holeCards.length >= 2 ? (
 				<>
 					{holeCards.map((card) => (
