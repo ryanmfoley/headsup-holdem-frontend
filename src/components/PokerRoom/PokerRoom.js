@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
-import { Box, Button, Paper } from '@material-ui/core'
+import { Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import BettingOptions from './BettingOptions'
@@ -37,7 +37,7 @@ const useStyles = makeStyles({
 		height: '60%',
 		maxWidth: 700,
 		maxHeight: 350,
-		margin: '60px auto',
+		margin: '100px auto',
 		border: '2px solid gray',
 		borderRadius: '30% / 60%',
 		// borderRadius: '50%',
@@ -136,6 +136,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const isPlayerOne = useRef(null)
 	const isPlayerOnBtn = useRef(null)
 	const isTurn = useRef(null)
+	const hasCalledSB = useRef(null)
 	const [numberOfHands, setNumberOfHands] = useState(0)
 
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
@@ -147,8 +148,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [playersChips, setPlayersChips] = useState(10000)
 	const [opponentsChips, setOpponentsChips] = useState(10000)
 	const [pot, setPot] = useState()
-	const [betAmount, setBetAmount] = useState(false)
-	const [amountToCall, setAmountToCall] = useState(0)
+	// const [betAmount, setBetAmount] = useState(false)
+	const [callAmount, setCallAmount] = useState(0)
 
 	const [showHands, setShowHands] = useState(false)
 
@@ -205,8 +206,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					: opponentsChips - SMALL_BLIND
 			)
 			setPot(SMALL_BLIND + BIG_BLIND)
-			setAmountToCall(isPlayerOnBtn.current ? SMALL_BLIND : 0)
+			setCallAmount(isPlayerOnBtn.current ? SMALL_BLIND : 0)
 			setHoleCards(holeCards)
+			hasCalledSB.current = false
 		})
 
 		socket.once('dealFlop', (flop) => {
@@ -260,18 +262,28 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
 
 		const isRoundOver = () =>
-			(bettingRound.current === 'preflop' &&
-				isPlayerOnBtn.current &&
-				!isTurn.current) ||
-			(bettingRound.current === 'preflop' &&
-				!isPlayerOnBtn.current &&
-				isTurn.current) ||
+			(bettingRound.current === 'preflop' && hasCalledSB.current) ||
 			(bettingRound.current !== 'preflop' &&
 				!isPlayerOnBtn.current &&
 				!isTurn.current) ||
 			(bettingRound.current !== 'preflop' &&
 				isPlayerOnBtn.current &&
 				isTurn.current)
+
+		// const isRoundOver = () =>
+		// 	(bettingRound.current === 'preflop' &&
+		// 		isPlayerOnBtn.current &&
+		// 		hasCalledSB.current &&
+		// 		!isTurn.current) ||
+		// 	(bettingRound.current === 'preflop' &&
+		// 		!isPlayerOnBtn.current &&
+		// 		isTurn.current) ||
+		// 	(bettingRound.current !== 'preflop' &&
+		// 		!isPlayerOnBtn.current &&
+		// 		!isTurn.current) ||
+		// 	(bettingRound.current !== 'preflop' &&
+		// 		isPlayerOnBtn.current &&
+		// 		isTurn.current)
 
 		const dealNextCard = () => {
 			switch (bettingRound.current) {
@@ -299,37 +311,40 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
 		})
 
-		socket.on('call', ({ playerCalling, amountToCall }) => {
+		socket.on('call', ({ playerCalling, callAmount }) => {
 			if (!isMounted) return null
 
 			if (isPlayerOne.current && isRoundOver()) dealNextCard()
 
+			// All calls but first SB call end betting round //
+			hasCalledSB.current = true
+
 			if (currentPlayer.username === playerCalling) {
-				setPlayersChips((chips) => chips - amountToCall)
+				// Current Player is calling //
+				setPlayersChips((chips) => chips - callAmount)
 			} else {
-				setOpponentsChips((chips) => chips - amountToCall)
+				// Opponent is calling //
+				setOpponentsChips((chips) => chips - callAmount)
 			}
 
-			setPot((pot) => pot + amountToCall)
-			setAmountToCall(0)
+			setPot((pot) => pot + callAmount)
+			setCallAmount(0)
 
 			// Change turn //
 			isTurn.current = !isTurn.current
 			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-
-			// add bet to pot here
-			// setBet(action === 'bet' ? bet : 0)
-			// setPot(bet + pot)
 		})
 
 		socket.on('bet', ({ playerBetting, betAmount }) => {
 			if (!isMounted) return null
 
 			if (currentPlayer.username === playerBetting) {
+				// Current Player is betting //
 				setPlayersChips((chips) => chips - betAmount)
 			} else {
+				// Opponent is betting //
 				setOpponentsChips((chips) => chips - betAmount)
-				setAmountToCall(betAmount)
+				setCallAmount(betAmount)
 			}
 
 			setPot((pot) => pot + betAmount)
@@ -339,17 +354,33 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
 		})
 
-		// 	// add bet to pot here
-		// 	// setBet(action === 'bet' ? bet : 0)
-		// 	// setPot(bet + pot)
-		// })
+		socket.on('raise', ({ playerRaising, callAmount, raiseAmount }) => {
+			if (!isMounted) return null
+
+			// All calls but first SB call end betting round //
+			hasCalledSB.current = true
+
+			if (currentPlayer.username === playerRaising) {
+				// Current Player is raising //
+				setPlayersChips((chips) => chips - callAmount - raiseAmount)
+			} else {
+				// Opponent is raising //
+				setOpponentsChips((chips) => chips - callAmount - raiseAmount)
+				setCallAmount(raiseAmount)
+			}
+
+			setPot((pot) => pot + callAmount + raiseAmount)
+
+			// Change turn //
+			isTurn.current = !isTurn.current
+			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
+		})
 
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
 			socket.offAny()
 		}
-		// }, [playersName])
 	}, [])
 
 	// useEffect(() => {
@@ -382,7 +413,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 		// setPosition((prevPosition) => !prevPosition)
 	// 		isPlayerOnBtn.current = isPlayerOnBtn.current
 	// 		setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-	// 		setAmountToCall(showBettingOptions ? 10 : 0)
+	// 		setCallAmount(showBettingOptions ? 10 : 0)
 	// 		// console.log('handIsOver')
 	// 	})
 
@@ -404,7 +435,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			<Link to='/lobby' style={{ textDecoration: 'none' }}>
 				<Button variant='contained'>Lobby</Button>
 			</Link>
-			<h1>{`amount to call: ${amountToCall}`}</h1>
 			<div className={classes.table}>
 				<div
 					className={classes.dealerBtn}
@@ -436,11 +466,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				{showBettingOptions && (
 					<BettingOptions
 						isPlayerOnBtn={isPlayerOnBtn.current}
-						betAmount={betAmount}
-						setBetAmount={setBetAmount}
-						amountToCall={amountToCall}
-						setAmountToCall={setAmountToCall}
-						chips={playersChips}
+						// betAmount={betAmount}
+						// setBetAmount={setBetAmount}
+						callAmount={callAmount}
+						setCallAmount={setCallAmount}
+						playersChips={playersChips}
 					/>
 				)}
 				{!startGame && (

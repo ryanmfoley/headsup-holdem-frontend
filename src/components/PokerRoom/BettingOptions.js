@@ -1,4 +1,4 @@
-import { useEffect, useRef, memo } from 'react'
+import { useState, memo } from 'react'
 import { Button, ButtonGroup, Grid, Input, Slider } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 
@@ -54,26 +54,34 @@ const BetSlider = withStyles({
 	},
 })(Slider)
 
+const BIG_BLIND = 20
+
 const BettingOptions = ({
 	isPlayerOnBtn,
-	betAmount,
-	setBetAmount,
-	amountToCall,
-	setAmountToCall,
-	chips,
+	callAmount,
+	setCallAmount,
+	playersChips,
 }) => {
 	const classes = useStyles()
+	const [betAmount, setBetAmount] = useState(0)
 
 	const handleFold = () => socket.emit('handIsOver')
 
 	const handleCheck = () => socket.emit('check')
 
 	const handleCall = () => {
-		socket.emit('call', amountToCall)
+		socket.emit('call', callAmount)
 	}
 
-	const handleBetOrRaise = () => {
-		socket.emit('bet', { betAmount })
+	const handleBet = () => {
+		if (betAmount >= BIG_BLIND || betAmount === playersChips)
+			socket.emit('bet', { betAmount })
+	}
+
+	const handleRaise = () => {
+		const raiseAmount = betAmount - callAmount
+		if (raiseAmount >= callAmount || betAmount === playersChips)
+			socket.emit('raise', { callAmount, raiseAmount })
 	}
 
 	const handleSliderChange = (e, newValue) => {
@@ -84,28 +92,9 @@ const BettingOptions = ({
 		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 	}
 
-	const handleBlur = () => {
-		if (betAmount < 0) {
-			setBetAmount(0)
-		} else if (betAmount > 100) {
-			setBetAmount(100)
-		}
-	}
-
-	// useEffect(() => {
-	// 	// Clean up controller //
-	// 	let isMounted = true
-
-	// 	// Cancel subscription to useEffect //
-	// 	return () => {
-	// 		isMounted = false
-	// 		socket.offAny()
-	// 	}
-	// }, [])
-
 	return (
 		<div className={classes.bettingOptions}>
-			{amountToCall ? (
+			{callAmount ? (
 				<ButtonGroup variant='contained' fullWidth>
 					<Button variant='contained' onClick={handleFold}>
 						Fold
@@ -113,7 +102,7 @@ const BettingOptions = ({
 					<Button variant='contained' onClick={handleCall}>
 						Call
 					</Button>
-					<Button variant='contained' onClick={handleBetOrRaise}>
+					<Button variant='contained' onClick={handleRaise}>
 						Raise
 					</Button>
 				</ButtonGroup>
@@ -125,7 +114,7 @@ const BettingOptions = ({
 					<Button variant='contained' onClick={handleCheck}>
 						CHECK
 					</Button>
-					<Button variant='contained' onClick={handleBetOrRaise}>
+					<Button variant='contained' onClick={handleBet}>
 						BET
 					</Button>
 				</ButtonGroup>
@@ -135,7 +124,7 @@ const BettingOptions = ({
 					<BetSlider
 						value={typeof betAmount === 'number' ? betAmount : 0}
 						step={50}
-						max={chips}
+						max={playersChips}
 						onChange={handleSliderChange}
 					/>
 				</Grid>
@@ -145,10 +134,9 @@ const BettingOptions = ({
 						value={betAmount}
 						margin='dense'
 						onChange={handleInputChange}
-						onBlur={handleBlur}
 						inputProps={{
 							step: 50,
-							max: chips,
+							max: playersChips,
 							type: 'number',
 						}}
 					/>
