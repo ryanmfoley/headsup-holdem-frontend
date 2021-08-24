@@ -67,7 +67,6 @@ const useStyles = makeStyles({
 	},
 	board: {
 		position: 'relative',
-		// border: '2px solid white',
 	},
 	pot: {
 		position: 'absolute',
@@ -270,21 +269,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				isPlayerOnBtn.current &&
 				isTurn.current)
 
-		// const isRoundOver = () =>
-		// 	(bettingRound.current === 'preflop' &&
-		// 		isPlayerOnBtn.current &&
-		// 		hasCalledSB.current &&
-		// 		!isTurn.current) ||
-		// 	(bettingRound.current === 'preflop' &&
-		// 		!isPlayerOnBtn.current &&
-		// 		isTurn.current) ||
-		// 	(bettingRound.current !== 'preflop' &&
-		// 		!isPlayerOnBtn.current &&
-		// 		!isTurn.current) ||
-		// 	(bettingRound.current !== 'preflop' &&
-		// 		isPlayerOnBtn.current &&
-		// 		isTurn.current)
-
 		const dealNextCard = () => {
 			switch (bettingRound.current) {
 				case 'preflop':
@@ -295,6 +279,25 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					break
 				case 'turn':
 					socket.emit('dealRiver')
+					break
+				default:
+					socket.emit('handIsOver')
+			}
+		}
+
+		const dealBoard = () => {
+			switch (bettingRound.current) {
+				case 'preflop':
+					setTimeout(() => socket.emit('dealFlop'), 1500)
+					setTimeout(() => socket.emit('dealTurn'), 3000)
+					setTimeout(() => socket.emit('dealRiver'), 4500)
+					break
+				case 'flop':
+					setTimeout(() => socket.emit('dealTurn'), 1500)
+					setTimeout(() => socket.emit('dealRiver'), 3000)
+					break
+				case 'turn':
+					setTimeout(() => socket.emit('dealRiver'), 1500)
 					break
 				default:
 					socket.emit('handIsOver')
@@ -314,7 +317,17 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('call', ({ playerCalling, callAmount }) => {
 			if (!isMounted) return null
 
-			if (isPlayerOne.current && isRoundOver()) dealNextCard()
+			// Only Player One emits deal to server //
+			if (isPlayerOne.current && isRoundOver()) {
+				if (playersChips <= callAmount || opponentsChips <= callAmount) {
+					// Player is All-In //
+					dealBoard()
+					console.log('allIn')
+				} else {
+					console.log('dealNextCard')
+					dealNextCard()
+				}
+			}
 
 			// All calls but first SB call end betting round //
 			hasCalledSB.current = true
@@ -381,7 +394,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			isMounted = false
 			socket.offAny()
 		}
-	}, [])
+	}, [playersChips, opponentsChips])
 
 	// useEffect(() => {
 	// 	// Clean up controller //
@@ -395,34 +408,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 		socket.offAny()
 	// 	}
 	// }, [])
-
-	// useEffect(() => {
-	// 	// Clean up controller //
-	// 	let isMounted = true
-
-	// 	socket.once('handIsOver', ({ losingPlayer }) => {
-	// 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
-
-	// 		// Add pot to winners chips //
-	// 		if (losingPlayer.username === currentPlayer.username) {
-	// 			setOpponentsChips((prevChips) => prevChips + pot)
-	// 		} else {
-	// 			setPlayersChips((prevChips) => prevChips + pot)
-	// 		}
-
-	// 		// setPosition((prevPosition) => !prevPosition)
-	// 		isPlayerOnBtn.current = isPlayerOnBtn.current
-	// 		setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-	// 		setCallAmount(showBettingOptions ? 10 : 0)
-	// 		// console.log('handIsOver')
-	// 	})
-
-	// 	// Cancel subscription to useEffect //
-	// 	return () => {
-	// 		isMounted = false
-	// 		socket.offAny()
-	// 	}
-	// }, [showBettingOptions, pot])
 
 	// useEffect(() => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
@@ -466,11 +451,10 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				{showBettingOptions && (
 					<BettingOptions
 						isPlayerOnBtn={isPlayerOnBtn.current}
-						// betAmount={betAmount}
-						// setBetAmount={setBetAmount}
 						callAmount={callAmount}
 						setCallAmount={setCallAmount}
 						playersChips={playersChips}
+						opponentsChips={opponentsChips}
 					/>
 				)}
 				{!startGame && (

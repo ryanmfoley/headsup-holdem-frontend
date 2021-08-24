@@ -61,6 +61,7 @@ const BettingOptions = ({
 	callAmount,
 	setCallAmount,
 	playersChips,
+	opponentsChips,
 }) => {
 	const classes = useStyles()
 	const [betAmount, setBetAmount] = useState(0)
@@ -69,9 +70,7 @@ const BettingOptions = ({
 
 	const handleCheck = () => socket.emit('check')
 
-	const handleCall = () => {
-		socket.emit('call', callAmount)
-	}
+	const handleCall = () => socket.emit('call', callAmount)
 
 	const handleBet = () => {
 		if (betAmount >= BIG_BLIND || betAmount === playersChips)
@@ -80,17 +79,15 @@ const BettingOptions = ({
 
 	const handleRaise = () => {
 		const raiseAmount = betAmount - callAmount
+
 		if (raiseAmount >= callAmount || betAmount === playersChips)
 			socket.emit('raise', { callAmount, raiseAmount })
 	}
 
-	const handleSliderChange = (e, newValue) => {
-		setBetAmount(newValue)
-	}
+	const handleSliderChange = (e, newValue) => setBetAmount(newValue)
 
-	const handleInputChange = (e) => {
+	const handleInputChange = (e) =>
 		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
-	}
 
 	return (
 		<div className={classes.bettingOptions}>
@@ -124,7 +121,7 @@ const BettingOptions = ({
 					<BetSlider
 						value={typeof betAmount === 'number' ? betAmount : 0}
 						step={50}
-						max={playersChips}
+						max={Math.min(playersChips, opponentsChips)}
 						onChange={handleSliderChange}
 					/>
 				</Grid>
@@ -136,7 +133,7 @@ const BettingOptions = ({
 						onChange={handleInputChange}
 						inputProps={{
 							step: 50,
-							max: playersChips,
+							max: Math.min(playersChips, opponentsChips),
 							type: 'number',
 						}}
 					/>
