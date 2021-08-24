@@ -19,6 +19,10 @@ import socket from '../../config/socketConfig'
 // }
 // isRoundWinner, isRoundOver, isGameOver
 
+//////////// TODOS ////////////
+// 1. Add blank cards //
+// 2. adjust allin value //
+
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
@@ -65,30 +69,20 @@ const useStyles = makeStyles({
 			content: "'...'",
 		},
 	},
-	board: {
-		position: 'relative',
-	},
 	pot: {
-		position: 'absolute',
-		top: 0,
-		right: 0,
-		bottom: 160,
-		left: 0,
 		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		width: '150px',
-		height: '40px',
-		margin: 'auto',
-		color: 'white',
+		flex: 1,
+		alignItems: 'flex-end',
+	},
+	potText: {
 		background: 'rgba(0, 0, 0, 0.4)',
+		padding: '10px',
+		color: 'white',
 		borderRadius: '15px',
 	},
 	playersHudContainer: {
 		position: 'absolute',
-		left: 0,
-		right: 0,
-		width: '30%',
+		width: '25%',
 		margin: 'auto',
 	},
 	dealerBtn: {
@@ -108,10 +102,10 @@ const useStyles = makeStyles({
 		fontSize: '1vmin',
 	},
 	top: {
-		top: '-30%',
+		top: '-35%',
 	},
 	bottom: {
-		bottom: '-45%',
+		bottom: '-35%',
 	},
 	'@keyframes loading-ellipsis': {
 		to: {
@@ -434,25 +428,18 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					)}
 					<PlayersHud playersName={opponentsName} chips={opponentsChips} />
 				</div>
-				<div className={classes.board}>
-					<div className={classes.pot}>
-						<h2>Pot: ${pot}</h2>
-					</div>
-					<CommunityCards communityCards={communityCards} />
+				<div className={classes.pot}>
+					<h2 className={classes.potText}>Pot: ${pot}</h2>
 				</div>
+				<CommunityCards communityCards={communityCards} />
+				<div style={{ flex: 1 }}></div>
 				<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
 					<HoleCards holeCards={holeCards} />
-					<PlayersHud
-						playersName={playersName}
-						chips={playersChips}
-						isPlayerOnBtn={isPlayerOnBtn.current}
-					/>
+					<PlayersHud playersName={playersName} chips={playersChips} />
 				</div>
 				{showBettingOptions && (
 					<BettingOptions
-						isPlayerOnBtn={isPlayerOnBtn.current}
 						callAmount={callAmount}
-						setCallAmount={setCallAmount}
 						playersChips={playersChips}
 						opponentsChips={opponentsChips}
 					/>

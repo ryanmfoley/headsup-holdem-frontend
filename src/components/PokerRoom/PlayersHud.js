@@ -4,15 +4,16 @@ import { makeStyles } from '@material-ui/core/styles'
 const useStyles = makeStyles({
 	root: {
 		marginBottom: '10px',
+		padding: '3px',
 		background: 'black',
 		textAlign: 'center',
 		color: 'white',
-		border: '2px solid black',
-		borderRadius: '10px',
+		border: '.8px solid white',
+		borderRadius: '20%/50%',
 	},
 })
 
-const PlayersHud = ({ playersName, chips, isPlayerOnBtn }) => {
+const PlayersHud = ({ playersName, chips }) => {
 	const classes = useStyles()
 
 	return (

@@ -6,8 +6,16 @@ const useStyles = makeStyles({
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
+		height: '100px',
 	},
-	card: {
+	cardOutline: {
+		height: 80,
+		width: 56 /*70% of height*/,
+		margin: 4,
+		border: '0.1em dashed white',
+		borderRadius: '10%',
+	},
+	cardFront: {
 		height: 80,
 		width: 56 /*70% of height*/,
 		margin: 4,
@@ -31,39 +39,33 @@ const useStyles = makeStyles({
 
 const CommunityCards = ({ communityCards }) => {
 	const classes = useStyles()
+	const cards = [...communityCards]
 
-	return communityCards.length > 0 ? (
+	// Add null to display outline for empty cards //
+	for (let i = 0; i <= 5 - communityCards.length; i++) {
+		cards.push(null)
+	}
+
+	return (
 		<div className={classes.root}>
-			{communityCards.map((card) => (
-				<div key={card.rank + card.suit} className={classes.card}>
-					<p className={classes.cardText} style={{ color: card.color }}>
-						{card.rank}
-					</p>
-					<p className={classes.cardImg} style={{ color: card.color }}>
-						{card.symbol}
-					</p>
-				</div>
-			))}
+			{cards.slice(0, 5).map((card) => {
+				if (card) {
+					return (
+						<div key={card.rank + card.suit} className={classes.cardFront}>
+							<p className={classes.cardText} style={{ color: card.color }}>
+								{card.rank}
+							</p>
+							<p className={classes.cardImg} style={{ color: card.color }}>
+								{card.symbol}
+							</p>
+						</div>
+					)
+				} else {
+					return <div className={classes.cardOutline}></div>
+				}
+			})}
 		</div>
-	) : (
-		<div className={classes.root}></div>
 	)
-	// return (
-	// 	communityCards.length > 0 && (
-	// 		<div className={classes.root}>
-	// 			{communityCards.map((card) => (
-	// 				<div key={card.rank + card.suit} className={classes.card}>
-	// 					<p className={classes.cardText} style={{ color: card.color }}>
-	// 						{card.rank}
-	// 					</p>
-	// 					<p className={classes.cardImg} style={{ color: card.color }}>
-	// 						{card.symbol}
-	// 					</p>
-	// 				</div>
-	// 			))}
-	// 		</div>
-	// 	)
-	// )
 }
 
 export default memo(CommunityCards)

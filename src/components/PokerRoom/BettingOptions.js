@@ -56,13 +56,7 @@ const BetSlider = withStyles({
 
 const BIG_BLIND = 20
 
-const BettingOptions = ({
-	isPlayerOnBtn,
-	callAmount,
-	setCallAmount,
-	playersChips,
-	opponentsChips,
-}) => {
+const BettingOptions = ({ callAmount, playersChips, opponentsChips }) => {
 	const classes = useStyles()
 	const [betAmount, setBetAmount] = useState(0)
 
