@@ -56,7 +56,12 @@ const BetSlider = withStyles({
 
 const BIG_BLIND = 20
 
-const BettingOptions = ({ callAmount, playersChips, opponentsChips }) => {
+const BettingOptions = ({
+	playersChips,
+	opponentsChips,
+	callAmount,
+	isPlayerAllIn,
+}) => {
 	const classes = useStyles()
 	const [betAmount, setBetAmount] = useState(0)
 
@@ -93,9 +98,11 @@ const BettingOptions = ({ callAmount, playersChips, opponentsChips }) => {
 					<Button variant='contained' onClick={handleCall}>
 						Call
 					</Button>
-					<Button variant='contained' onClick={handleRaise}>
-						Raise
-					</Button>
+					{!isPlayerAllIn && (
+						<Button variant='contained' onClick={handleRaise}>
+							Raise
+						</Button>
+					)}
 				</ButtonGroup>
 			) : (
 				<ButtonGroup variant='contained' fullWidth>
@@ -110,29 +117,31 @@ const BettingOptions = ({ callAmount, playersChips, opponentsChips }) => {
 					</Button>
 				</ButtonGroup>
 			)}
-			<Grid container spacing={2} alignItems='center'>
-				<Grid item xs>
-					<BetSlider
-						value={typeof betAmount === 'number' ? betAmount : 0}
-						step={50}
-						max={Math.min(playersChips, opponentsChips)}
-						onChange={handleSliderChange}
-					/>
+			{!isPlayerAllIn && (
+				<Grid container spacing={2} alignItems='center'>
+					<Grid item xs>
+						<BetSlider
+							value={typeof betAmount === 'number' ? betAmount : 0}
+							step={50}
+							max={Math.min(playersChips, opponentsChips + callAmount)}
+							onChange={handleSliderChange}
+						/>
+					</Grid>
+					<Grid item>
+						<Input
+							className={classes.input}
+							value={betAmount}
+							margin='dense'
+							onChange={handleInputChange}
+							inputProps={{
+								step: 50,
+								max: Math.min(playersChips, opponentsChips + callAmount),
+								type: 'number',
+							}}
+						/>
+					</Grid>
 				</Grid>
-				<Grid item>
-					<Input
-						className={classes.input}
-						value={betAmount}
-						margin='dense'
-						onChange={handleInputChange}
-						inputProps={{
-							step: 50,
-							max: Math.min(playersChips, opponentsChips),
-							type: 'number',
-						}}
-					/>
-				</Grid>
-			</Grid>
+			)}
 		</div>
 	)
 }

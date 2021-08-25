@@ -20,8 +20,7 @@ import socket from '../../config/socketConfig'
 // isRoundWinner, isRoundOver, isGameOver
 
 //////////// TODOS ////////////
-// 1. Add blank cards //
-// 2. adjust allin value //
+// 1. adjust allin value //
 
 const useStyles = makeStyles({
 	root: {
@@ -125,12 +124,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
 
-	const bettingRound = useRef('preflop')
+	const bettingRound = useRef(null)
 	const isPlayerOne = useRef(null)
 	const isPlayerOnBtn = useRef(null)
 	const isTurn = useRef(null)
 	const hasCalledSB = useRef(null)
-	const [numberOfHands, setNumberOfHands] = useState(0)
+	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	// const [playersHoleCards, setPlayersHoleCards] = useState([])
@@ -141,7 +140,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [playersChips, setPlayersChips] = useState(10000)
 	const [opponentsChips, setOpponentsChips] = useState(10000)
 	const [pot, setPot] = useState()
-	// const [betAmount, setBetAmount] = useState(false)
+	// const [betAmount, setBetAmount] = useState(0)
 	const [callAmount, setCallAmount] = useState(0)
 
 	const [showHands, setShowHands] = useState(false)
@@ -165,7 +164,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 			setOpponentsName(username)
 			setStartGame(true)
-			setShowBettingOptions(isPlayerOne.current ? true : false)
 			isPlayerOnBtn.current = isPlayerOne.current ? true : false
 			isTurn.current = isPlayerOne.current ? true : false
 
@@ -185,7 +183,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		// Clean up controller //
 		let isMounted = true
 
-		socket.once('dealPreFlop', (holeCards) => {
+		socket.on('dealPreFlop', (holeCards) => {
 			if (!isMounted) return null
 
 			setPlayersChips((playersChips) =>
@@ -201,10 +199,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setPot(SMALL_BLIND + BIG_BLIND)
 			setCallAmount(isPlayerOnBtn.current ? SMALL_BLIND : 0)
 			setHoleCards(holeCards)
+			setShowBettingOptions(isPlayerOnBtn.current ? true : false)
 			hasCalledSB.current = false
+			bettingRound.current = 'preflop'
 		})
 
-		socket.once('dealFlop', (flop) => {
+		socket.on('dealFlop', (flop) => {
 			if (!isMounted) return null
 
 			// Change betting round to flop //
@@ -217,7 +217,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setCommunityCards(flop)
 		})
 
-		socket.once('dealTurn', (turn) => {
+		socket.on('dealTurn', (turn) => {
 			if (!isMounted) return null
 
 			// Change betting round to turn //
@@ -229,7 +229,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			])
 		})
 
-		socket.once('dealRiver', (river) => {
+		socket.on('dealRiver', (river) => {
 			if (!isMounted) return null
 
 			// Change betting round to river //
@@ -241,12 +241,27 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			])
 		})
 
+		socket.on('handIsOver', () => {
+			if (!isMounted) return null
+
+			setShowBettingOptions(false)
+			setShowHands(true)
+
+			setTimeout(() => {
+				setHoleCards([])
+				setCommunityCards([])
+				isPlayerOnBtn.current = !isPlayerOnBtn.current
+			}, 3000)
+
+			if (isPlayerOne.current) setTimeout(() => socket.emit('deal'), 3000)
+		})
+
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
 			socket.offAny()
 		}
-	}, [numberOfHands])
+	}, [])
 
 	useEffect(() => {
 		// Clean up controller //
@@ -311,16 +326,20 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('call', ({ playerCalling, callAmount }) => {
 			if (!isMounted) return null
 
-			// Only Player One emits deal to server //
-			if (isPlayerOne.current && isRoundOver()) {
-				if (playersChips <= callAmount || opponentsChips <= callAmount) {
-					// Player is All-In //
+			const hasCalledAllIn =
+				playersChips <= callAmount || opponentsChips <= callAmount
+
+			// Deal all cards if player is all-in //
+			if (hasCalledAllIn) {
+				setShowBettingOptions(false)
+
+				if (isPlayerOne.current) {
+					// Only Player One emits deal event to server //
 					dealBoard()
-					console.log('allIn')
-				} else {
-					console.log('dealNextCard')
-					dealNextCard()
 				}
+			} else if (isRoundOver()) {
+				// Only Player One emits deal event to server //
+				dealNextCard()
 			}
 
 			// All calls but first SB call end betting round //
@@ -345,6 +364,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('bet', ({ playerBetting, betAmount }) => {
 			if (!isMounted) return null
 
+			if (playersChips <= betAmount || opponentsChips <= betAmount)
+				setIsPlayerAllIn(true)
+
 			if (currentPlayer.username === playerBetting) {
 				// Current Player is betting //
 				setPlayersChips((chips) => chips - betAmount)
@@ -363,6 +385,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		socket.on('raise', ({ playerRaising, callAmount, raiseAmount }) => {
 			if (!isMounted) return null
+
+			if (playersChips <= raiseAmount || opponentsChips <= raiseAmount)
+				setIsPlayerAllIn(true)
 
 			// All calls but first SB call end betting round //
 			hasCalledSB.current = true
@@ -415,36 +440,40 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				<Button variant='contained'>Lobby</Button>
 			</Link>
 			<div className={classes.table}>
-				<div
-					className={classes.dealerBtn}
-					style={{ top: !isPlayerOnBtn.current ? '10%' : '80%' }}>
-					<p className={classes.dealerBtnText}>DEALER</p>
-				</div>
-				<div className={`${classes.playersHudContainer} ${classes.top}`}>
-					{showHands ? (
-						<HoleCards holeCards={opponentsHoleCards} />
-					) : (
-						<HoleCards />
-					)}
-					<PlayersHud playersName={opponentsName} chips={opponentsChips} />
-				</div>
-				<div className={classes.pot}>
-					<h2 className={classes.potText}>Pot: ${pot}</h2>
-				</div>
-				<CommunityCards communityCards={communityCards} />
-				<div style={{ flex: 1 }}></div>
-				<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
-					<HoleCards holeCards={holeCards} />
-					<PlayersHud playersName={playersName} chips={playersChips} />
-				</div>
-				{showBettingOptions && (
-					<BettingOptions
-						callAmount={callAmount}
-						playersChips={playersChips}
-						opponentsChips={opponentsChips}
-					/>
-				)}
-				{!startGame && (
+				{startGame ? (
+					<>
+						<div
+							className={classes.dealerBtn}
+							style={{ top: !isPlayerOnBtn.current ? '10%' : '80%' }}>
+							<p className={classes.dealerBtnText}>DEALER</p>
+						</div>
+						<div className={`${classes.playersHudContainer} ${classes.top}`}>
+							{showHands ? (
+								<HoleCards holeCards={opponentsHoleCards} />
+							) : (
+								<HoleCards />
+							)}
+							<PlayersHud playersName={opponentsName} chips={opponentsChips} />
+						</div>
+						<div className={classes.pot}>
+							<h2 className={classes.potText}>Pot: ${pot}</h2>
+						</div>
+						<CommunityCards communityCards={communityCards} />
+						<div style={{ flex: 1 }}></div>
+						<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
+							<HoleCards holeCards={holeCards} />
+							<PlayersHud playersName={playersName} chips={playersChips} />
+						</div>
+						{showBettingOptions && (
+							<BettingOptions
+								playersChips={playersChips}
+								opponentsChips={opponentsChips}
+								callAmount={callAmount}
+								isPlayerAllIn={isPlayerAllIn}
+							/>
+						)}
+					</>
+				) : (
 					<Paper className={classes.waitingDisplay}>
 						<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
 					</Paper>

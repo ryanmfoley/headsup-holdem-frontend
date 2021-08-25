@@ -43,27 +43,25 @@ const CommunityCards = ({ communityCards }) => {
 
 	// Add null to display outline for empty cards //
 	for (let i = 0; i <= 5 - communityCards.length; i++) {
-		cards.push(null)
+		cards.push({ id: i, rank: null })
 	}
 
 	return (
 		<div className={classes.root}>
-			{cards.slice(0, 5).map((card) => {
-				if (card) {
-					return (
-						<div key={card.rank + card.suit} className={classes.cardFront}>
-							<p className={classes.cardText} style={{ color: card.color }}>
-								{card.rank}
-							</p>
-							<p className={classes.cardImg} style={{ color: card.color }}>
-								{card.symbol}
-							</p>
-						</div>
-					)
-				} else {
-					return <div className={classes.cardOutline}></div>
-				}
-			})}
+			{cards.slice(0, 5).map((card) =>
+				card.rank ? (
+					<div key={card.rank + card.suit} className={classes.cardFront}>
+						<p className={classes.cardText} style={{ color: card.color }}>
+							{card.rank}
+						</p>
+						<p className={classes.cardImg} style={{ color: card.color }}>
+							{card.symbol}
+						</p>
+					</div>
+				) : (
+					<div key={card.id} className={classes.cardOutline}></div>
+				)
+			)}
 		</div>
 	)
 }
