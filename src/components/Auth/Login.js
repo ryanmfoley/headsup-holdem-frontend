@@ -13,10 +13,11 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
+import Header from '../Header/Header'
 import ENDPOINT from '../../config/config'
 
 const useStyles = makeStyles((theme) => ({
-	loginContainer: {
+	root: {
 		height: '100vh',
 		margin: 'auto',
 	},
@@ -36,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 	paperStyle: {
 		width: 280,
-		marginTop: 60,
+		margin: '100px auto',
 		padding: 20,
 	},
 	avatarStyle: { backgroundColor: 'green' },
@@ -94,7 +95,8 @@ const Login = ({ setIsLoggedIn }) => {
 	}
 
 	return (
-		<div className={classes.loginContainer}>
+		<div className={classes.root}>
+			<Header />
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
 					<Avatar color='secondary'>

@@ -12,6 +12,7 @@ import {
 	TableRow,
 } from '@material-ui/core'
 
+import Header from '../Header/Header'
 import socket from '../../config/socketConfig'
 
 const StyledTableCell = withStyles((theme) => ({
@@ -32,12 +33,12 @@ const StyledTableRow = withStyles((theme) => ({
 }))(TableRow)
 
 const useStyles = makeStyles({
-	lobbyContainer: {
+	root: {
 		background: 'pink',
-		margin: '60px auto',
 	},
 	table: {
-		width: 300,
+		width: 'min(40%, 500px)',
+		margin: '100px auto',
 	},
 })
 
@@ -83,9 +84,10 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 	// if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
-		<div className={classes.lobbyContainer}>
-			<TableContainer component={Paper}>
-				<Table className={classes.table}>
+		<div className={classes.root}>
+			<Header />
+			<TableContainer component={Paper} className={classes.table}>
+				<Table>
 					<TableHead>
 						<TableRow>
 							<StyledTableCell>Name</StyledTableCell>
