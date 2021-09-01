@@ -147,7 +147,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 	// Chips //
 	const potRef = useRef(0)
-	const [pot, setPot] = useState()
+	const [pot, setPot] = useState(0)
 	const [playersChips, setPlayersChips] = useState(10000)
 	const [opponentsChips, setOpponentsChips] = useState(10000)
 	const [callAmount, setCallAmount] = useState(0)
@@ -193,21 +193,38 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 			bettingRoundRef.current = 'preflop'
 
-			// Subtract blinds from players chips //
-			setPlayersChips((playersChips) =>
-				isPlayerOnBtnRef.current
-					? playersChips - SMALL_BLIND
-					: playersChips - BIG_BLIND
-			)
-			setOpponentsChips((opponentsChips) =>
-				isPlayerOnBtnRef.current
-					? opponentsChips - BIG_BLIND
-					: opponentsChips - SMALL_BLIND
-			)
+			// Subtract blinds from players chips and set pot //
+			setPlayersChips((playersChips) => {
+				let newChipTotal
 
-			// Add small blind and big blind to pot //
-			potRef.current = SMALL_BLIND + BIG_BLIND
-			setPot(SMALL_BLIND + BIG_BLIND)
+				if (isPlayerOnBtnRef.current) {
+					newChipTotal = playersChips - Math.min(playersChips, SMALL_BLIND)
+					potRef.current = Math.min(playersChips, SMALL_BLIND)
+					setPot((pot) => pot + Math.min(playersChips, SMALL_BLIND))
+				} else {
+					newChipTotal = playersChips - Math.min(playersChips, BIG_BLIND)
+					potRef.current = Math.min(playersChips, BIG_BLIND)
+					setPot((pot) => pot + Math.min(playersChips, BIG_BLIND))
+				}
+
+				return newChipTotal
+			})
+
+			setOpponentsChips((opponentsChips) => {
+				let newChipTotal
+
+				if (isPlayerOnBtnRef.current) {
+					newChipTotal = opponentsChips - Math.min(opponentsChips, BIG_BLIND)
+					potRef.current = Math.min(opponentsChips, BIG_BLIND)
+					setPot((pot) => pot + Math.min(opponentsChips, BIG_BLIND))
+				} else {
+					newChipTotal = opponentsChips - Math.min(opponentsChips, SMALL_BLIND)
+					potRef.current = Math.min(opponentsChips, SMALL_BLIND)
+					setPot((pot) => pot + Math.min(opponentsChips, SMALL_BLIND))
+				}
+
+				return newChipTotal
+			})
 
 			setCallAmount(isPlayerOnBtnRef.current ? SMALL_BLIND : 0)
 

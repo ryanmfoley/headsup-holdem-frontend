@@ -63,7 +63,7 @@ const BettingOptions = ({
 	isPlayerAllIn,
 }) => {
 	const classes = useStyles()
-	const [betAmount, setBetAmount] = useState(0)
+	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
 
 	const handleFold = () => socket.emit('handIsOver')
 
@@ -132,20 +132,23 @@ const BettingOptions = ({
 				<Grid container spacing={2} alignItems='center'>
 					<Grid item xs>
 						<BetSlider
-							value={typeof betAmount === 'number' ? betAmount : 0}
+							value={betAmount ? betAmount : Math.min(playersChips, 20)}
 							step={50}
+							min={Math.min(playersChips, BIG_BLIND)}
 							max={Math.min(playersChips, opponentsChips + callAmount)}
+							valueLabelDisplay='auto'
 							onChange={handleSliderChange}
 						/>
 					</Grid>
 					<Grid item>
 						<Input
 							className={classes.input}
-							value={betAmount}
+							value={betAmount ? betAmount : Math.min(playersChips, 20)}
 							margin='dense'
 							onChange={handleInputChange}
 							inputProps={{
 								step: 50,
+								min: Math.min(playersChips, BIG_BLIND),
 								max: Math.min(playersChips, opponentsChips + callAmount),
 								type: 'number',
 							}}
