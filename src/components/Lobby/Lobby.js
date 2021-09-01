@@ -11,8 +11,12 @@ import {
 	TableHead,
 	TableRow,
 } from '@material-ui/core'
+import io from 'socket.io-client'
 
-import socket from '../../config/socketConfig'
+import Header from '../Header/Header'
+import ENDPOINT from '../../config/config'
+
+let socket
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -32,12 +36,12 @@ const StyledTableRow = withStyles((theme) => ({
 }))(TableRow)
 
 const useStyles = makeStyles({
-	lobbyContainer: {
+	root: {
 		background: 'pink',
-		margin: '60px auto',
 	},
 	table: {
-		width: 300,
+		width: 'min(40%, 500px)',
+		margin: '100px auto',
 	},
 })
 
@@ -55,14 +59,16 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 
 	useEffect(() => {
 		// Clean up controller //
-		let isSubscribed = true
+		let isMounted = true
+
+		socket = io(ENDPOINT)
 
 		const username = JSON.parse(localStorage.getItem('username'))
 
 		socket.emit('enterLobby', username)
 
 		socket.once('enterLobby', (player) => {
-			if (!isSubscribed) return null
+			if (!isMounted) return null
 
 			setPlayer(player)
 			localStorage.setItem('player', JSON.stringify(player))
@@ -70,22 +76,23 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		socket.on(
 			'playersWaiting',
-			(players) => isSubscribed && setPlayersWaiting(players)
+			(players) => isMounted && setPlayersWaiting(players)
 		)
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isSubscribed = false
-			socket.offAny()
+			isMounted = false
+			socket.disconnect()
 		}
 	}, [])
 
 	// if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
-		<div className={classes.lobbyContainer}>
-			<TableContainer component={Paper}>
-				<Table className={classes.table}>
+		<div className={classes.root}>
+			<Header />
+			<TableContainer component={Paper} className={classes.table}>
+				<Table>
 					<TableHead>
 						<TableRow>
 							<StyledTableCell>Name</StyledTableCell>

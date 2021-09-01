@@ -44,7 +44,13 @@ const Header = () => {
 					aria-label='menu'>
 					<MenuIcon />
 				</IconButton>
-				<img src={pokerIcon} alt='poker chips icon' style={{ width: '50px' }} />
+				<Link to='/'>
+					<img
+						src={pokerIcon}
+						alt='poker chips icon'
+						style={{ width: '50px' }}
+					/>
+				</Link>
 				<Typography variant='h6' className={classes.title}>
 					HU HOLD'EM
 				</Typography>

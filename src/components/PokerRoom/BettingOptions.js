@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, memo } from 'react'
 import { Button, ButtonGroup, Grid, Input, Slider } from '@material-ui/core'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 
@@ -8,8 +8,19 @@ const useStyles = makeStyles({
 	root: {
 		width: 250,
 	},
+	bettingOptions: {
+		position: 'absolute',
+		right: '-10%',
+		bottom: '-35%',
+		display: 'flex',
+		flexDirection: 'column',
+		width: '35%',
+		height: '80px',
+	},
 	input: {
 		width: 52,
+		background: 'rgba(255, 255, 255, 0.3)',
+		borderRadius: '5px',
 	},
 })
 
@@ -43,89 +54,107 @@ const BetSlider = withStyles({
 	},
 })(Slider)
 
-const BettingOptions = ({ bet, setBet, chips }) => {
+const BIG_BLIND = 20
+
+const BettingOptions = ({
+	playersChips,
+	opponentsChips,
+	callAmount,
+	isPlayerAllIn,
+}) => {
 	const classes = useStyles()
+	const [betAmount, setBetAmount] = useState(0)
 
-	const handleClick = (e) => {
-		const { action } = e.currentTarget.dataset
+	const handleFold = () => socket.emit('handIsOver')
 
-		socket.emit('action', action, bet)
+	const handleCheck = () => socket.emit('check')
+
+	const handleCall = () => {
+		socket.emit('call', {
+			playersChips,
+			opponentsChips,
+			callAmount,
+		})
 	}
 
-	const handleSliderChange = (event, newValue) => {
-		setBet(newValue)
+	const handleBet = () => {
+		if (betAmount >= BIG_BLIND || betAmount === playersChips)
+			socket.emit('bet', { playersChips, opponentsChips, betAmount })
 	}
 
-	const handleInputChange = (event) => {
-		setBet(event.target.value === '' ? '' : Number(event.target.value))
+	const handleRaise = () => {
+		const raiseAmount = betAmount - callAmount
+
+		if (raiseAmount >= callAmount || betAmount === playersChips)
+			socket.emit('raise', {
+				playersChips,
+				opponentsChips,
+				callAmount,
+				raiseAmount,
+			})
 	}
 
-	const handleBlur = () => {
-		if (bet < 0) {
-			setBet(0)
-		} else if (bet > 100) {
-			setBet(100)
-		}
-	}
+	const handleSliderChange = (e, newValue) => setBetAmount(newValue)
 
-	useEffect(() => {
-		// Clean up controller //
-		let isSubscribed = true
-
-		// Cancel subscription to useEffect //
-		return () => {
-			isSubscribed = false
-			socket.offAny()
-		}
-	}, [])
+	const handleInputChange = (e) =>
+		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 
 	return (
-		<div className={classes.playerOptions}>
-			<ButtonGroup variant='contained' fullWidth>
-				<Button variant='contained' data-action='check' onClick={handleClick}>
-					Check
-				</Button>
-				<Button variant='contained' data-action='bet' onClick={handleClick}>
-					Bet
-				</Button>
-			</ButtonGroup>
-			<ButtonGroup variant='contained' size='small' fullWidth>
-				<Button variant='contained' data-action='fold' onClick={handleClick}>
-					Fold
-				</Button>
-				<Button variant='contained' data-action='call' onClick={handleClick}>
-					Call
-				</Button>
-				<Button variant='contained' data-action='raise' onClick={handleClick}>
-					Raise
-				</Button>
-			</ButtonGroup>
-			<Grid container spacing={2} alignItems='center'>
-				<Grid item xs>
-					<BetSlider
-						value={typeof bet === 'number' ? bet : 0}
-						step={50}
-						max={chips}
-						onChange={handleSliderChange}
-					/>
+		<div className={classes.bettingOptions}>
+			{callAmount ? (
+				<ButtonGroup variant='contained' fullWidth>
+					<Button variant='contained' onClick={handleFold}>
+						Fold
+					</Button>
+					<Button variant='contained' onClick={handleCall}>
+						Call
+					</Button>
+					{!isPlayerAllIn && (
+						<Button variant='contained' onClick={handleRaise}>
+							Raise
+						</Button>
+					)}
+				</ButtonGroup>
+			) : (
+				<ButtonGroup variant='contained' fullWidth>
+					<Button variant='contained' onClick={handleFold}>
+						FOLD
+					</Button>
+					<Button variant='contained' onClick={handleCheck}>
+						CHECK
+					</Button>
+					<Button variant='contained' onClick={handleBet}>
+						BET
+					</Button>
+				</ButtonGroup>
+			)}
+			{!isPlayerAllIn && (
+				<Grid container spacing={2} alignItems='center'>
+					<Grid item xs>
+						<BetSlider
+							value={typeof betAmount === 'number' ? betAmount : 0}
+							step={50}
+							max={Math.min(playersChips, opponentsChips + callAmount)}
+							onChange={handleSliderChange}
+						/>
+					</Grid>
+					<Grid item>
+						<Input
+							className={classes.input}
+							value={betAmount}
+							margin='dense'
+							onChange={handleInputChange}
+							inputProps={{
+								step: 50,
+								max: Math.min(playersChips, opponentsChips + callAmount),
+								type: 'number',
+							}}
+						/>
+					</Grid>
 				</Grid>
-				<Grid item>
-					<Input
-						className={classes.input}
-						value={bet}
-						margin='dense'
-						onChange={handleInputChange}
-						onBlur={handleBlur}
-						inputProps={{
-							step: 50,
-							max: chips,
-							type: 'number',
-						}}
-					/>
-				</Grid>
-			</Grid>
+			)}
 		</div>
 	)
 }
 
-export default BettingOptions
+export default memo(BettingOptions)
