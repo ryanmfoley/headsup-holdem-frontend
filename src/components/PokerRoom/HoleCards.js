@@ -39,7 +39,7 @@ const HoleCards = ({ holeCards }) => {
 
 	return (
 		<div className={classes.root}>
-			{holeCards && holeCards.length >= 2 ? (
+			{holeCards ? (
 				<>
 					{holeCards.map((card) => (
 						<div

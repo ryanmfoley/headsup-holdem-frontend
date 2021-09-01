@@ -20,7 +20,11 @@ import socket from '../../config/socketConfig'
 // isRoundWinner, isRoundOver, isGameOver
 
 //////////// TODOS ////////////
-// 1. adjust allin value //
+// 1. Set min bet
+// 2. change bet from BB to raise
+// 3. maybe add a hand counter
+// 4. Add chat
+// 5. socket.handshake
 
 const useStyles = makeStyles({
 	root: {
@@ -41,9 +45,8 @@ const useStyles = makeStyles({
 		maxWidth: 700,
 		maxHeight: 350,
 		margin: '100px auto',
-		border: '2px solid gray',
+		border: '5px solid gray',
 		borderRadius: '30% / 60%',
-		// borderRadius: '50%',
 		boxShadow: '0 0 10px #9ecaed',
 	},
 	waitingDisplay: {
@@ -120,55 +123,357 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	////////////// TURN REDIRECT BACK ON //////////////
 	const classes = useStyles()
 	const { roomId } = useParams()
-	const [startGame, setStartGame] = useState(false)
+
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
 
-	const bettingRound = useRef(null)
-	const isPlayerOne = useRef(null)
-	const isPlayerOnBtn = useRef(null)
-	const isTurn = useRef(null)
-	const hasCalledSB = useRef(null)
+	// Gameplay variables //
+	const bettingRoundRef = useRef(null)
+	const isPlayerOneRef = useRef(null)
+	const isPlayerOnBtnRef = useRef(null)
+	const isTurnRef = useRef(null)
+	const hasCalledSBRef = useRef(false)
+	const [startGame, setStartGame] = useState(false)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
-
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
-	// const [playersHoleCards, setPlayersHoleCards] = useState([])
-	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
-	const [holeCards, setHoleCards] = useState([])
-	const [communityCards, setCommunityCards] = useState([])
-
-	const [playersChips, setPlayersChips] = useState(10000)
-	const [opponentsChips, setOpponentsChips] = useState(10000)
-	const [pot, setPot] = useState()
-	// const [betAmount, setBetAmount] = useState(0)
-	const [callAmount, setCallAmount] = useState(0)
-
 	const [showHands, setShowHands] = useState(false)
 
+	// Cards //
+	const communityCardsRef = useRef([])
+	const holeCardsRef = useRef({})
+	const [communityCards, setCommunityCards] = useState([])
+	const [holeCards, setHoleCards] = useState(null)
+	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
+
+	// Chips //
+	const potRef = useRef(0)
+	const [pot, setPot] = useState()
+	const [playersChips, setPlayersChips] = useState(10000)
+	const [opponentsChips, setOpponentsChips] = useState(10000)
+	const [callAmount, setCallAmount] = useState(0)
+
+	const alternateTurn = () => {
+		isTurnRef.current = !isTurnRef.current
+		setShowBettingOptions((showBettingOptions) => !showBettingOptions)
+	}
+
+	const setTurn = () => {
+		isTurnRef.current = !isPlayerOnBtnRef.current ? true : false
+		setShowBettingOptions(!isPlayerOnBtnRef.current ? true : false)
+	}
+
+	////////// Get Player Info //////////
 	useEffect(() => {
 		// Clean up controller //
 		let isMounted = true
 
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
-		isPlayerOne.current = currentPlayer.id === roomId
+		isPlayerOneRef.current = currentPlayer.id === roomId
 		setPlayersName(currentPlayer.username)
 
-		// Join socket to given room //
-		socket.emit('enterPokerRoom', roomId, currentPlayer)
+		// Join socket to the roomId //
+		socket.emit('enterPokerRoom', { roomId, currentPlayer })
 
 		// Listen for opponent to enter the room //
 		socket.once('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
 
-		socket.on('getPlayersInfo', ({ username }) => {
+		socket.once('getPlayersInfo', ({ username }) => {
 			if (!isMounted) return null
 
 			setOpponentsName(username)
 			setStartGame(true)
-			isPlayerOnBtn.current = isPlayerOne.current ? true : false
-			isTurn.current = isPlayerOne.current ? true : false
+			isPlayerOnBtnRef.current = isPlayerOneRef.current ? true : false
 
 			// Player 1 emits deal to server //
-			if (isPlayerOne.current) socket.emit('deal')
+			if (isPlayerOneRef.current) socket.emit('deal')
+		})
+
+		socket.on('dealPreFlop', (holeCards) => {
+			if (!isMounted) return null
+
+			bettingRoundRef.current = 'preflop'
+
+			// Subtract blinds from players chips //
+			setPlayersChips((playersChips) =>
+				isPlayerOnBtnRef.current
+					? playersChips - SMALL_BLIND
+					: playersChips - BIG_BLIND
+			)
+			setOpponentsChips((opponentsChips) =>
+				isPlayerOnBtnRef.current
+					? opponentsChips - BIG_BLIND
+					: opponentsChips - SMALL_BLIND
+			)
+
+			// Add small blind and big blind to pot //
+			potRef.current = SMALL_BLIND + BIG_BLIND
+			setPot(SMALL_BLIND + BIG_BLIND)
+
+			setCallAmount(isPlayerOnBtnRef.current ? SMALL_BLIND : 0)
+
+			// Set hole cards //
+			holeCardsRef.current = holeCards
+			setHoleCards(holeCards)
+
+			// Set turn //
+			isTurnRef.current = isPlayerOnBtnRef.current ? true : false
+			setShowBettingOptions(isPlayerOnBtnRef.current ? true : false)
+		})
+
+		socket.on('dealFlop', (flop) => {
+			if (!isMounted) return null
+
+			bettingRoundRef.current = 'flop'
+
+			// Add Flop cards to communityCards //
+			communityCardsRef.current = flop
+			setCommunityCards(flop)
+
+			// Set turn //
+			setTurn()
+		})
+
+		socket.on('dealTurn', (turn) => {
+			if (!isMounted) return null
+
+			// Change betting round to turn //
+			bettingRoundRef.current = 'turn'
+
+			communityCardsRef.current = [...communityCardsRef.current, turn[0]]
+			setCommunityCards((prevCommunityCards) => [
+				...prevCommunityCards,
+				turn[0],
+			])
+
+			// Set turn //
+			setTurn()
+		})
+
+		socket.on('dealRiver', (river) => {
+			if (!isMounted) return null
+
+			// Change betting round to river //
+			bettingRoundRef.current = 'river'
+
+			communityCardsRef.current = [...communityCardsRef.current, river[0]]
+
+			setCommunityCards((prevCommunityCards) => [
+				...prevCommunityCards,
+				river[0],
+			])
+
+			// Set turn //
+			setTurn()
+		})
+
+		const isRoundOver = (action) =>
+			(bettingRoundRef.current === 'preflop' && hasCalledSBRef.current) ||
+			(bettingRoundRef.current !== 'preflop' && action === 'call') ||
+			(bettingRoundRef.current !== 'preflop' &&
+				action === 'check' &&
+				isPlayerOnBtnRef.current &&
+				isTurnRef.current) ||
+			(bettingRoundRef.current !== 'preflop' &&
+				action === 'check' &&
+				!isPlayerOnBtnRef.current &&
+				!isTurnRef.current)
+
+		const dealNextCard = () => {
+			switch (bettingRoundRef.current) {
+				case 'preflop':
+					if (isPlayerOneRef.current) socket.emit('dealFlop')
+					break
+				case 'flop':
+					if (isPlayerOneRef.current) socket.emit('dealTurn')
+					break
+				case 'turn':
+					if (isPlayerOneRef.current) socket.emit('dealRiver')
+					break
+				default:
+					if (isPlayerOneRef.current) socket.emit('handIsOver')
+			}
+		}
+
+		const dealBoard = () => {
+			switch (bettingRoundRef.current) {
+				case 'preflop':
+					setTimeout(() => socket.emit('dealFlop'), 1500)
+					setTimeout(() => socket.emit('dealTurn'), 3000)
+					setTimeout(() => socket.emit('dealRiver'), 4500)
+					setTimeout(() => socket.emit('handIsOver'), 6000)
+					break
+				case 'flop':
+					setTimeout(() => socket.emit('dealTurn'), 1500)
+					setTimeout(() => socket.emit('dealRiver'), 3000)
+					setTimeout(() => socket.emit('handIsOver'), 4500)
+					break
+				case 'turn':
+					setTimeout(() => socket.emit('dealRiver'), 1500)
+					setTimeout(() => socket.emit('handIsOver'), 3000)
+					break
+				default:
+					setTimeout(() => socket.emit('handIsOver'), 1500)
+			}
+		}
+
+		socket.on('check', () =>
+			isRoundOver('check') ? dealNextCard() : alternateTurn()
+		)
+
+		socket.on(
+			'call',
+			({ playerCalling, playersChips, opponentsChips, callAmount }) => {
+				if (!isMounted) return null
+
+				// Add chips from players chip total to pot total //
+				if (currentPlayer.username === playerCalling) {
+					// Current Player is calling //
+					setPlayersChips((chips) => chips - callAmount)
+				} else {
+					// Opponent is calling //
+					setOpponentsChips((chips) => chips - callAmount)
+				}
+
+				potRef.current = potRef.current + callAmount
+				setPot((pot) => pot + callAmount)
+				setCallAmount(0)
+
+				const hasCalledAllIn =
+					(isTurnRef.current && playersChips <= callAmount) ||
+					(!isTurnRef.current && opponentsChips <= callAmount)
+
+				// Deal all cards if player is all-in //
+				if (hasCalledAllIn) return dealBoard()
+
+				isRoundOver('call') ? dealNextCard() : alternateTurn()
+
+				hasCalledSBRef.current = true
+			}
+		)
+
+		socket.on(
+			'bet',
+			({ playerBetting, playersChips, opponentsChips, betAmount }) => {
+				if (!isMounted) return null
+
+				if (playersChips <= betAmount || opponentsChips <= betAmount)
+					setIsPlayerAllIn(true)
+
+				if (currentPlayer.username === playerBetting) {
+					// Current Player is betting //
+					setPlayersChips((chips) => chips - betAmount)
+				} else {
+					// Opponent is betting //
+					setOpponentsChips((chips) => chips - betAmount)
+					setCallAmount(betAmount)
+				}
+
+				potRef.current = potRef.current + betAmount
+				setPot((pot) => pot + betAmount)
+				alternateTurn()
+			}
+		)
+
+		socket.on(
+			'raise',
+			({
+				playerRaising,
+				playersChips,
+				opponentsChips,
+				callAmount,
+				raiseAmount,
+			}) => {
+				if (!isMounted) return null
+
+				if (playersChips <= raiseAmount || opponentsChips <= raiseAmount)
+					setIsPlayerAllIn(true)
+
+				// All calls but first SB call end betting round //
+				hasCalledSBRef.current = true
+
+				if (currentPlayer.username === playerRaising) {
+					// Current Player is raising //
+					setPlayersChips((chips) => chips - callAmount - raiseAmount)
+				} else {
+					// Opponent is raising //
+					setOpponentsChips((chips) => chips - callAmount - raiseAmount)
+					setCallAmount(raiseAmount)
+				}
+
+				potRef.current = potRef.current + callAmount + raiseAmount
+				setPot((pot) => pot + callAmount + raiseAmount)
+				alternateTurn()
+			}
+		)
+
+		socket.on('handIsOver', () => {
+			socket.emit('showdown', holeCardsRef.current)
+		})
+
+		socket.on('determineWinner', (opponentsCards) => {
+			setOpponentsHoleCards(opponentsCards)
+
+			// Host emits determineWinner event //
+			const playerOnesHand = [
+				...communityCardsRef.current,
+				holeCardsRef.current[0],
+				holeCardsRef.current[1],
+			]
+			const playerTwosHand = [
+				...communityCardsRef.current,
+				opponentsCards[0],
+				opponentsCards[1],
+			]
+
+			if (isPlayerOneRef.current)
+				socket.emit('determineWinner', {
+					playerOnesHand,
+					playerTwosHand,
+				})
+		})
+
+		socket.on('handResults', ({ winner, isDraw }) => {
+			if (!isMounted) return null
+
+			setShowBettingOptions(false)
+			setShowHands(true)
+
+			if (isDraw) {
+				// Split pot between players //
+				const halfPot = potRef.current / 2
+
+				setPlayersChips((chips) => chips + halfPot)
+				setOpponentsChips((chips) => chips + halfPot)
+			} else if (
+				(winner === 'playerOne' && isPlayerOneRef.current) ||
+				(winner !== 'playerOne' && !isPlayerOneRef.current)
+			) {
+				// Player Won //
+				setPlayersChips((chips) => chips + potRef.current)
+			} else {
+				// Opponent Won //
+				setOpponentsChips((chips) => chips + potRef.current)
+			}
+
+			setTimeout(() => {
+				// Reset game variables //
+				isPlayerOnBtnRef.current = !isPlayerOnBtnRef.current
+				isTurnRef.current = false
+				hasCalledSBRef.current = false
+				setShowBettingOptions(false)
+				setIsPlayerAllIn(false)
+				setShowHands(false)
+				setCallAmount(0)
+				holeCardsRef.current = []
+				communityCardsRef.current = null
+				setHoleCards(null)
+				setOpponentsHoleCards(null)
+				setCommunityCards([])
+				potRef.current = 0
+				setPot(0)
+			}, 3000)
+
+			if (isPlayerOneRef.current) setTimeout(() => socket.emit('deal'), 4500)
 		})
 
 		// Cancel subscription to useEffect //
@@ -177,256 +482,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			socket.offAny()
 		}
 	}, [roomId])
-
-	////////// Deal Cards //////////
-	useEffect(() => {
-		// Clean up controller //
-		let isMounted = true
-
-		socket.on('dealPreFlop', (holeCards) => {
-			if (!isMounted) return null
-
-			setPlayersChips((playersChips) =>
-				isPlayerOnBtn.current
-					? playersChips - SMALL_BLIND
-					: playersChips - BIG_BLIND
-			)
-			setOpponentsChips((opponentsChips) =>
-				isPlayerOnBtn.current
-					? opponentsChips - BIG_BLIND
-					: opponentsChips - SMALL_BLIND
-			)
-			setPot(SMALL_BLIND + BIG_BLIND)
-			setCallAmount(isPlayerOnBtn.current ? SMALL_BLIND : 0)
-			setHoleCards(holeCards)
-			setShowBettingOptions(isPlayerOnBtn.current ? true : false)
-			hasCalledSB.current = false
-			bettingRound.current = 'preflop'
-		})
-
-		socket.on('dealFlop', (flop) => {
-			if (!isMounted) return null
-
-			// Change betting round to flop //
-			bettingRound.current = 'flop'
-
-			// Player in position 1 goes first postflop //
-			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-			isTurn.current = !isTurn.current
-
-			setCommunityCards(flop)
-		})
-
-		socket.on('dealTurn', (turn) => {
-			if (!isMounted) return null
-
-			// Change betting round to turn //
-			bettingRound.current = 'turn'
-
-			setCommunityCards((prevCommunityCards) => [
-				...prevCommunityCards,
-				turn[0],
-			])
-		})
-
-		socket.on('dealRiver', (river) => {
-			if (!isMounted) return null
-
-			// Change betting round to river //
-			bettingRound.current = 'river'
-
-			setCommunityCards((prevCommunityCards) => [
-				...prevCommunityCards,
-				river[0],
-			])
-		})
-
-		socket.on('handIsOver', () => {
-			if (!isMounted) return null
-
-			setShowBettingOptions(false)
-			setShowHands(true)
-
-			setTimeout(() => {
-				setHoleCards([])
-				setCommunityCards([])
-				isPlayerOnBtn.current = !isPlayerOnBtn.current
-			}, 3000)
-
-			if (isPlayerOne.current) setTimeout(() => socket.emit('deal'), 3000)
-		})
-
-		// Cancel subscription to useEffect //
-		return () => {
-			isMounted = false
-			socket.offAny()
-		}
-	}, [])
-
-	useEffect(() => {
-		// Clean up controller //
-		let isMounted = true
-
-		const currentPlayer = JSON.parse(localStorage.getItem('player'))
-
-		const isRoundOver = () =>
-			(bettingRound.current === 'preflop' && hasCalledSB.current) ||
-			(bettingRound.current !== 'preflop' &&
-				!isPlayerOnBtn.current &&
-				!isTurn.current) ||
-			(bettingRound.current !== 'preflop' &&
-				isPlayerOnBtn.current &&
-				isTurn.current)
-
-		const dealNextCard = () => {
-			switch (bettingRound.current) {
-				case 'preflop':
-					socket.emit('dealFlop')
-					break
-				case 'flop':
-					socket.emit('dealTurn')
-					break
-				case 'turn':
-					socket.emit('dealRiver')
-					break
-				default:
-					socket.emit('handIsOver')
-			}
-		}
-
-		const dealBoard = () => {
-			switch (bettingRound.current) {
-				case 'preflop':
-					setTimeout(() => socket.emit('dealFlop'), 1500)
-					setTimeout(() => socket.emit('dealTurn'), 3000)
-					setTimeout(() => socket.emit('dealRiver'), 4500)
-					break
-				case 'flop':
-					setTimeout(() => socket.emit('dealTurn'), 1500)
-					setTimeout(() => socket.emit('dealRiver'), 3000)
-					break
-				case 'turn':
-					setTimeout(() => socket.emit('dealRiver'), 1500)
-					break
-				default:
-					socket.emit('handIsOver')
-			}
-		}
-
-		socket.on('check', () => {
-			if (!isMounted) return null
-
-			if (isPlayerOne.current && isRoundOver()) dealNextCard()
-
-			// Change turn //
-			isTurn.current = !isTurn.current
-			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-		})
-
-		socket.on('call', ({ playerCalling, callAmount }) => {
-			if (!isMounted) return null
-
-			const hasCalledAllIn =
-				playersChips <= callAmount || opponentsChips <= callAmount
-
-			// Deal all cards if player is all-in //
-			if (hasCalledAllIn) {
-				setShowBettingOptions(false)
-
-				if (isPlayerOne.current) {
-					// Only Player One emits deal event to server //
-					dealBoard()
-				}
-			} else if (isRoundOver()) {
-				// Only Player One emits deal event to server //
-				dealNextCard()
-			}
-
-			// All calls but first SB call end betting round //
-			hasCalledSB.current = true
-
-			if (currentPlayer.username === playerCalling) {
-				// Current Player is calling //
-				setPlayersChips((chips) => chips - callAmount)
-			} else {
-				// Opponent is calling //
-				setOpponentsChips((chips) => chips - callAmount)
-			}
-
-			setPot((pot) => pot + callAmount)
-			setCallAmount(0)
-
-			// Change turn //
-			isTurn.current = !isTurn.current
-			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-		})
-
-		socket.on('bet', ({ playerBetting, betAmount }) => {
-			if (!isMounted) return null
-
-			if (playersChips <= betAmount || opponentsChips <= betAmount)
-				setIsPlayerAllIn(true)
-
-			if (currentPlayer.username === playerBetting) {
-				// Current Player is betting //
-				setPlayersChips((chips) => chips - betAmount)
-			} else {
-				// Opponent is betting //
-				setOpponentsChips((chips) => chips - betAmount)
-				setCallAmount(betAmount)
-			}
-
-			setPot((pot) => pot + betAmount)
-
-			// Change turn //
-			isTurn.current = !isTurn.current
-			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-		})
-
-		socket.on('raise', ({ playerRaising, callAmount, raiseAmount }) => {
-			if (!isMounted) return null
-
-			if (playersChips <= raiseAmount || opponentsChips <= raiseAmount)
-				setIsPlayerAllIn(true)
-
-			// All calls but first SB call end betting round //
-			hasCalledSB.current = true
-
-			if (currentPlayer.username === playerRaising) {
-				// Current Player is raising //
-				setPlayersChips((chips) => chips - callAmount - raiseAmount)
-			} else {
-				// Opponent is raising //
-				setOpponentsChips((chips) => chips - callAmount - raiseAmount)
-				setCallAmount(raiseAmount)
-			}
-
-			setPot((pot) => pot + callAmount + raiseAmount)
-
-			// Change turn //
-			isTurn.current = !isTurn.current
-			setShowBettingOptions((showBettingOptions) => !showBettingOptions)
-		})
-
-		// Cancel subscription to useEffect //
-		return () => {
-			isMounted = false
-			socket.offAny()
-		}
-	}, [playersChips, opponentsChips])
-
-	// useEffect(() => {
-	// 	// Clean up controller //
-	// 	let isMounted = true
-
-	// 	// deal
-
-	// 	// Cancel subscription to useEffect //
-	// 	return () => {
-	// 		isMounted = false
-	// 		socket.offAny()
-	// 	}
-	// }, [])
 
 	// useEffect(() => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
@@ -444,7 +499,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					<>
 						<div
 							className={classes.dealerBtn}
-							style={{ top: !isPlayerOnBtn.current ? '10%' : '80%' }}>
+							style={{ top: !isPlayerOnBtnRef.current ? '10%' : '80%' }}>
 							<p className={classes.dealerBtnText}>DEALER</p>
 						</div>
 						<div className={`${classes.playersHudContainer} ${classes.top}`}>

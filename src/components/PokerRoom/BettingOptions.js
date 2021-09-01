@@ -69,18 +69,29 @@ const BettingOptions = ({
 
 	const handleCheck = () => socket.emit('check')
 
-	const handleCall = () => socket.emit('call', callAmount)
+	const handleCall = () => {
+		socket.emit('call', {
+			playersChips,
+			opponentsChips,
+			callAmount,
+		})
+	}
 
 	const handleBet = () => {
 		if (betAmount >= BIG_BLIND || betAmount === playersChips)
-			socket.emit('bet', { betAmount })
+			socket.emit('bet', { playersChips, opponentsChips, betAmount })
 	}
 
 	const handleRaise = () => {
 		const raiseAmount = betAmount - callAmount
 
 		if (raiseAmount >= callAmount || betAmount === playersChips)
-			socket.emit('raise', { callAmount, raiseAmount })
+			socket.emit('raise', {
+				playersChips,
+				opponentsChips,
+				callAmount,
+				raiseAmount,
+			})
 	}
 
 	const handleSliderChange = (e, newValue) => setBetAmount(newValue)

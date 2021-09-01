@@ -11,9 +11,12 @@ import {
 	TableHead,
 	TableRow,
 } from '@material-ui/core'
+import io from 'socket.io-client'
 
 import Header from '../Header/Header'
-import socket from '../../config/socketConfig'
+import ENDPOINT from '../../config/config'
+
+let socket
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -58,6 +61,8 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		// Clean up controller //
 		let isMounted = true
 
+		socket = io(ENDPOINT)
+
 		const username = JSON.parse(localStorage.getItem('username'))
 
 		socket.emit('enterLobby', username)
@@ -77,7 +82,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
-			socket.offAny()
+			socket.disconnect()
 		}
 	}, [])
 
