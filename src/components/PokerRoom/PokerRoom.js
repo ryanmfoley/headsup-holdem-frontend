@@ -20,18 +20,11 @@ import socket from '../../config/socketConfig'
 // isRoundWinner, isRoundOver, isGameOver
 
 //////////// TODOS ////////////
-/// Do I need playersChipsRef? ///
-// 1. Set min bet and min raise
-// 2. change bet from BB to raise
-// 3. maybe add a hand counter
-// 4. Add chat
-// 5. socket.handshake
-// 6. useMemo for setting playersChips?
-// 7. change all blah = blah + bloop to blah += bloop
-// 8. is isLogin enough for security or should I use socket.auth?
-////// I shouldn't need playersChips as argument in socket.emit('call) //////
-////// Change betslider scale //////
-//////////////////// playMeChess waiting display on mobile
+// 1. maybe add a hand counter
+// 2. Add chat
+// 3. socket.handshake
+// 4. useMemo for setting playersChips?
+// 5. is isLogin enough for security or should I use socket.auth?
 
 const useStyles = makeStyles({
 	root: {
@@ -143,6 +136,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
+	const [hasCalledBB, setHasCalledBB] = useState(false)
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	const [showHands, setShowHands] = useState(false)
 
@@ -300,6 +294,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					: 0
 			)
 
+			// Set to true so BB has raise option instead of bet preflop //
+			setHasCalledBB(true)
+
 			if (!playersChipsRef.current || !opponentsChipsRef.current) {
 				// Player All-In //
 				setIsPlayerAllIn(true)
@@ -319,6 +316,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'flop'
+
+			// Reset hasCalledBBRef variable //
+			setHasCalledBB(false)
 
 			// Add Flop cards to communityCards //
 			communityCardsRef.current = flop
@@ -366,7 +366,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		)
 
 		socket.on('call', (callAmount) => {
-			// callAmount isn't the full blind !!!!!!!!!!!!!!!!!!!
 			if (!isMounted) return null
 
 			// Add chips from players chip total to pot total //
@@ -582,6 +581,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 								opponentsChips={opponentsChips}
 								callAmount={callAmount}
 								isPlayerAllIn={isPlayerAllIn}
+								hasCalledBB={hasCalledBB}
 							/>
 						)}
 					</>

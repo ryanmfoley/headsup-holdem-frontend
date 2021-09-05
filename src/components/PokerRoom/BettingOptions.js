@@ -1,5 +1,12 @@
-import { useState, memo } from 'react'
-import { Button, ButtonGroup, Grid, Input, Slider } from '@material-ui/core'
+import { useState, useEffect, memo } from 'react'
+import {
+	Button,
+	ButtonGroup,
+	Grid,
+	Input,
+	Slider,
+	Tooltip,
+} from '@material-ui/core'
 import {
 	createTheme,
 	ThemeProvider,
@@ -30,9 +37,8 @@ const useStyles = makeStyles({
 		height: '80px',
 	},
 	input: {
-		width: 52,
-		background: 'rgba(255, 255, 255, 0.3)',
-		borderRadius: '5px',
+		width: 55,
+		color: 'white',
 	},
 })
 
@@ -66,6 +72,30 @@ const BetSlider = withStyles({
 	},
 })(Slider)
 
+const LightTooltip = withStyles((theme) => ({
+	tooltip: {
+		background: theme.palette.common.white,
+		color: 'rgba(0, 0, 0, 0.87)',
+		boxShadow: theme.shadows[1],
+		fontSize: 11,
+	},
+}))(Tooltip)
+
+const ValueLabelComponent = (props) => {
+	const { children, open, value } = props
+
+	return (
+		<LightTooltip
+			open={open}
+			enterTouchDelay={0}
+			placement='bottom'
+			title={value}
+			arrow>
+			{children}
+		</LightTooltip>
+	)
+}
+
 const BIG_BLIND = 20
 
 const BettingOptions = ({
@@ -73,10 +103,11 @@ const BettingOptions = ({
 	opponentsChips,
 	callAmount,
 	isPlayerAllIn,
+	hasCalledBB,
 }) => {
 	const classes = useStyles()
 	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
-	const isRaiseAvailable = !isPlayerAllIn && playersChips > callAmount
+	const [isRaiseAvailable, setIsRaiseAvailable] = useState(null)
 
 	const handleFold = () => socket.emit('handIsOver')
 
@@ -101,25 +132,50 @@ const BettingOptions = ({
 			})
 	}
 
-	const handleSliderChange = (e, newValue) => setBetAmount(newValue)
+	const handleSliderChange = (e, newValue) => {
+		const minValue = isRaiseAvailable
+			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
+			: Math.min(playersChips, BIG_BLIND)
+
+		if (newValue >= minValue) setBetAmount(newValue)
+	}
 
 	const handleInputChange = (e) =>
 		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 
+	useEffect(() => {
+		setIsRaiseAvailable(
+			(!isPlayerAllIn && callAmount && playersChips > callAmount) ||
+				(!isPlayerAllIn && hasCalledBB)
+		)
+	}, [playersChips, isPlayerAllIn, hasCalledBB, callAmount])
+
 	return (
 		<div className={classes.root}>
 			<ThemeProvider theme={theme}>
-				{callAmount ? (
+				{callAmount || hasCalledBB ? (
 					<ButtonGroup variant='contained' fullWidth>
 						<Button onClick={handleFold}>Fold</Button>
-						<Button onClick={handleCall}>
-							<p style={{ margin: 0 }}>Call</p>
-							<p style={{ margin: 0 }}>${callAmount}</p>
-						</Button>
+						{callAmount ? (
+							<Button onClick={handleCall}>
+								<p style={{ margin: 0 }}>Call</p>
+								<p style={{ margin: 0 }}>${callAmount}</p>
+							</Button>
+						) : (
+							<Button onClick={handleCheck}>CHECK</Button>
+						)}
 						{isRaiseAvailable && (
 							<Button onClick={handleRaise}>
 								<p style={{ margin: 0 }}>Raise To</p>
-								<p style={{ margin: 0 }}>${betAmount}</p>
+								<p style={{ margin: 0 }}>
+									$
+									{Math.max(
+										betAmount,
+										isRaiseAvailable
+											? Math.min(playersChips, callAmount * 2)
+											: Math.min(playersChips, BIG_BLIND)
+									)}
+								</p>
 							</Button>
 						)}
 					</ButtonGroup>
@@ -133,26 +189,31 @@ const BettingOptions = ({
 						</Button>
 					</ButtonGroup>
 				)}
-				{isRaiseAvailable && (
+				{!isPlayerAllIn && (
 					<Grid container spacing={2} alignItems='center'>
 						<Grid item xs>
 							<BetSlider
-								value={betAmount ? betAmount : Math.min(playersChips, 20)}
-								step={50}
-								min={Math.min(playersChips, BIG_BLIND)}
+								value={betAmount}
+								step={20}
+								min={
+									isRaiseAvailable
+										? Math.min(playersChips, callAmount * 2)
+										: Math.min(playersChips, BIG_BLIND)
+								}
 								max={Math.min(playersChips, opponentsChips + callAmount)}
 								valueLabelDisplay='auto'
+								ValueLabelComponent={ValueLabelComponent}
 								onChange={handleSliderChange}
 							/>
 						</Grid>
 						<Grid item>
 							<Input
 								className={classes.input}
-								value={betAmount ? betAmount : Math.min(playersChips, 20)}
+								value={betAmount}
 								margin='dense'
 								onChange={handleInputChange}
 								inputProps={{
-									step: 50,
+									step: 20,
 									min: Math.min(playersChips, BIG_BLIND),
 									max: Math.min(playersChips, opponentsChips + callAmount),
 									type: 'number',
