@@ -134,6 +134,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
+	const [isGameOver, setIsGameOver] = useState(false)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
 	const [hasWon, setHasWon] = useState(false)
@@ -509,6 +510,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				setOpponentsChips((chips) => chips + potRef.current)
 			}
 
+			if (!playersChipsRef.current || !opponentsChipsRef.current)
+				setIsGameOver(true)
+
 			setTimeout(() => {
 				// Reset game variables //
 				isPlayerOnBtnRef.current = !isPlayerOnBtnRef.current
@@ -543,6 +547,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// }, [])
 
 	// if (!isLoggedIn) return <Redirect to='/login' />
+	if (isGameOver) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
