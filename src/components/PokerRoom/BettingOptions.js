@@ -109,7 +109,7 @@ const BettingOptions = ({
 	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
 	const [isRaiseAvailable, setIsRaiseAvailable] = useState(null)
 
-	const handleFold = () => socket.emit('handIsOver')
+	const handleFold = () => socket.emit('fold')
 
 	const handleCheck = () => socket.emit('check')
 
@@ -133,11 +133,11 @@ const BettingOptions = ({
 	}
 
 	const handleSliderChange = (e, newValue) => {
-		const minValue = isRaiseAvailable
+		const minBetSize = isRaiseAvailable
 			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
 			: Math.min(playersChips, BIG_BLIND)
 
-		if (newValue >= minValue) setBetAmount(newValue)
+		if (newValue >= minBetSize) setBetAmount(newValue)
 	}
 
 	const handleInputChange = (e) =>
@@ -148,7 +148,12 @@ const BettingOptions = ({
 			(!isPlayerAllIn && callAmount && playersChips > callAmount) ||
 				(!isPlayerAllIn && hasCalledBB)
 		)
-	}, [playersChips, isPlayerAllIn, hasCalledBB, callAmount])
+		const minBetSize = isRaiseAvailable
+			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
+			: Math.min(playersChips, BIG_BLIND)
+
+		setBetAmount(minBetSize)
+	}, [playersChips, isPlayerAllIn, isRaiseAvailable, hasCalledBB, callAmount])
 
 	return (
 		<div className={classes.root}>
@@ -214,7 +219,9 @@ const BettingOptions = ({
 								onChange={handleInputChange}
 								inputProps={{
 									step: 20,
-									min: Math.min(playersChips, BIG_BLIND),
+									min: isRaiseAvailable
+										? Math.min(playersChips, callAmount * 2)
+										: Math.min(playersChips, BIG_BLIND),
 									max: Math.min(playersChips, opponentsChips + callAmount),
 									type: 'number',
 								}}
@@ -223,6 +230,7 @@ const BettingOptions = ({
 					</Grid>
 				)}
 			</ThemeProvider>
+			{betAmount}
 		</div>
 	)
 }

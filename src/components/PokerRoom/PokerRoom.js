@@ -129,7 +129,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 	// Gameplay variables //
 	const bettingRoundRef = useRef(null)
-	const isPlayerOneRef = useRef(null)
 	const isPlayerOnBtnRef = useRef(null)
 	const isTurnRef = useRef(null)
 	const isPlayerAllInRef = useRef(false)
@@ -137,6 +136,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [startGame, setStartGame] = useState(false)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
+	const [hasWon, setHasWon] = useState(false)
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	const [showHands, setShowHands] = useState(false)
 
@@ -162,6 +162,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		let isMounted = true
 
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
+		currentPlayer.isPlayerOne = currentPlayer.id === roomId
+		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
 
 		const alternateTurn = () => {
 			isTurnRef.current = !isTurnRef.current
@@ -189,16 +191,16 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		const dealNextCard = () => {
 			switch (bettingRoundRef.current) {
 				case 'preflop':
-					if (isPlayerOneRef.current) socket.emit('dealFlop')
+					if (currentPlayer.isPlayerOne) socket.emit('dealFlop')
 					break
 				case 'flop':
-					if (isPlayerOneRef.current) socket.emit('dealTurn')
+					if (currentPlayer.isPlayerOne) socket.emit('dealTurn')
 					break
 				case 'turn':
-					if (isPlayerOneRef.current) socket.emit('dealRiver')
+					if (currentPlayer.isPlayerOne) socket.emit('dealRiver')
 					break
 				default:
-					if (isPlayerOneRef.current) socket.emit('handIsOver')
+					if (currentPlayer.isPlayerOne) socket.emit('handIsOver')
 			}
 		}
 
@@ -237,11 +239,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setOpponentsName(username)
 			setStartGame(true)
 
-			isPlayerOneRef.current = currentPlayer.id === roomId
-			isPlayerOnBtnRef.current = isPlayerOneRef.current ? true : false
-
 			// Player 1 emits deal to server //
-			if (isPlayerOneRef.current) socket.emit('deal')
+			if (currentPlayer.isPlayerOne) socket.emit('deal')
 		})
 
 		socket.on('dealPreFlop', (holeCards) => {
@@ -475,14 +474,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				opponentsCards[1],
 			]
 
-			if (isPlayerOneRef.current)
+			if (currentPlayer.isPlayerOne)
 				socket.emit('determineWinner', {
 					playerOnesHand,
 					playerTwosHand,
 				})
 		})
 
-		socket.on('handResults', ({ winner, isDraw }) => {
+		socket.on('handResults', ({ winningPlayer, isDraw }) => {
 			if (!isMounted) return null
 
 			setShowBettingOptions(false)
@@ -498,8 +497,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				opponentsChipsRef.current += halfPot
 				setOpponentsChips((chips) => chips + halfPot)
 			} else if (
-				(winner === 'playerOne' && isPlayerOneRef.current) ||
-				(winner !== 'playerOne' && !isPlayerOneRef.current)
+				(winningPlayer === 'playerOne' && currentPlayer.isPlayerOne) ||
+				(winningPlayer !== 'playerOne' && !currentPlayer.isPlayerOne)
 			) {
 				// Player Won //
 				playersChipsRef.current += potRef.current
@@ -529,7 +528,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				hasCalledSBRef.current = false
 			}, 3000)
 
-			if (isPlayerOneRef.current) setTimeout(() => socket.emit('deal'), 4500)
+			if (currentPlayer.isPlayerOne) setTimeout(() => socket.emit('deal'), 4500)
 		})
 
 		// Cancel subscription to useEffect //
@@ -564,7 +563,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 							) : (
 								<HoleCards />
 							)}
-							<PlayersHud playersName={opponentsName} chips={opponentsChips} />
+							<PlayersHud
+								playersName={opponentsName}
+								chips={opponentsChips}
+								hasWon={hasWon}
+							/>
 						</div>
 						<div className={classes.pot}>
 							<h2 className={classes.potText}>Pot: ${pot}</h2>
@@ -573,7 +576,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						<div style={{ flex: 1 }}></div>
 						<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
 							<HoleCards holeCards={holeCards} />
-							<PlayersHud playersName={playersName} chips={playersChips} />
+							<PlayersHud
+								playersName={playersName}
+								chips={playersChips}
+								hasWon={hasWon}
+							/>
 						</div>
 						{showBettingOptions && (
 							<BettingOptions
