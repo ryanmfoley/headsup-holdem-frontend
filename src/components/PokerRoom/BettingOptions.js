@@ -230,7 +230,6 @@ const BettingOptions = ({
 					</Grid>
 				)}
 			</ThemeProvider>
-			{betAmount}
 		</div>
 	)
 }

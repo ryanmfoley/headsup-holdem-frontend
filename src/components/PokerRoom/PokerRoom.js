@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
-import { Button, Paper } from '@material-ui/core'
+import { Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
+import Chat from '../Chat/Chat'
 import socket from '../../config/socketConfig'
 
 // function Switch(i) {
@@ -26,12 +27,15 @@ import socket from '../../config/socketConfig'
 // 4. useMemo for setting playersChips?
 // 5. is isLogin enough for security or should I use socket.auth?
 
+// change padding for root class
+
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
-		width: '100vw',
-		height: '90vh',
+		// width: '100vw',
+		height: '100vh',
 		background: '#4327ac',
+		// padding: '20px',
 	},
 	table: {
 		position: 'relative',
@@ -40,14 +44,24 @@ const useStyles = makeStyles({
 		justifyContent: 'center',
 		alignItems: 'center',
 		background: '#193024',
-		width: '75%',
-		height: '60%',
-		maxWidth: 700,
-		maxHeight: 350,
+		width: '55%',
+		height: '55%',
+		// width: 700,
+		// height: 350,
+		// maxWidth: 700,
+		// maxHeight: 350,
 		margin: '100px auto',
 		border: '5px solid gray',
 		borderRadius: '30% / 60%',
 		boxShadow: '0 0 10px #9ecaed',
+	},
+	tableContainer: {
+		height: '80%',
+		// outline: '3px solid red',
+	},
+	hudContainer: {
+		height: '20%',
+		// outline: '3px solid cyan',
 	},
 	waitingDisplay: {
 		position: 'absolute',
@@ -70,6 +84,19 @@ const useStyles = makeStyles({
 			animation: '$loading-ellipsis steps(4, end) 3s infinite',
 			content: "'...'",
 		},
+	},
+	handResultDisplay: {
+		position: 'absolute',
+		top: '50%',
+		left: '50%',
+		width: '40%',
+		background: 'rgba(255, 255, 255, 0.5)',
+		transform: 'translate(-50%, -50%)',
+		borderRadius: '10px',
+	},
+	handResultText: {
+		color: 'white',
+		textAlign: 'center',
 	},
 	pot: {
 		display: 'flex',
@@ -140,6 +167,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [hasWon, setHasWon] = useState(false)
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	const [showHands, setShowHands] = useState(false)
+	const [winningHand, setWinningHand] = useState('')
 
 	// Cards //
 	const holeCardsRef = useRef({})
@@ -228,12 +256,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 
 		// Join socket to the roomId //
-		socket.emit('enterPokerRoom', { roomId, currentPlayer })
+		socket.emit('enter-poker-room', { roomId, currentPlayer })
 
 		// Listen for opponent to enter the room //
-		socket.once('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
+		socket.once('start-game', () =>
+			socket.emit('get-players-info', currentPlayer)
+		)
 
-		socket.once('getPlayersInfo', ({ username }) => {
+		socket.once('get-players-info', ({ username }) => {
 			if (!isMounted) return null
 
 			setPlayersName(currentPlayer.username)
@@ -244,7 +274,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			if (currentPlayer.isPlayerOne) socket.emit('deal')
 		})
 
-		socket.on('dealPreFlop', (holeCards) => {
+		socket.on('deal-preflop', (holeCards) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'preflop'
@@ -312,7 +342,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setHoleCards(holeCards)
 		})
 
-		socket.on('dealFlop', (flop) => {
+		socket.on('deal-flop', (flop) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'flop'
@@ -328,7 +358,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTurn()
 		})
 
-		socket.on('dealTurn', (turn) => {
+		socket.on('deal-turn', (turn) => {
 			if (!isMounted) return null
 
 			// Change betting round to turn //
@@ -344,7 +374,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTurn()
 		})
 
-		socket.on('dealRiver', (river) => {
+		socket.on('deal-river', (river) => {
 			if (!isMounted) return null
 
 			// Change betting round to river //
@@ -456,11 +486,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			alternateTurn()
 		})
 
-		socket.on('handIsOver', () => {
+		socket.on('hand-is-over', () => {
 			socket.emit('showdown', holeCardsRef.current)
 		})
 
-		socket.on('determineWinner', (opponentsCards) => {
+		socket.on('determine-winner', (opponentsCards) => {
 			setOpponentsHoleCards(opponentsCards)
 
 			// Host emits determineWinner event //
@@ -482,7 +512,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				})
 		})
 
-		socket.on('handResults', ({ winningPlayer, isDraw }) => {
+		socket.on('hand-results', ({ winningPlayer, winningHand, isDraw }) => {
 			if (!isMounted) return null
 
 			setShowBettingOptions(false)
@@ -497,6 +527,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 				opponentsChipsRef.current += halfPot
 				setOpponentsChips((chips) => chips + halfPot)
+
+				setWinningHand('DRAW')
 			} else if (
 				(winningPlayer === 'playerOne' && currentPlayer.isPlayerOne) ||
 				(winningPlayer !== 'playerOne' && !currentPlayer.isPlayerOne)
@@ -504,10 +536,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				// Player Won //
 				playersChipsRef.current += potRef.current
 				setPlayersChips((chips) => chips + potRef.current)
+
+				setWinningHand(winningHand)
 			} else {
 				// Opponent Won //
 				opponentsChipsRef.current += potRef.current
 				setOpponentsChips((chips) => chips + potRef.current)
+
+				setWinningHand(winningHand)
 			}
 
 			if (!playersChipsRef.current || !opponentsChipsRef.current)
@@ -529,6 +565,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				isPlayerAllInRef.current = false
 				setIsPlayerAllIn(false)
 				setShowHands(false)
+				setWinningHand('')
 				hasCalledSBRef.current = false
 			}, 3000)
 
@@ -546,47 +583,76 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	// if (!isLoggedIn) return <Redirect to='/login' />
-	if (isGameOver) return <Redirect to='/lobby' />
+	if (!isLoggedIn || isGameOver) return <Redirect to='/lobby' />
 
 	return (
-		<div className={classes.root}>
-			<Link to='/lobby' style={{ textDecoration: 'none' }}>
-				<Button variant='contained'>Lobby</Button>
-			</Link>
-			<div className={classes.table}>
-				{startGame ? (
-					<>
-						<div
-							className={classes.dealerBtn}
-							style={{ top: !isPlayerOnBtnRef.current ? '10%' : '80%' }}>
-							<p className={classes.dealerBtnText}>DEALER</p>
-						</div>
-						<div className={`${classes.playersHudContainer} ${classes.top}`}>
-							{showHands ? (
-								<HoleCards holeCards={opponentsHoleCards} />
-							) : (
-								<HoleCards />
-							)}
-							<PlayersHud
-								playersName={opponentsName}
-								chips={opponentsChips}
-								hasWon={hasWon}
-							/>
-						</div>
-						<div className={classes.pot}>
-							<h2 className={classes.potText}>Pot: ${pot}</h2>
-						</div>
-						<CommunityCards communityCards={communityCards} />
-						<div style={{ flex: 1 }}></div>
-						<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
-							<HoleCards holeCards={holeCards} />
-							<PlayersHud
-								playersName={playersName}
-								chips={playersChips}
-								hasWon={hasWon}
-							/>
-						</div>
+		<Grid container className={classes.root}>
+			<Grid item xs={12} className={classes.tableContainer}>
+				<Link to='/lobby' style={{ textDecoration: 'none' }}>
+					<Button variant='contained'>Lobby</Button>
+				</Link>
+				<div className={classes.table}>
+					{startGame ? (
+						<>
+							<div
+								className={classes.dealerBtn}
+								style={{ top: !isPlayerOnBtnRef.current ? '10%' : '80%' }}>
+								<p className={classes.dealerBtnText}>DEALER</p>
+							</div>
+							<div className={`${classes.playersHudContainer} ${classes.top}`}>
+								{showHands ? (
+									<HoleCards holeCards={opponentsHoleCards} />
+								) : (
+									<HoleCards />
+								)}
+								<PlayersHud
+									playersName={opponentsName}
+									chips={opponentsChips}
+									hasWon={hasWon}
+								/>
+							</div>
+							<div className={classes.pot}>
+								<h2 className={classes.potText}>Pot: ${pot}</h2>
+							</div>
+							<CommunityCards communityCards={communityCards} />
+							<div style={{ flex: 1 }}></div>
+							<div
+								className={`${classes.playersHudContainer} ${classes.bottom}`}>
+								<HoleCards holeCards={holeCards} />
+								<PlayersHud
+									playersName={playersName}
+									chips={playersChips}
+									hasWon={hasWon}
+								/>
+							</div>
+						</>
+					) : (
+						<Paper className={classes.waitingDisplay}>
+							<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
+						</Paper>
+					)}
+				</div>
+				{winningHand && (
+					<Paper className={classes.handResultDisplay}>
+						<h2 className={classes.handResultText}>{winningHand}</h2>
+					</Paper>
+				)}
+			</Grid>
+			<Grid
+				item
+				container
+				className={classes.hudContainer}
+				// style={{ outline: '1px solid white' }}
+				xs={12}>
+				{/* <Grid item xs={6}> */}
+				{/* <Grid item xs={6} style={{ outline: '1px solid teal' }}> */}
+				<Grid item xs={6}>
+					<Chat />
+				</Grid>
+				{/* <Grid item xs={6} style={{ outline: '1px solid pink' }}> */}
+				<Grid item xs={6}>
+					{/* <div style={{ border: '2px solid blue' }}> */}
+					<div>
 						{showBettingOptions && (
 							<BettingOptions
 								playersChips={playersChips}
@@ -596,14 +662,10 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 								hasCalledBB={hasCalledBB}
 							/>
 						)}
-					</>
-				) : (
-					<Paper className={classes.waitingDisplay}>
-						<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
-					</Paper>
-				)}
-			</div>
-		</div>
+					</div>
+				</Grid>
+			</Grid>
+		</Grid>
 	)
 }
 
