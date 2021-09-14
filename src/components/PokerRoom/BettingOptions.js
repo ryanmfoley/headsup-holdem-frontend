@@ -29,12 +29,13 @@ const theme = createTheme({
 const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
-		right: '-10%',
-		bottom: '-35%',
+		right: '40px',
+		bottom: '40%',
 		display: 'flex',
 		flexDirection: 'column',
-		width: '50%',
+		width: '30%',
 		height: '80px',
+		margin: 0,
 	},
 	input: {
 		width: 55,

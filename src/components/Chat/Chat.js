@@ -11,6 +11,7 @@ const useStyles = makeStyles({
 		flexDirection: 'column',
 		width: '80%',
 		background: 'rgba(0, 0, 0, 0.5)',
+		margin: 0,
 	},
 	chatInput: {
 		color: 'white',

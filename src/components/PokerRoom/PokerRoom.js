@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, Redirect } from 'react-router-dom'
-import { Button, Grid, Paper } from '@material-ui/core'
+import { Box, Grid, Paper, Button } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import BettingOptions from './BettingOptions'
@@ -8,6 +8,11 @@ import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
 import Chat from '../Chat/Chat'
+import Options from './Options'
+import OptionsDialog from './OptionsDialog'
+import pokerRoom from '../../assets/images/poker-room.png'
+import woodenFloor from '../../assets/images/wooden-floor.png'
+import greenTable from '../../assets/images/green-table.png'
 import socket from '../../config/socketConfig'
 
 // function Switch(i) {
@@ -22,20 +27,27 @@ import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
 // 1. maybe add a hand counter
-// 2. Add chat
+// 2. Add sound
 // 3. socket.handshake
 // 4. useMemo for setting playersChips?
 // 5. is isLogin enough for security or should I use socket.auth?
-
 // change padding for root class
+// add shadow to waitingDisplay
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
-		// width: '100vw',
+		width: '100vw',
 		height: '100vh',
-		background: '#4327ac',
-		// padding: '20px',
+		// height: '100%',
+		backgroundPosition: 'center top',
+		backgroundRepeat: 'no-repeat',
+		// backgroundSize: '100%',
+		backgroundSize: '1500px',
+		// backgroundSize: 'auto 75%, auto 100%',
+		// backgroundSize: '100%, 100%',
+		// backgroundSize: '1200px, cover',
+		// backgroundSize: 'max(80vw, 1200px), cover',
 	},
 	table: {
 		position: 'relative',
@@ -46,37 +58,51 @@ const useStyles = makeStyles({
 		background: '#193024',
 		width: '55%',
 		height: '55%',
-		// width: 700,
-		// height: 350,
-		// maxWidth: 700,
-		// maxHeight: 350,
 		margin: '100px auto',
 		border: '5px solid gray',
 		borderRadius: '30% / 60%',
 		boxShadow: '0 0 10px #9ecaed',
 	},
+	myTable: {
+		width: '100%',
+		// margin: 'auto',
+		// paddingTop: '5%',
+		// height: 200,
+		// margin: '200px',
+		// padding: 0,
+		// outline: '2px solid teal',
+	},
 	tableContainer: {
-		height: '80%',
-		// outline: '3px solid red',
+		position: 'relative',
+		display: 'flex',
+		justifyContent: 'center',
+		height: '75%',
+		// padding: '30px',
+		// outline: '2px solid red',
 	},
 	hudContainer: {
-		height: '20%',
-		// outline: '3px solid cyan',
+		position: 'absolute',
+		bottom: '-40px',
+		width: '100%',
+		height: '250px',
+		padding: 0,
+		// marginLeft: '20px',
+		// outline: '1px solid cyan',
 	},
 	waitingDisplay: {
 		position: 'absolute',
-		top: '50%',
+		top: '400px',
 		left: '50%',
-		width: '60%',
-		transform: 'translate(-50%, -50%)',
+		width: '500px',
+		transform: 'translate(-50%, -120%)',
 		borderRadius: '10px',
 	},
 	waitingText: {
 		margin: 'auto',
-		padding: '10px',
+		padding: '2%',
 		fontSize: '24px',
 		textAlign: 'center',
-		'&:after': {
+		'&::after': {
 			overflow: 'hidden',
 			display: 'inline-block',
 			width: '0px',
@@ -99,24 +125,26 @@ const useStyles = makeStyles({
 		textAlign: 'center',
 	},
 	pot: {
-		display: 'flex',
-		flex: 1,
-		alignItems: 'flex-end',
+		position: 'absolute',
+		top: '270px',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
 	},
 	potText: {
 		background: 'rgba(0, 0, 0, 0.4)',
-		padding: '10px',
+		padding: '5px',
 		color: 'white',
-		borderRadius: '15px',
+		fontSize: '20px',
+		borderRadius: '10px',
 	},
 	playersHudContainer: {
 		position: 'absolute',
-		width: '25%',
-		margin: 'auto',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
 	},
 	dealerBtn: {
 		position: 'absolute',
-		left: '30%',
+		left: '40%',
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -131,10 +159,10 @@ const useStyles = makeStyles({
 		fontSize: '1vmin',
 	},
 	top: {
-		top: '-35%',
+		top: '150px',
 	},
 	bottom: {
-		bottom: '-35%',
+		top: '570px',
 	},
 	'@keyframes loading-ellipsis': {
 		to: {
@@ -151,8 +179,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const classes = useStyles()
 	const { roomId } = useParams()
 
+	// Display variables //
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
+	const [floorOption, setFloorOption] = useState(woodenFloor)
+	const [tableOption, setTableOption] = useState(greenTable)
+	const [deckOption, setDeckOption] = useState()
 
 	// Gameplay variables //
 	const bettingRoundRef = useRef(null)
@@ -583,67 +615,110 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	if (!isLoggedIn || isGameOver) return <Redirect to='/lobby' />
+	// if (!isLoggedIn || isGameOver) return <Redirect to='/lobby' />
 
 	return (
-		<Grid container className={classes.root}>
-			<Grid item xs={12} className={classes.tableContainer}>
+		<div
+			className={classes.root}
+			style={{
+				// backgroundImage: `url(${tableOption}), url(${floorOption})`,
+				backgroundImage: `url(${pokerRoom})`,
+			}}>
+			{/* <img src={tableOption} className={classes.myTable} alt='poker table' /> */}
+			{/* <div
+				style={{
+					position: 'absolute',
+					// top: '32%',
+					top: '264.5px',
+					left: '50%',
+					width: '45px',
+					height: '45px',
+					// width: '8%',
+					// paddingTop: '8%',
+					transform: 'translate(-50%, -50%)',
+					outline: '2px solid red',
+				}}></div> */}
+
+			{/* <Box display='flex' justifyContent='flex-end'>
 				<Link to='/lobby' style={{ textDecoration: 'none' }}>
-					<Button variant='contained'>Lobby</Button>
+					<Button variant='outlined' color='primary' size='small'>
+						Lobby
+					</Button>
 				</Link>
-				<div className={classes.table}>
-					{startGame ? (
-						<>
-							<div
-								className={classes.dealerBtn}
-								style={{ top: !isPlayerOnBtnRef.current ? '10%' : '80%' }}>
-								<p className={classes.dealerBtnText}>DEALER</p>
-							</div>
-							<div className={`${classes.playersHudContainer} ${classes.top}`}>
-								{showHands ? (
-									<HoleCards holeCards={opponentsHoleCards} />
-								) : (
-									<HoleCards />
-								)}
-								<PlayersHud
-									playersName={opponentsName}
-									chips={opponentsChips}
-									hasWon={hasWon}
-								/>
-							</div>
-							<div className={classes.pot}>
-								<h2 className={classes.potText}>Pot: ${pot}</h2>
-							</div>
-							<CommunityCards communityCards={communityCards} />
-							<div style={{ flex: 1 }}></div>
-							<div
-								className={`${classes.playersHudContainer} ${classes.bottom}`}>
-								<HoleCards holeCards={holeCards} />
-								<PlayersHud
-									playersName={playersName}
-									chips={playersChips}
-									hasWon={hasWon}
-								/>
-							</div>
-						</>
-					) : (
-						<Paper className={classes.waitingDisplay}>
-							<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
-						</Paper>
-					)}
-				</div>
-				{winningHand && (
-					<Paper className={classes.handResultDisplay}>
-						<h2 className={classes.handResultText}>{winningHand}</h2>
-					</Paper>
-				)}
-			</Grid>
-			<Grid
-				item
-				container
-				className={classes.hudContainer}
-				// style={{ outline: '1px solid white' }}
-				xs={12}>
+				<Options
+					setFloorOption={setFloorOption}
+					setTableOption={setTableOption}
+				/>
+			</Box> */}
+
+			{/* <div
+				className={classes.table2}
+				style={{
+					// width: 600,
+					height: 550,
+					margin: '100px auto',
+					border: '1px solid blue',
+					backgroundImage: `url(${tableOption})`,
+				}}></div> */}
+			{/* <div className={classes.tableContainer}> */}
+			{/* <Box height='75%' border={1} borderColor='red'> */}
+			{/* <img className={classes.table2} src={tableOption} alt='poker table' /> */}
+			{startGame ? (
+				<>
+					<div
+						className={classes.dealerBtn}
+						style={{ top: !isPlayerOnBtnRef.current ? '235px' : '465px' }}>
+						<p className={classes.dealerBtnText}>DEALER</p>
+					</div>
+
+					<div className={`${classes.playersHudContainer} ${classes.top}`}>
+						{showHands ? (
+							<HoleCards holeCards={opponentsHoleCards} />
+						) : (
+							<HoleCards />
+						)}
+						<PlayersHud
+							playersName={opponentsName}
+							chips={opponentsChips}
+							hasWon={hasWon}
+						/>
+					</div>
+
+					<div className={classes.pot}>
+						<h2 className={classes.potText}>Pot: ${pot}</h2>
+					</div>
+
+					<CommunityCards communityCards={communityCards} />
+
+					{/* <div style={{ flex: 1 }}></div> */}
+
+					<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
+						<HoleCards holeCards={holeCards} />
+						<PlayersHud
+							playersName={playersName}
+							chips={playersChips}
+							hasWon={hasWon}
+						/>
+					</div>
+				</>
+			) : (
+				<Paper className={classes.waitingDisplay}>
+					<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
+				</Paper>
+			)}
+
+			{winningHand && (
+				<Paper className={classes.handResultDisplay}>
+					<h2 className={classes.handResultText}>{winningHand}</h2>
+				</Paper>
+			)}
+			{/* </div> */}
+
+			<Box
+				display='flex'
+				// justifyContent='center'
+				alignItems='center'
+				className={classes.hudContainer}>
 				{/* <Grid item xs={6}> */}
 				{/* <Grid item xs={6} style={{ outline: '1px solid teal' }}> */}
 				<Grid item xs={6}>
@@ -664,8 +739,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						)}
 					</div>
 				</Grid>
-			</Grid>
-		</Grid>
+			</Box>
+		</div>
 	)
 }
 
