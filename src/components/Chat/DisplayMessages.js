@@ -5,7 +5,7 @@ import ScrollToBottom from 'react-scroll-to-bottom'
 const useStyles = makeStyles({
 	root: {
 		flex: 'auto',
-		height: '100px',
+		height: '10vw',
 		overflow: 'auto',
 	},
 })
@@ -17,19 +17,20 @@ const DisplayMessages = ({ messages }) => {
 		return (
 			<ScrollToBottom className={classes.root}>
 				{messages.map(({ user, text }, index) => (
-					<Box key={index} display='flex' alignItems='center'>
+					<Box
+						key={index}
+						display='flex'
+						alignItems='center'
+						style={{ padding: '1.3% 0%' }}>
 						<div
 							style={{
-								marginRight: '10px',
-								padding: '0px',
+								marginRight: '3%',
 								color: 'pink',
 							}}>
-							<p>{user}</p>
+							<p style={{ margin: 0, padding: 0 }}>{user}:</p>
 						</div>
 						<Box display='flex'>
-							<p style={{ margin: '0px', padding: '0px', color: 'white' }}>
-								{text}
-							</p>
+							<p style={{ margin: 0, padding: 0, color: 'white' }}>{text}</p>
 						</Box>
 					</Box>
 				))}

@@ -1,47 +1,37 @@
 import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
+import Card from './Card'
+
 const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
-		top: '370px',
+		top: '45%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
 		display: 'flex',
-		justifyContent: 'center',
+		justifyContent: 'space-evenly',
 		alignItems: 'center',
-		height: '100px',
+		width: '25%',
+		height: '10%',
 	},
-	cardOutline: {
-		height: 80,
-		width: 56 /*70% of height*/,
-		margin: 4,
-		border: '0.1em dashed white',
+	card: {
+		position: 'relative',
+		width: '16%',
+		height: '100%',
+		fontSize: '1.5vw',
 		borderRadius: '10%',
 	},
 	cardFront: {
-		height: 80,
-		width: 56 /*70% of height*/,
-		margin: 4,
 		background: 'white',
-		border: '0.2em solid black',
-		borderRadius: '10%',
+		border: '.2vw solid black',
 	},
-	cardText: {
-		margin: 0,
-		marginTop: '15%',
-		textAlign: 'center',
-		fontSize: '1.5em',
-		fontWeight: 'bold',
-	},
-	cardImg: {
-		textAlign: 'center',
-		margin: 0,
-		fontSize: '2em',
+	cardOutline: {
+		border: '0.1em dashed white',
 	},
 })
 
-const CommunityCards = ({ communityCards }) => {
+const CommunityCards = ({ communityCards, deckOption }) => {
 	const classes = useStyles()
 	const cards = [...communityCards]
 
@@ -52,18 +42,18 @@ const CommunityCards = ({ communityCards }) => {
 
 	return (
 		<div className={classes.root}>
-			{cards.slice(0, 5).map((card) =>
+			{cards.slice(0, 5).map((card, index) =>
 				card.rank ? (
-					<div key={card.rank + card.suit} className={classes.cardFront}>
-						<p className={classes.cardText} style={{ color: card.color }}>
-							{card.rank}
-						</p>
-						<p className={classes.cardImg} style={{ color: card.color }}>
-							{card.symbol}
-						</p>
+					<div
+						key={card.rank + card.suit}
+						className={`${classes.card} ${classes.cardFront}`}
+						data-index={index}>
+						<Card card={card} index={index + 1} />
 					</div>
 				) : (
-					<div key={card.id} className={classes.cardOutline}></div>
+					<div
+						key={card.id}
+						className={`${classes.card} ${classes.cardOutline}`}></div>
 				)
 			)}
 		</div>

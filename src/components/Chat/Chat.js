@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Paper, TextField } from '@material-ui/core'
+import { Box, Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import DisplayMessages from './DisplayMessages'
@@ -12,17 +12,24 @@ const useStyles = makeStyles({
 		width: '80%',
 		background: 'rgba(0, 0, 0, 0.5)',
 		margin: 0,
+		padding: '1%',
 	},
 	chatInput: {
 		color: 'white',
-		width: '100%',
+		width: '95%',
 		height: '100%',
-		margin: '0 5px',
+		paddingLeft: '2.5%',
 		background: 'rgba(0, 0, 0, 0.5)',
 		border: 'none',
+		'&:focus': {
+			outline: '.05vw solid white',
+		},
 	},
 	sendButton: {
-		color: 'white',
+		color: '#878787',
+		padding: 0,
+		fontSize: '1vw',
+		border: '1px solid #878787',
 	},
 })
 
@@ -31,12 +38,6 @@ const Chat = () => {
 
 	const [message, setMessage] = useState('')
 	const [messages, setMessages] = useState([])
-	// const [messages, setMessages] = useState([
-	// 	{ user: 'ryan', text: 'hello' },
-	// 	{ user: 'ryan', text: 'hello' },
-	// 	{ user: 'ryan', text: 'hello' },
-	// 	{ user: 'ryan', text: 'hello' },
-	// ])
 
 	const handleSend = (e) => {
 		e.preventDefault()
@@ -67,14 +68,6 @@ const Chat = () => {
 			<DisplayMessages messages={messages} />
 			<Box display='flex'>
 				<Box flexGrow={1} m={0} p={0}>
-					{/* <TextField
-							className={classes.chatInput}
-							label='Type here to chat'
-							onChange={(e) => setMessage(e.target.value)}
-							onKeyPress={(e) => (e.key === 'Enter' ? handleSend(e) : null)}
-							size='small'
-							fullWidth
-						/> */}
 					<input
 						type='text'
 						className={classes.chatInput}

@@ -2,8 +2,8 @@ import { useState, useEffect, memo } from 'react'
 import {
 	Button,
 	ButtonGroup,
-	Grid,
-	Input,
+	// Grid,
+	// Input,
 	Slider,
 	Tooltip,
 } from '@material-ui/core'
@@ -29,17 +29,33 @@ const theme = createTheme({
 const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
-		right: '40px',
-		bottom: '40%',
+		right: '5%',
+		bottom: '30%',
 		display: 'flex',
 		flexDirection: 'column',
 		width: '30%',
-		height: '80px',
-		margin: 0,
+		// margin: 0,
+		'& p': {
+			// margin: '.5vw',
+			fontSize: '1vw',
+			color: 'white',
+		},
 	},
 	input: {
 		width: 55,
 		color: 'white',
+	},
+	foldBtn: {
+		background:
+			'linear-gradient(0deg, rgba(171,38,0,1) 0%, rgba(252,140,107,1) 122%)',
+	},
+	checkOrcallBtn: {
+		background:
+			'linear-gradient(0deg, rgba(253,141,45,1) 0%, rgba(253,214,45,1) 122%)',
+	},
+	betOrRaiseBtn: {
+		background:
+			'linear-gradient(0deg, rgba(24,148,0,1) 0%, rgba(158,198,0,1) 122%)',
 	},
 })
 
@@ -159,19 +175,38 @@ const BettingOptions = ({
 	return (
 		<div className={classes.root}>
 			<ThemeProvider theme={theme}>
+				{!isPlayerAllIn && (
+					<BetSlider
+						value={betAmount}
+						step={20}
+						min={
+							isRaiseAvailable
+								? Math.min(playersChips, callAmount * 2)
+								: Math.min(playersChips, BIG_BLIND)
+						}
+						max={Math.min(playersChips, opponentsChips + callAmount)}
+						valueLabelDisplay='auto'
+						style={{ marginBottom: '3%' }}
+						onChange={handleSliderChange}
+					/>
+				)}
 				{callAmount || hasCalledBB ? (
 					<ButtonGroup variant='contained' fullWidth>
-						<Button onClick={handleFold}>Fold</Button>
+						<Button className={classes.foldBtn} onClick={handleFold}>
+							<p>Fold</p>
+						</Button>
 						{callAmount ? (
-							<Button onClick={handleCall}>
+							<Button className={classes.checkOrcallBtn} onClick={handleCall}>
 								<p style={{ margin: 0 }}>Call</p>
 								<p style={{ margin: 0 }}>${callAmount}</p>
 							</Button>
 						) : (
-							<Button onClick={handleCheck}>CHECK</Button>
+							<Button className={classes.checkOrcallBtn} onClick={handleCheck}>
+								<p>CHECK</p>
+							</Button>
 						)}
 						{isRaiseAvailable && (
-							<Button onClick={handleRaise}>
+							<Button className={classes.betOrRaiseBtn} onClick={handleRaise}>
 								<p style={{ margin: 0 }}>Raise To</p>
 								<p style={{ margin: 0 }}>
 									$
@@ -187,52 +222,98 @@ const BettingOptions = ({
 					</ButtonGroup>
 				) : (
 					<ButtonGroup variant='contained' fullWidth>
-						<Button onClick={handleFold}>FOLD</Button>
-						<Button onClick={handleCheck}>CHECK</Button>
-						<Button onClick={handleBet}>
+						<Button className={classes.foldBtn} onClick={handleFold}>
+							<p>FOLD</p>
+						</Button>
+						<Button className={classes.checkOrcallBtn} onClick={handleCheck}>
+							<p>CHECK</p>
+						</Button>
+						<Button className={classes.betOrRaiseBtn} onClick={handleBet}>
 							<p style={{ margin: 0 }}>Bet</p>
 							<p style={{ margin: 0 }}>${betAmount}</p>
 						</Button>
 					</ButtonGroup>
 				)}
-				{!isPlayerAllIn && (
-					<Grid container spacing={2} alignItems='center'>
-						<Grid item xs>
-							<BetSlider
-								value={betAmount}
-								step={20}
-								min={
-									isRaiseAvailable
-										? Math.min(playersChips, callAmount * 2)
-										: Math.min(playersChips, BIG_BLIND)
-								}
-								max={Math.min(playersChips, opponentsChips + callAmount)}
-								valueLabelDisplay='auto'
-								ValueLabelComponent={ValueLabelComponent}
-								onChange={handleSliderChange}
-							/>
-						</Grid>
-						<Grid item>
-							<Input
-								className={classes.input}
-								value={betAmount}
-								margin='dense'
-								onChange={handleInputChange}
-								inputProps={{
-									step: 20,
-									min: isRaiseAvailable
-										? Math.min(playersChips, callAmount * 2)
-										: Math.min(playersChips, BIG_BLIND),
-									max: Math.min(playersChips, opponentsChips + callAmount),
-									type: 'number',
-								}}
-							/>
-						</Grid>
-					</Grid>
-				)}
 			</ThemeProvider>
 		</div>
 	)
+	// return (
+	// 	<div className={classes.root}>
+	// 		<ThemeProvider theme={theme}>
+	// 			{callAmount || hasCalledBB ? (
+	// 				<ButtonGroup variant='contained' fullWidth>
+	// 					<Button onClick={handleFold}>Fold</Button>
+	// 					{callAmount ? (
+	// 						<Button onClick={handleCall}>
+	// 							<p style={{ margin: 0 }}>Call</p>
+	// 							<p style={{ margin: 0 }}>${callAmount}</p>
+	// 						</Button>
+	// 					) : (
+	// 						<Button onClick={handleCheck}>CHECK</Button>
+	// 					)}
+	// 					{isRaiseAvailable && (
+	// 						<Button onClick={handleRaise}>
+	// 							<p style={{ margin: 0 }}>Raise To</p>
+	// 							<p style={{ margin: 0 }}>
+	// 								$
+	// 								{Math.max(
+	// 									betAmount,
+	// 									isRaiseAvailable
+	// 										? Math.min(playersChips, callAmount * 2)
+	// 										: Math.min(playersChips, BIG_BLIND)
+	// 								)}
+	// 							</p>
+	// 						</Button>
+	// 					)}
+	// 				</ButtonGroup>
+	// 			) : (
+	// 				<ButtonGroup variant='contained' fullWidth>
+	// 					<Button onClick={handleFold}>FOLD</Button>
+	// 					<Button onClick={handleCheck}>CHECK</Button>
+	// 					<Button onClick={handleBet}>
+	// 						<p style={{ margin: 0 }}>Bet</p>
+	// 						<p style={{ margin: 0 }}>${betAmount}</p>
+	// 					</Button>
+	// 				</ButtonGroup>
+	// 			)}
+	// 			{!isPlayerAllIn && (
+	// 				<Grid container spacing={2} alignItems='center'>
+	// 					<Grid item xs>
+	// 						<BetSlider
+	// 							value={betAmount}
+	// 							step={20}
+	// 							min={
+	// 								isRaiseAvailable
+	// 									? Math.min(playersChips, callAmount * 2)
+	// 									: Math.min(playersChips, BIG_BLIND)
+	// 							}
+	// 							max={Math.min(playersChips, opponentsChips + callAmount)}
+	// 							valueLabelDisplay='auto'
+	// 							ValueLabelComponent={ValueLabelComponent}
+	// 							onChange={handleSliderChange}
+	// 						/>
+	// 					</Grid>
+	// 					<Grid item>
+	// 						<Input
+	// 							className={classes.input}
+	// 							value={betAmount}
+	// 							margin='dense'
+	// 							onChange={handleInputChange}
+	// 							inputProps={{
+	// 								step: 20,
+	// 								min: isRaiseAvailable
+	// 									? Math.min(playersChips, callAmount * 2)
+	// 									: Math.min(playersChips, BIG_BLIND),
+	// 								max: Math.min(playersChips, opponentsChips + callAmount),
+	// 								type: 'number',
+	// 							}}
+	// 						/>
+	// 					</Grid>
+	// 				</Grid>
+	// 			)}
+	// 		</ThemeProvider>
+	// 	</div>
+	// )
 }
 
 export default memo(BettingOptions)
