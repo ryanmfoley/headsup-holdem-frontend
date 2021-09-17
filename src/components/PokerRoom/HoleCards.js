@@ -1,63 +1,64 @@
 import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
+import Card from './Card'
+
 const useStyles = makeStyles({
 	root: {
+		position: 'absolute',
+		bottom: '15%',
+		left: '65%',
 		display: 'flex',
-		justifyContent: 'center',
+		width: '100%',
+		height: '100%',
+		zIndex: 1,
+		fontSize: '1.5vw',
+		"& [data-index='1']": {
+			position: 'absolute',
+			left: '6%',
+			top: '7%',
+		},
 	},
 	card: {
-		height: 80,
-		width: 56 /*70% of height*/,
-		margin: '5px 3px',
+		width: '16%',
+		height: '100%',
+		margin: '.1%',
 		borderRadius: '10%',
 	},
 	cardFront: {
 		background: 'white',
-		border: '0.2em solid black',
+		border: '.2vw solid black',
 	},
 	cardBack: {
-		background: 'salmon',
-		border: '0.2em solid white',
-	},
-	cardText: {
-		margin: 0,
-		marginTop: '15%',
-		textAlign: 'center',
-		fontSize: '1.5em',
-		fontWeight: 'bold',
-	},
-	cardImg: {
-		textAlign: 'center',
-		margin: 0,
-		fontSize: '2em',
+		border: '.2vw solid white',
 	},
 })
 
-const HoleCards = ({ holeCards }) => {
+const HoleCards = ({ deckOption, holeCards }) => {
 	const classes = useStyles()
 
 	return (
 		<div className={classes.root}>
 			{holeCards ? (
 				<>
-					{holeCards.map((card) => (
+					{holeCards.map((card, index) => (
 						<div
 							key={card.rank + card.suit}
-							className={`${classes.card} ${classes.cardFront}`}>
-							<p className={classes.cardText} style={{ color: card.color }}>
-								{card.rank}
-							</p>
-							<p className={classes.cardImg} style={{ color: card.color }}>
-								{card.symbol}
-							</p>
+							className={`${classes.card} ${classes.cardFront}`}
+							data-index={index}>
+							<Card card={card} index={index} />
 						</div>
 					))}
 				</>
 			) : (
 				<>
-					<div className={`${classes.card} ${classes.cardBack}`}></div>
-					<div className={`${classes.card} ${classes.cardBack}`}></div>
+					{[0, 1].map((index) => (
+						<div
+							key={index}
+							className={`${classes.card} ${classes.cardBack}`}
+							style={{ background: deckOption }}
+							data-index={index}></div>
+					))}
 				</>
 			)}
 		</div>

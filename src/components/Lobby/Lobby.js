@@ -52,10 +52,10 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [player, setPlayer] = useState({})
 	const [playersWaiting, setPlayersWaiting] = useState([])
 
-	const createGame = () => socket.emit('createGame', player)
+	const createGame = () => socket.emit('create-game', player)
 
 	const joinGame = (e) =>
-		socket.emit('updatePlayersWaiting', e.target.dataset.id)
+		socket.emit('update-players-waiting', e.target.dataset.id)
 
 	useEffect(() => {
 		// Clean up controller //
@@ -65,9 +65,9 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		const username = JSON.parse(localStorage.getItem('username'))
 
-		socket.emit('enterLobby', username)
+		socket.emit('enter-lobby', username)
 
-		socket.once('enterLobby', (player) => {
+		socket.once('enter-lobby', (player) => {
 			if (!isMounted) return null
 
 			setPlayer(player)
@@ -75,7 +75,7 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		})
 
 		socket.on(
-			'playersWaiting',
+			'players-waiting',
 			(players) => isMounted && setPlayersWaiting(players)
 		)
 

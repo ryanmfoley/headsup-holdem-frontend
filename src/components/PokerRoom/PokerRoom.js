@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useParams, Redirect } from 'react-router-dom'
-import { Button, Paper } from '@material-ui/core'
+import { useParams, Redirect } from 'react-router-dom'
+import { Box, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
+import Chat from '../Chat/Chat'
+import Options from './Options'
+// import OptionsDialog from './OptionsDialog'
+import woodenFloor from '../../assets/images/floors/wooden-floor.png'
+import greenTable from '../../assets/images/tables/green-table.png'
 import socket from '../../config/socketConfig'
 
 // function Switch(i) {
@@ -21,93 +26,129 @@ import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
 // 1. maybe add a hand counter
-// 2. Add chat
+// 2. Add sound
 // 3. socket.handshake
 // 4. useMemo for setting playersChips?
 // 5. is isLogin enough for security or should I use socket.auth?
+// maybe cut off sides with minWidth or maxWidth
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
-		width: '100vw',
-		height: '90vh',
-		background: '#4327ac',
 	},
-	table: {
-		position: 'relative',
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
-		background: '#193024',
-		width: '75%',
-		height: '60%',
-		maxWidth: 700,
-		maxHeight: 350,
-		margin: '100px auto',
-		border: '5px solid gray',
-		borderRadius: '30% / 60%',
-		boxShadow: '0 0 10px #9ecaed',
+	floorBackground: {
+		width: '100%',
 	},
-	waitingDisplay: {
+	pokerTable: {
+		width: '100%',
 		position: 'absolute',
 		top: '50%',
 		left: '50%',
-		width: '60%',
 		transform: 'translate(-50%, -50%)',
-		borderRadius: '10px',
+	},
+	tableContainer: {
+		position: 'relative',
+		display: 'flex',
+		justifyContent: 'center',
+		height: '75%',
+		// padding: '30px',
+		// outline: '2px solid red',
+	},
+	hudContainer: {
+		position: 'absolute',
+		bottom: '4%',
+		left: '.5%',
+		width: '100%',
+		padding: 0,
+	},
+	waitingDisplay: {
+		position: 'absolute',
+		top: '48.8%',
+		left: '50%',
+		width: '35%',
+		transform: 'translate(-50%, -120%)',
+		borderRadius: '.45vw',
 	},
 	waitingText: {
 		margin: 'auto',
-		padding: '10px',
-		fontSize: '24px',
+		padding: '2%',
+		fontSize: '1.7vw',
 		textAlign: 'center',
-		'&:after': {
+		'&::after': {
 			overflow: 'hidden',
 			display: 'inline-block',
-			width: '0px',
+			width: 0,
 			verticalAlign: 'bottom',
 			animation: '$loading-ellipsis steps(4, end) 3s infinite',
 			content: "'...'",
 		},
 	},
+	handResultDisplay: {
+		position: 'absolute',
+		top: '50%',
+		left: '50%',
+		width: '40%',
+		background: 'rgba(255, 255, 255, 0.5)',
+		transform: 'translate(-50%, -50%)',
+		borderRadius: '10px',
+	},
+	handResultText: {
+		color: 'white',
+		textAlign: 'center',
+	},
 	pot: {
-		display: 'flex',
-		flex: 1,
-		alignItems: 'flex-end',
+		position: 'absolute',
+		top: '35%',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
 	},
 	potText: {
 		background: 'rgba(0, 0, 0, 0.4)',
-		padding: '10px',
+		padding: '.4vw',
 		color: 'white',
-		borderRadius: '15px',
+		fontSize: '1.5vw',
+		borderRadius: '10px',
 	},
 	playersHudContainer: {
 		position: 'absolute',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
 		width: '25%',
-		margin: 'auto',
+		height: '10%',
 	},
 	dealerBtn: {
 		position: 'absolute',
-		left: '30%',
+		left: '40%',
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		width: '4vmin',
-		height: '4vmin',
+		width: '2vw',
+		height: '2vw',
 		padding: 5,
 		background: 'white',
-		border: '1px solid black',
+		border: '.08vw solid black',
 		borderRadius: '50%',
 	},
 	dealerBtnText: {
-		fontSize: '1vmin',
+		fontSize: '.6vw',
+	},
+	navBtnGroup: {
+		position: 'absolute',
+		right: 0,
+		zIndex: 1,
+		display: 'flex',
+		justifyContent: 'flex-end',
+		margin: '.5vw',
+		'& button': {
+			fontSize: '1.2vw',
+			cursor: 'pointer',
+		},
 	},
 	top: {
-		top: '-35%',
+		top: '22%',
 	},
 	bottom: {
-		bottom: '-35%',
+		top: '70%',
 	},
 	'@keyframes loading-ellipsis': {
 		to: {
@@ -124,26 +165,33 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const classes = useStyles()
 	const { roomId } = useParams()
 
+	// Display variables //
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
+	const [floorOption, setFloorOption] = useState(woodenFloor)
+	const [tableOption, setTableOption] = useState(greenTable)
+	const [deckOption, setDeckOption] = useState('black')
 
 	// Gameplay variables //
 	const bettingRoundRef = useRef(null)
-	const isPlayerOneRef = useRef(null)
 	const isPlayerOnBtnRef = useRef(null)
 	const isTurnRef = useRef(null)
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
+	const [isGameOver, setIsGameOver] = useState(false)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
+	const [hasWon, setHasWon] = useState(false)
 	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	const [showHands, setShowHands] = useState(false)
+	const [winningHand, setWinningHand] = useState('')
+	const [redirectToLobby, setRedirectToLobby] = useState(false)
 
 	// Cards //
 	const holeCardsRef = useRef({})
 	const communityCardsRef = useRef([])
-	const [holeCards, setHoleCards] = useState(null)
+	const [holeCards, setHoleCards] = useState([])
 	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
 	const [communityCards, setCommunityCards] = useState([])
 
@@ -162,6 +210,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		let isMounted = true
 
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
+		currentPlayer.isPlayerOne = currentPlayer.id === roomId
+		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
 
 		const alternateTurn = () => {
 			isTurnRef.current = !isTurnRef.current
@@ -189,16 +239,16 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		const dealNextCard = () => {
 			switch (bettingRoundRef.current) {
 				case 'preflop':
-					if (isPlayerOneRef.current) socket.emit('dealFlop')
+					if (currentPlayer.isPlayerOne) socket.emit('deal-flop')
 					break
 				case 'flop':
-					if (isPlayerOneRef.current) socket.emit('dealTurn')
+					if (currentPlayer.isPlayerOne) socket.emit('deal-turn')
 					break
 				case 'turn':
-					if (isPlayerOneRef.current) socket.emit('dealRiver')
+					if (currentPlayer.isPlayerOne) socket.emit('deal-river')
 					break
 				default:
-					if (isPlayerOneRef.current) socket.emit('handIsOver')
+					if (currentPlayer.isPlayerOne) socket.emit('hand-is-over')
 			}
 		}
 
@@ -225,26 +275,25 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 
 		// Join socket to the roomId //
-		socket.emit('enterPokerRoom', { roomId, currentPlayer })
+		socket.emit('enter-poker-room', { roomId, currentPlayer })
 
 		// Listen for opponent to enter the room //
-		socket.once('startGame', () => socket.emit('getPlayersInfo', currentPlayer))
+		socket.once('start-game', () =>
+			socket.emit('get-players-info', currentPlayer)
+		)
 
-		socket.once('getPlayersInfo', ({ username }) => {
+		socket.once('get-players-info', ({ username }) => {
 			if (!isMounted) return null
 
 			setPlayersName(currentPlayer.username)
 			setOpponentsName(username)
 			setStartGame(true)
 
-			isPlayerOneRef.current = currentPlayer.id === roomId
-			isPlayerOnBtnRef.current = isPlayerOneRef.current ? true : false
-
 			// Player 1 emits deal to server //
-			if (isPlayerOneRef.current) socket.emit('deal')
+			if (currentPlayer.isPlayerOne) socket.emit('deal')
 		})
 
-		socket.on('dealPreFlop', (holeCards) => {
+		socket.on('deal-preflop', (holeCards) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'preflop'
@@ -312,7 +361,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setHoleCards(holeCards)
 		})
 
-		socket.on('dealFlop', (flop) => {
+		socket.on('deal-flop', (flop) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'flop'
@@ -328,7 +377,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTurn()
 		})
 
-		socket.on('dealTurn', (turn) => {
+		socket.on('deal-turn', (turn) => {
 			if (!isMounted) return null
 
 			// Change betting round to turn //
@@ -344,7 +393,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTurn()
 		})
 
-		socket.on('dealRiver', (river) => {
+		socket.on('deal-river', (river) => {
 			if (!isMounted) return null
 
 			// Change betting round to river //
@@ -456,11 +505,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			alternateTurn()
 		})
 
-		socket.on('handIsOver', () => {
+		socket.on('hand-is-over', () =>
 			socket.emit('showdown', holeCardsRef.current)
-		})
+		)
 
-		socket.on('determineWinner', (opponentsCards) => {
+		socket.on('determine-winner', (opponentsCards) => {
 			setOpponentsHoleCards(opponentsCards)
 
 			// Host emits determineWinner event //
@@ -475,14 +524,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				opponentsCards[1],
 			]
 
-			if (isPlayerOneRef.current)
-				socket.emit('determineWinner', {
+			if (currentPlayer.isPlayerOne)
+				socket.emit('determine-winner', {
 					playerOnesHand,
 					playerTwosHand,
 				})
 		})
 
-		socket.on('handResults', ({ winner, isDraw }) => {
+		socket.on('hand-results', ({ winningPlayer, winningHand, isDraw }) => {
 			if (!isMounted) return null
 
 			setShowBettingOptions(false)
@@ -497,18 +546,27 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 				opponentsChipsRef.current += halfPot
 				setOpponentsChips((chips) => chips + halfPot)
+
+				setWinningHand('DRAW')
 			} else if (
-				(winner === 'playerOne' && isPlayerOneRef.current) ||
-				(winner !== 'playerOne' && !isPlayerOneRef.current)
+				(winningPlayer === 'playerOne' && currentPlayer.isPlayerOne) ||
+				(winningPlayer !== 'playerOne' && !currentPlayer.isPlayerOne)
 			) {
 				// Player Won //
 				playersChipsRef.current += potRef.current
 				setPlayersChips((chips) => chips + potRef.current)
+
+				setWinningHand(winningHand)
 			} else {
 				// Opponent Won //
 				opponentsChipsRef.current += potRef.current
 				setOpponentsChips((chips) => chips + potRef.current)
+
+				setWinningHand(winningHand)
 			}
+
+			if (!playersChipsRef.current || !opponentsChipsRef.current)
+				setIsGameOver(true)
 
 			setTimeout(() => {
 				// Reset game variables //
@@ -516,8 +574,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				isTurnRef.current = false
 				setShowBettingOptions(false)
 				holeCardsRef.current = []
-				setHoleCards(null)
-				setOpponentsHoleCards(null)
+				setHoleCards([])
+				setOpponentsHoleCards([])
 				communityCardsRef.current = null
 				setCommunityCards([])
 				potRef.current = 0
@@ -526,10 +584,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				isPlayerAllInRef.current = false
 				setIsPlayerAllIn(false)
 				setShowHands(false)
+				setWinningHand('')
 				hasCalledSBRef.current = false
 			}, 3000)
 
-			if (isPlayerOneRef.current) setTimeout(() => socket.emit('deal'), 4500)
+			if (currentPlayer.isPlayerOne) setTimeout(() => socket.emit('deal'), 4500)
 		})
 
 		// Cancel subscription to useEffect //
@@ -543,38 +602,87 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	// if (!isLoggedIn) return <Redirect to='/login' />
+	// if (!isLoggedIn || redirectToLobby || isGameOver) return <Redirect to='/lobby' />
+	if (redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
-			<Link to='/lobby' style={{ textDecoration: 'none' }}>
-				<Button variant='contained'>Lobby</Button>
-			</Link>
-			<div className={classes.table}>
-				{startGame ? (
-					<>
-						<div
-							className={classes.dealerBtn}
-							style={{ top: !isPlayerOnBtnRef.current ? '10%' : '80%' }}>
-							<p className={classes.dealerBtnText}>DEALER</p>
-						</div>
-						<div className={`${classes.playersHudContainer} ${classes.top}`}>
-							{showHands ? (
-								<HoleCards holeCards={opponentsHoleCards} />
-							) : (
-								<HoleCards />
-							)}
-							<PlayersHud playersName={opponentsName} chips={opponentsChips} />
-						</div>
-						<div className={classes.pot}>
-							<h2 className={classes.potText}>Pot: ${pot}</h2>
-						</div>
-						<CommunityCards communityCards={communityCards} />
-						<div style={{ flex: 1 }}></div>
-						<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
-							<HoleCards holeCards={holeCards} />
-							<PlayersHud playersName={playersName} chips={playersChips} />
-						</div>
+			<Box
+				display='flex'
+				justifyContent='flex-end'
+				className={classes.navBtnGroup}>
+				<button onClick={() => setRedirectToLobby(true)}>Lobby</button>
+				<Options
+					setFloorOption={setFloorOption}
+					setTableOption={setTableOption}
+					setDeckOption={setDeckOption}
+				/>
+			</Box>
+
+			<img
+				src={floorOption}
+				className={classes.floorBackground}
+				alt='floor background'
+			/>
+			<img src={tableOption} className={classes.pokerTable} alt='poker table' />
+
+			{startGame ? (
+				<>
+					<div
+						className={classes.dealerBtn}
+						style={{ top: !isPlayerOnBtnRef.current ? '29%' : '55%' }}>
+						<p className={classes.dealerBtnText}>DEALER</p>
+					</div>
+
+					<div className={`${classes.playersHudContainer} ${classes.top}`}>
+						{showHands ? (
+							holeCards && <HoleCards holeCards={opponentsHoleCards} />
+						) : (
+							<HoleCards deckOption={deckOption} />
+						)}
+						<PlayersHud
+							playersName={opponentsName}
+							chips={opponentsChips}
+							hasWon={hasWon}
+						/>
+					</div>
+
+					<div className={classes.pot}>
+						<h2 className={classes.potText}>Pot: ${pot}</h2>
+					</div>
+
+					<CommunityCards
+						communityCards={communityCards}
+						deckOption={deckOption}
+					/>
+
+					<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
+						{holeCards && <HoleCards holeCards={holeCards} />}
+						<PlayersHud
+							playersName={playersName}
+							chips={playersChips}
+							hasWon={hasWon}
+						/>
+					</div>
+				</>
+			) : (
+				<Paper className={classes.waitingDisplay} elevation={6}>
+					<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
+				</Paper>
+			)}
+
+			{winningHand && (
+				<Paper className={classes.handResultDisplay}>
+					<h2 className={classes.handResultText}>{winningHand}</h2>
+				</Paper>
+			)}
+
+			<Box display='flex' alignItems='center' className={classes.hudContainer}>
+				<Grid item xs={6}>
+					<Chat />
+				</Grid>
+				<Grid item xs={6}>
+					<div>
 						{showBettingOptions && (
 							<BettingOptions
 								playersChips={playersChips}
@@ -584,13 +692,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 								hasCalledBB={hasCalledBB}
 							/>
 						)}
-					</>
-				) : (
-					<Paper className={classes.waitingDisplay}>
-						<h5 className={classes.waitingText}>WAITING FOR OPPONENT</h5>
-					</Paper>
-				)}
-			</div>
+					</div>
+				</Grid>
+			</Box>
 		</div>
 	)
 }
