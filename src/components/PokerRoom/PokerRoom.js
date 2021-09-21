@@ -174,6 +174,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [floorOption, setFloorOption] = useState(woodenFloor)
 	const [tableOption, setTableOption] = useState(greenTable)
 	const [deckOption, setDeckOption] = useState('black')
+	const [timeLeft, setTimeLeft] = useState(100)
+	const [playersAction, setPlayersAction] = useState('')
+	const [opponentsAction, setOpponentsAction] = useState('')
 
 	// Gameplay variables //
 	const bettingRoundRef = useRef(null)
@@ -184,7 +187,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [startGame, setStartGame] = useState(false)
 	const [isGameOver, setIsGameOver] = useState(false)
 	const [isTurn, setIsTurn] = useState(false)
-	const [timeLeft, setTimeLeft] = useState(100)
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
@@ -237,6 +239,16 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			// Reset timer //
 			setResetTimer((timer) => !timer)
 			setTimeLeft(TIMER)
+		}
+
+		const displayAction = (type, value = 0) => {
+			isTurnRef.current
+				? setPlayersAction({ type, value })
+				: setOpponentsAction({ type, value })
+			setTimeout(() => {
+				setPlayersAction({ type: '', value: 0 })
+				setOpponentsAction({ type: '', value: 0 })
+			}, 2000)
 		}
 
 		const isRoundOver = (action) =>
@@ -419,12 +431,15 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTurn()
 		})
 
-		socket.on('check', () =>
+		socket.on('check', () => {
+			displayAction('CHECK')
 			isRoundOver('check') ? dealNextCard() : alternateTurn()
-		)
+		})
 
 		socket.on('call', (callAmount) => {
 			if (!isMounted) return null
+
+			displayAction('CALL')
 
 			// Add chips from players chip total to pot total //
 			if (isTurnRef.current) {
@@ -458,6 +473,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('bet', (betAmount) => {
 			if (!isMounted) return null
 
+			displayAction('BET', betAmount)
+
 			if (
 				playersChipsRef.current <= betAmount ||
 				opponentsChipsRef.current <= betAmount
@@ -472,7 +489,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				// Opponent is betting //
 				opponentsChipsRef.current -= betAmount
 				setOpponentsChips((chips) => chips - betAmount)
-
 				setCallAmount(betAmount)
 			}
 
@@ -484,6 +500,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		socket.on('raise', ({ callAmount, raiseAmount }) => {
 			if (!isMounted) return null
+
+			displayAction('RAISE', raiseAmount)
 
 			const totalBetSize = callAmount + raiseAmount
 
@@ -504,7 +522,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				// Opponent is raising //
 				opponentsChipsRef.current -= callAmount + raiseAmount
 				setOpponentsChips((chips) => chips - callAmount - raiseAmount)
-
 				setCallAmount(raiseAmount)
 			}
 
@@ -660,6 +677,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 							playersName={opponentsName}
 							chips={opponentsChips}
 							active={!isTurn}
+							action={opponentsAction}
 							hasWon={hasWon}
 						/>
 						{!isTurn && (
@@ -686,6 +704,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 							playersName={playersName}
 							chips={playersChips}
 							active={isTurn}
+							action={playersAction}
 							hasWon={hasWon}
 						/>
 						{isTurn && (
