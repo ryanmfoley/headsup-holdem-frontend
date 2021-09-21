@@ -7,12 +7,14 @@ const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
 		bottom: '15%',
-		left: '65%',
+		left: '67%',
 		display: 'flex',
 		width: '100%',
 		height: '100%',
 		zIndex: 1,
 		fontSize: '1.5vw',
+		fontFamily: 'Bebas Neue',
+		letterSpacing: '0',
 		"& [data-index='1']": {
 			position: 'absolute',
 			left: '6%',

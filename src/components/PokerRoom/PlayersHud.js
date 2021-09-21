@@ -11,20 +11,23 @@ const useStyles = makeStyles({
 		background: '#212121',
 		textAlign: 'center',
 		color: 'white',
-		// fontSize: '80%',
 		fontSize: '1vw',
 		border: '.1vw solid #bfbfbf',
 		// borderRadius: '20%/50%',
-		borderRadius: '5%',
-		// outline: '1px solid blue',
+		// borderRadius: '5%',
+		borderRadius: '10%/20%',
+	},
+	active: {
+		borderColor: '#9ecaed',
+		boxShadow: '0 0 10px #9ecaed',
 	},
 })
 
-const PlayersHud = ({ playersName, chips }) => {
+const PlayersHud = ({ playersName, chips, active }) => {
 	const classes = useStyles()
 
 	return (
-		<div className={classes.root}>
+		<div className={`${classes.root} ${active ? classes.active : ''}`}>
 			<h2 style={{ margin: 0 }}>{playersName}</h2>
 			<div>
 				<hr />

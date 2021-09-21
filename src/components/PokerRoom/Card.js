@@ -28,7 +28,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const Card = ({ deckOption, card, index }) => {
+const Card = ({ card, index }) => {
 	const classes = useStyles()
 
 	return (

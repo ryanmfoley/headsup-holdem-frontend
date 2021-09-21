@@ -7,6 +7,7 @@ import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
+import Timer from './Timer'
 import Chat from '../Chat/Chat'
 import Options from './Options'
 // import OptionsDialog from './OptionsDialog'
@@ -30,11 +31,14 @@ import socket from '../../config/socketConfig'
 // 3. socket.handshake
 // 4. useMemo for setting playersChips?
 // 5. is isLogin enough for security or should I use socket.auth?
+// 6. remove select text on all pages
+// 7. make pips larger for chrome
 // maybe cut off sides with minWidth or maxWidth
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
+		userSelect: 'none',
 	},
 	floorBackground: {
 		width: '100%',
@@ -51,8 +55,6 @@ const useStyles = makeStyles({
 		display: 'flex',
 		justifyContent: 'center',
 		height: '75%',
-		// padding: '30px',
-		// outline: '2px solid red',
 	},
 	hudContainer: {
 		position: 'absolute',
@@ -159,6 +161,7 @@ const useStyles = makeStyles({
 
 const SMALL_BLIND = 10
 const BIG_BLIND = 20
+const TIMER = 100
 
 const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	////////////// TURN REDIRECT BACK ON //////////////
@@ -180,10 +183,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
 	const [isGameOver, setIsGameOver] = useState(false)
+	const [isTurn, setIsTurn] = useState(false)
+	const [timeLeft, setTimeLeft] = useState(100)
+	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
 	const [hasWon, setHasWon] = useState(false)
-	const [showBettingOptions, setShowBettingOptions] = useState(false)
 	const [showHands, setShowHands] = useState(false)
 	const [winningHand, setWinningHand] = useState('')
 	const [redirectToLobby, setRedirectToLobby] = useState(false)
@@ -215,13 +220,23 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 		const alternateTurn = () => {
 			isTurnRef.current = !isTurnRef.current
-			setShowBettingOptions(isTurnRef.current)
+			setIsTurn(isTurnRef.current)
+
+			// Reset timer //
+			setResetTimer((timer) => !timer)
+			setTimeLeft(TIMER)
 		}
 
 		const setTurn = () => {
+			setIsTurn(null) // allows timer bar display to dissapear //
+
 			isTurnRef.current =
 				!isPlayerAllInRef.current && !isPlayerOnBtnRef.current ? true : false
-			setShowBettingOptions(isTurnRef.current)
+			setIsTurn(isTurnRef.current)
+
+			// Reset timer //
+			setResetTimer((timer) => !timer)
+			setTimeLeft(TIMER)
 		}
 
 		const isRoundOver = (action) =>
@@ -298,12 +313,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 			bettingRoundRef.current = 'preflop'
 
-			// Test Code //
-			// playersChipsRef.current = isPlayerOnBtnRef.current ? 100 : 200
-			// setPlayersChips(isPlayerOnBtnRef.current ? 100 : 200)
-			// opponentsChipsRef.current = !isPlayerOnBtnRef.current ? 100 : 200
-			// setOpponentsChips(!isPlayerOnBtnRef.current ? 100 : 200)
-
 			////////// Subtract blinds from players chips and set pot //////////
 			const playersBlindAmount = isPlayerOnBtnRef.current
 				? Math.min(
@@ -353,7 +362,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			} else {
 				// Set turn //
 				isTurnRef.current = isPlayerOnBtnRef.current ? true : false
-				setShowBettingOptions(isPlayerOnBtnRef.current ? true : false)
+				setIsTurn(isPlayerOnBtnRef.current ? true : false)
 			}
 
 			// Set hole cards //
@@ -436,7 +445,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			// Deal all cards if player is all-in //
 			if (!playersChipsRef.current || !opponentsChipsRef.current) {
 				isPlayerAllInRef.current = true
-				setShowBettingOptions(false)
+				setIsTurn(false)
 
 				return dealCommunityCards()
 			}
@@ -534,7 +543,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('hand-results', ({ winningPlayer, winningHand, isDraw }) => {
 			if (!isMounted) return null
 
-			setShowBettingOptions(false)
+			setIsTurn(false)
 			setShowHands(true)
 
 			if (isDraw) {
@@ -572,7 +581,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				// Reset game variables //
 				isPlayerOnBtnRef.current = !isPlayerOnBtnRef.current
 				isTurnRef.current = false
-				setShowBettingOptions(false)
+				setIsTurn(false)
+				setTimeLeft(100)
 				holeCardsRef.current = []
 				setHoleCards([])
 				setOpponentsHoleCards([])
@@ -602,8 +612,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	// if (!isLoggedIn || redirectToLobby || isGameOver) return <Redirect to='/lobby' />
-	if (redirectToLobby) return <Redirect to='/lobby' />
+	if (!isLoggedIn || redirectToLobby || isGameOver)
+		return <Redirect to='/lobby' />
+	// if (redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
@@ -624,7 +635,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				className={classes.floorBackground}
 				alt='floor background'
 			/>
-			<img src={tableOption} className={classes.pokerTable} alt='poker table' />
+			<img
+				src={tableOption}
+				className={classes.pokerTable}
+				draggable='false'
+				alt='poker table'
+			/>
 
 			{startGame ? (
 				<>
@@ -643,8 +659,16 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						<PlayersHud
 							playersName={opponentsName}
 							chips={opponentsChips}
+							active={!isTurn}
 							hasWon={hasWon}
 						/>
+						{!isTurn && (
+							<Timer
+								timeLeft={timeLeft}
+								setTimeLeft={setTimeLeft}
+								resetTimer={resetTimer}
+							/>
+						)}
 					</div>
 
 					<div className={classes.pot}>
@@ -661,8 +685,16 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						<PlayersHud
 							playersName={playersName}
 							chips={playersChips}
+							active={isTurn}
 							hasWon={hasWon}
 						/>
+						{isTurn && (
+							<Timer
+								timeLeft={timeLeft}
+								setTimeLeft={setTimeLeft}
+								resetTimer={resetTimer}
+							/>
+						)}
 					</div>
 				</>
 			) : (
@@ -683,13 +715,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				</Grid>
 				<Grid item xs={6}>
 					<div>
-						{showBettingOptions && (
+						{isTurn && (
 							<BettingOptions
 								playersChips={playersChips}
 								opponentsChips={opponentsChips}
 								callAmount={callAmount}
 								isPlayerAllIn={isPlayerAllIn}
 								hasCalledBB={hasCalledBB}
+								timeLeft={timeLeft}
 							/>
 						)}
 					</div>
