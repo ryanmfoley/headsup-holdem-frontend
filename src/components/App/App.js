@@ -11,7 +11,7 @@ import PokerRoom from '../PokerRoom/PokerRoom'
 const useStyles = makeStyles((theme) => ({
 	root: {
 		height: '100vh',
-		background: 'pink',
+		background: 'black',
 	},
 }))
 
