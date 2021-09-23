@@ -34,6 +34,9 @@ import socket from '../../config/socketConfig'
 // 6. remove select text on all pages
 // 7. make pips larger for chrome
 // maybe cut off sides with minWidth or maxWidth
+// display draws
+// setTimeout for drawing cards
+// didn't recognize straight
 
 const useStyles = makeStyles({
 	root: {
@@ -85,17 +88,24 @@ const useStyles = makeStyles({
 			content: "'...'",
 		},
 	},
-	handResultDisplay: {
+	// handResultDisplay: {
+	// 	position: 'absolute',
+	// 	top: '50%',
+	// 	left: '50%',
+	// 	width: '40%',
+	// 	background: 'rgba(255, 255, 255, 0.5)',
+	// 	transform: 'translate(-50%, -50%)',
+	// 	borderRadius: '10px',
+	// },
+	handResultText: {
 		position: 'absolute',
 		top: '50%',
 		left: '50%',
-		width: '40%',
-		background: 'rgba(255, 255, 255, 0.5)',
 		transform: 'translate(-50%, -50%)',
-		borderRadius: '10px',
-	},
-	handResultText: {
 		color: 'white',
+		fontFamily: 'Arial',
+		fontSize: '2.3vw',
+		fontWeight: '100',
 		textAlign: 'center',
 	},
 	pot: {
@@ -190,7 +200,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
-	const [hasWon, setHasWon] = useState(false)
 	const [showHands, setShowHands] = useState(false)
 	const [winningHand, setWinningHand] = useState('')
 	const [redirectToLobby, setRedirectToLobby] = useState(false)
@@ -241,10 +250,11 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			setTimeLeft(TIMER)
 		}
 
-		const displayAction = (type, value = 0) => {
+		const showActionDisplay = (type, value = 0) => {
 			isTurnRef.current
 				? setPlayersAction({ type, value })
 				: setOpponentsAction({ type, value })
+
 			setTimeout(() => {
 				setPlayersAction({ type: '', value: 0 })
 				setOpponentsAction({ type: '', value: 0 })
@@ -432,14 +442,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		})
 
 		socket.on('check', () => {
-			displayAction('CHECK')
+			showActionDisplay('CHECK')
 			isRoundOver('check') ? dealNextCard() : alternateTurn()
 		})
 
 		socket.on('call', (callAmount) => {
 			if (!isMounted) return null
 
-			displayAction('CALL')
+			showActionDisplay('CALL')
 
 			// Add chips from players chip total to pot total //
 			if (isTurnRef.current) {
@@ -473,7 +483,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('bet', (betAmount) => {
 			if (!isMounted) return null
 
-			displayAction('BET', betAmount)
+			showActionDisplay('BET', betAmount)
 
 			if (
 				playersChipsRef.current <= betAmount ||
@@ -501,7 +511,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		socket.on('raise', ({ callAmount, raiseAmount }) => {
 			if (!isMounted) return null
 
-			displayAction('RAISE', raiseAmount)
+			showActionDisplay('RAISE', raiseAmount)
 
 			const totalBetSize = callAmount + raiseAmount
 
@@ -573,6 +583,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				opponentsChipsRef.current += halfPot
 				setOpponentsChips((chips) => chips + halfPot)
 
+				showActionDisplay('DRAW')
 				setWinningHand('DRAW')
 			} else if (
 				(winningPlayer === 'playerOne' && currentPlayer.isPlayerOne) ||
@@ -581,15 +592,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				// Player Won //
 				playersChipsRef.current += potRef.current
 				setPlayersChips((chips) => chips + potRef.current)
-
-				setWinningHand(winningHand)
+				setPlayersAction({ type: 'WINNER', value: 0 })
 			} else {
 				// Opponent Won //
 				opponentsChipsRef.current += potRef.current
 				setOpponentsChips((chips) => chips + potRef.current)
-
-				setWinningHand(winningHand)
+				setOpponentsAction({ type: 'WINNER', value: 0 })
 			}
+			setWinningHand(winningHand)
 
 			if (!playersChipsRef.current || !opponentsChipsRef.current)
 				setIsGameOver(true)
@@ -629,9 +639,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	if (!isLoggedIn || redirectToLobby || isGameOver)
-		return <Redirect to='/lobby' />
-	// if (redirectToLobby) return <Redirect to='/lobby' />
+	// if (!isLoggedIn || redirectToLobby || isGameOver)
+	// 	return <Redirect to='/lobby' />
+	if (redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
@@ -678,7 +688,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 							chips={opponentsChips}
 							active={!isTurn}
 							action={opponentsAction}
-							hasWon={hasWon}
 						/>
 						{!isTurn && (
 							<Timer
@@ -705,7 +714,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 							chips={playersChips}
 							active={isTurn}
 							action={playersAction}
-							hasWon={hasWon}
 						/>
 						{isTurn && (
 							<Timer
@@ -722,11 +730,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				</Paper>
 			)}
 
-			{winningHand && (
-				<Paper className={classes.handResultDisplay}>
-					<h2 className={classes.handResultText}>{winningHand}</h2>
-				</Paper>
-			)}
+			{winningHand && <h2 className={classes.handResultText}>{winningHand}</h2>}
 
 			<Box display='flex' alignItems='center' className={classes.hudContainer}>
 				<Grid item xs={6}>

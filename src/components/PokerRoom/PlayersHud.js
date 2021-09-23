@@ -13,15 +13,15 @@ const useStyles = makeStyles({
 		textAlign: 'center',
 		color: 'white',
 		fontSize: '1vw',
-		border: '.1vw solid #bfbfbf',
+		border: '.1vw solid darkgray',
 		borderRadius: '10%/20%',
 		'& h2': {
 			margin: '4%',
 		},
 	},
 	active: {
-		borderColor: '#9ecaed',
-		boxShadow: '0 0 1vw #9ecaed',
+		borderColor: 'white',
+		boxShadow: '0 0 1vw white',
 	},
 	actionContainer: {
 		display: 'flex',
@@ -35,6 +35,13 @@ const useStyles = makeStyles({
 	},
 	chipStack: {
 		color: 'lightgreen',
+	},
+	winnerText: {
+		'--neon-text-color': '#08f',
+		fontFamily: "'Exo 2', sans-serif",
+		fontSize: '1.7vw',
+		textShadow:
+			'-0.05vw -0.05vw .25vw #fff, 0vw 0vw 0vw #fff, 0 0 0vw var(--neon-text-color), 0 0 1vw var(--neon-text-color), 0 0 .5vw var(--neon-text-color), 0 0 1vw var(--neon-text-color),0 0 1.2vw var(--neon-text-color)',
 	},
 })
 
@@ -50,7 +57,12 @@ const PlayersHud = ({ playersName, chips, active, action }) => {
 				</>
 			) : (
 				<div className={classes.actionContainer}>
-					<h2 className={classes.actionText}>{action.type}</h2>
+					<h2
+						className={
+							action.type === 'WINNER' ? classes.winnerText : classes.actionText
+						}>
+						{action.type}
+					</h2>
 					{Boolean(action.value) && (
 						<h2 className={classes.actionText}>${action.value}</h2>
 					)}
