@@ -1,5 +1,12 @@
 import { useState, useEffect, memo } from 'react'
-import { Button, ButtonGroup, Slider, Tooltip } from '@material-ui/core'
+import {
+	Box,
+	Button,
+	ButtonGroup,
+	Input,
+	Slider,
+	Tooltip,
+} from '@material-ui/core'
 import {
 	createTheme,
 	ThemeProvider,
@@ -27,16 +34,19 @@ const useStyles = makeStyles({
 		display: 'flex',
 		flexDirection: 'column',
 		width: '30%',
-		// margin: 0,
 		'& p': {
-			// margin: '.5vw',
 			fontSize: '1vw',
 			color: 'white',
 		},
 	},
 	input: {
-		width: 55,
+		width: '7vw',
 		color: 'white',
+		marginLeft: '.5vw',
+		paddingLeft: '.5vw',
+		background: 'rgba(0, 0, 0, 0.8)',
+		fontSize: '1.3vw',
+		borderRadius: '.8vw',
 	},
 	foldBtn: {
 		background:
@@ -55,29 +65,25 @@ const useStyles = makeStyles({
 const BetSlider = withStyles({
 	root: {
 		color: '#52af77',
-		height: 8,
 	},
 	thumb: {
-		height: 24,
-		width: 24,
+		width: '2vw',
+		height: '2vw',
 		backgroundColor: '#fff',
-		border: '2px solid currentColor',
-		marginTop: -8,
-		marginLeft: -12,
+		border: '.3vw solid currentColor',
+		marginTop: '-.6vw',
+		marginLeft: '-4%',
 		'&:focus, &:hover, &$active': {
 			boxShadow: 'inherit',
 		},
 	},
 	active: {},
-	valueLabel: {
-		left: 'calc(-50% + 4px)',
-	},
 	track: {
-		height: 8,
+		height: '.7vw',
 		borderRadius: 4,
 	},
 	rail: {
-		height: 8,
+		height: '.7vw',
 		borderRadius: 4,
 	},
 })(Slider)
@@ -175,21 +181,6 @@ const BettingOptions = ({
 	return (
 		<div className={classes.root}>
 			<ThemeProvider theme={theme}>
-				{!isPlayerAllIn && (
-					<BetSlider
-						value={betAmount}
-						step={20}
-						min={
-							isRaiseAvailable
-								? Math.min(playersChips, callAmount * 2)
-								: Math.min(playersChips, BIG_BLIND)
-						}
-						max={Math.min(playersChips, opponentsChips + callAmount)}
-						valueLabelDisplay='auto'
-						style={{ marginBottom: '3%' }}
-						onChange={handleSliderChange}
-					/>
-				)}
 				{callAmount || hasCalledBB ? (
 					<ButtonGroup variant='contained' fullWidth>
 						<Button className={classes.foldBtn} onClick={handleFold}>
@@ -233,6 +224,37 @@ const BettingOptions = ({
 							<p style={{ margin: 0 }}>${betAmount}</p>
 						</Button>
 					</ButtonGroup>
+				)}
+				{!isPlayerAllIn && (
+					<Box display='flex' alignItems='center' style={{ marginTop: '.5vw' }}>
+						<BetSlider
+							value={betAmount}
+							step={20}
+							min={
+								isRaiseAvailable
+									? Math.min(playersChips, callAmount * 2)
+									: Math.min(playersChips, BIG_BLIND)
+							}
+							max={Math.min(playersChips, opponentsChips + callAmount)}
+							valueLabelDisplay='auto'
+							ValueLabelComponent={ValueLabelComponent}
+							onChange={handleSliderChange}
+						/>
+						<Input
+							className={classes.input}
+							value={betAmount}
+							margin='dense'
+							onChange={handleInputChange}
+							inputProps={{
+								step: 20,
+								min: isRaiseAvailable
+									? Math.min(playersChips, callAmount * 2)
+									: Math.min(playersChips, BIG_BLIND),
+								max: Math.min(playersChips, opponentsChips + callAmount),
+								type: 'number',
+							}}
+						/>
+					</Box>
 				)}
 			</ThemeProvider>
 		</div>
