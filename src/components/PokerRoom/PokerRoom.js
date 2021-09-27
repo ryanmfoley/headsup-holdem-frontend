@@ -7,6 +7,7 @@ import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
+import WinDisplay from './WinDisplay'
 import Timer from './Timer'
 import Chat from '../Chat/Chat'
 import Options from './Options'
@@ -23,20 +24,18 @@ import socket from '../../config/socketConfig'
 // function cleanBeforeRound() {
 //   inRound = false
 // }
-// isRoundWinner, isRoundOver, isGameOver
+// isRoundWinner, isRoundOver, showWinnerDisplay
 
 //////////// TODOS ////////////
-// 1. maybe add a hand counter
+// 1.. Add draw display
 // 2. Add sound
-// 3. socket.handshake
-// 4. useMemo for setting playersChips?
-// 5. is isLogin enough for security or should I use socket.auth?
-// 6. remove select text on all pages
-// 7. make pips larger for chrome
+// is isLogin enough for security or should I use socket.auth?
+// useMemo for setting playersChips?
+// socket.handshake
+// maybe add a hand counter
 // maybe cut off sides with minWidth or maxWidth
 // display draws
-// setTimeout for drawing cards
-// didn't recognize straight
+// shake animation for incorrect username and/or password
 
 const useStyles = makeStyles({
 	root: {
@@ -88,15 +87,6 @@ const useStyles = makeStyles({
 			content: "'...'",
 		},
 	},
-	// handResultDisplay: {
-	// 	position: 'absolute',
-	// 	top: '50%',
-	// 	left: '50%',
-	// 	width: '40%',
-	// 	background: 'rgba(255, 255, 255, 0.5)',
-	// 	transform: 'translate(-50%, -50%)',
-	// 	borderRadius: '10px',
-	// },
 	handResultText: {
 		position: 'absolute',
 		top: '50%',
@@ -195,12 +185,13 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
-	const [isGameOver, setIsGameOver] = useState(false)
+	const [showWinnerDisplay, setShowWinnerDisplay] = useState(false)
 	const [isTurn, setIsTurn] = useState(false)
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
 	const [showHands, setShowHands] = useState(false)
+	const [winner, setWinner] = useState('')
 	const [winningHand, setWinningHand] = useState('')
 	const [redirectToLobby, setRedirectToLobby] = useState(false)
 
@@ -224,7 +215,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	useEffect(() => {
 		// Clean up controller //
 		let isMounted = true
-
+		console.log('useEffect')
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
 		currentPlayer.isPlayerOne = currentPlayer.id === roomId
 		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
@@ -251,9 +242,14 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 
 		const showActionDisplay = (type, value = 0) => {
-			isTurnRef.current
-				? setPlayersAction({ type, value })
-				: setOpponentsAction({ type, value })
+			if (type === 'DRAW') {
+				setPlayersAction({ type, value })
+				setOpponentsAction({ type, value })
+			} else {
+				isTurnRef.current
+					? setPlayersAction({ type, value })
+					: setOpponentsAction({ type, value })
+			}
 
 			setTimeout(() => {
 				setPlayersAction({ type: '', value: 0 })
@@ -292,22 +288,52 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		const dealCommunityCards = () => {
 			switch (bettingRoundRef.current) {
 				case 'preflop':
-					setTimeout(() => socket.emit('dealFlop'), 1500)
-					setTimeout(() => socket.emit('dealTurn'), 3000)
-					setTimeout(() => socket.emit('dealRiver'), 4500)
-					setTimeout(() => socket.emit('handIsOver'), 6000)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-flop'),
+						1500
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-turn'),
+						3000
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
+						4500
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
+						6000
+					)
 					break
 				case 'flop':
-					setTimeout(() => socket.emit('dealTurn'), 1500)
-					setTimeout(() => socket.emit('dealRiver'), 3000)
-					setTimeout(() => socket.emit('handIsOver'), 4500)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-turn'),
+						1500
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
+						3000
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
+						4500
+					)
 					break
 				case 'turn':
-					setTimeout(() => socket.emit('dealRiver'), 1500)
-					setTimeout(() => socket.emit('handIsOver'), 3000)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
+						1500
+					)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
+						3000
+					)
 					break
 				default:
-					setTimeout(() => socket.emit('handIsOver'), 1500)
+					setTimeout(
+						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
+						1500
+					)
 			}
 		}
 
@@ -442,6 +468,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 		})
 
 		socket.on('check', () => {
+			if (!isMounted) return null
+
 			showActionDisplay('CHECK')
 			isRoundOver('check') ? dealNextCard() : alternateTurn()
 		})
@@ -545,27 +573,33 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			socket.emit('showdown', holeCardsRef.current)
 		)
 
-		socket.on('determine-winner', (opponentsCards) => {
-			setOpponentsHoleCards(opponentsCards)
+		socket.on(
+			'determine-winner',
+			({ username: opponentsName, holeCards: opponentsCards }) => {
+				if (!isMounted) return null
 
-			// Host emits determineWinner event //
-			const playerOnesHand = [
-				...communityCardsRef.current,
-				holeCardsRef.current[0],
-				holeCardsRef.current[1],
-			]
-			const playerTwosHand = [
-				...communityCardsRef.current,
-				opponentsCards[0],
-				opponentsCards[1],
-			]
+				setOpponentsHoleCards(opponentsCards)
 
-			if (currentPlayer.isPlayerOne)
-				socket.emit('determine-winner', {
-					playerOnesHand,
-					playerTwosHand,
-				})
-		})
+				// Host emits determineWinner event //
+				const playerOnesHand = [
+					...communityCardsRef.current,
+					holeCardsRef.current[0],
+					holeCardsRef.current[1],
+				]
+				const playerTwosHand = [
+					...communityCardsRef.current,
+					opponentsCards[0],
+					opponentsCards[1],
+				]
+
+				if (currentPlayer.isPlayerOne)
+					socket.emit('determine-winner', {
+						opponentsName,
+						playerOnesHand,
+						playerTwosHand,
+					})
+			}
+		)
 
 		socket.on('hand-results', ({ winningPlayer, winningHand, isDraw }) => {
 			if (!isMounted) return null
@@ -584,11 +618,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				setOpponentsChips((chips) => chips + halfPot)
 
 				showActionDisplay('DRAW')
-				setWinningHand('DRAW')
-			} else if (
-				(winningPlayer === 'playerOne' && currentPlayer.isPlayerOne) ||
-				(winningPlayer !== 'playerOne' && !currentPlayer.isPlayerOne)
-			) {
+			} else if (winningPlayer === currentPlayer.username) {
 				// Player Won //
 				playersChipsRef.current += potRef.current
 				setPlayersChips((chips) => chips + potRef.current)
@@ -599,10 +629,17 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				setOpponentsChips((chips) => chips + potRef.current)
 				setOpponentsAction({ type: 'WINNER', value: 0 })
 			}
+
 			setWinningHand(winningHand)
 
-			if (!playersChipsRef.current || !opponentsChipsRef.current)
-				setIsGameOver(true)
+			// Send players to lobby if game is over //
+			if (!playersChipsRef.current || !opponentsChipsRef.current) {
+				// Display winner banner //
+				setWinner(winningPlayer)
+				setTimeout(() => setShowWinnerDisplay(true), 2000)
+				setTimeout(() => setRedirectToLobby(true), 8000)
+				return
+			}
 
 			setTimeout(() => {
 				// Reset game variables //
@@ -639,9 +676,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	// if (!isLoggedIn || redirectToLobby || isGameOver)
-	// 	return <Redirect to='/lobby' />
-	if (redirectToLobby) return <Redirect to='/lobby' />
+	if (!isLoggedIn || redirectToLobby || showWinnerDisplay)
+		return <Redirect to='/lobby' />
+	// if (redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
@@ -655,6 +692,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					setTableOption={setTableOption}
 					setDeckOption={setDeckOption}
 				/>
+				<button onClick={() => setShowWinnerDisplay((state) => !state)}>
+					Game results
+				</button>
 			</Box>
 
 			<img
@@ -731,6 +771,8 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 			)}
 
 			{winningHand && <h2 className={classes.handResultText}>{winningHand}</h2>}
+
+			{showWinnerDisplay && <WinDisplay winner={winner} />}
 
 			<Box display='flex' alignItems='center' className={classes.hudContainer}>
 				<Grid item xs={6}>
