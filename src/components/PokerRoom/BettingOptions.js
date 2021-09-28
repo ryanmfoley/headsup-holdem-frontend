@@ -81,10 +81,13 @@ const BetSlider = withStyles({
 	track: {
 		height: '.7vw',
 		borderRadius: 4,
+		// borderRadius: '20%',
 	},
 	rail: {
 		height: '.7vw',
 		borderRadius: 4,
+		// borderRadius: '50% / 30%',
+		// borderRadius: '500px',
 	},
 })(Slider)
 
