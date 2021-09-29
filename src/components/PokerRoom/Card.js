@@ -1,4 +1,4 @@
-const Card = ({ card, index }) => (
+const Card = ({ card }) => (
 	<img
 		src={
 			require(`../../assets/images/cards/${

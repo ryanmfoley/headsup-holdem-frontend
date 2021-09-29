@@ -87,13 +87,12 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 					<InputLabel id='select-deck-label'>Select Deck</InputLabel>
 					<Select
 						labelId='select-deck-label'
-						defaultValue={'#a30d0d'}
+						defaultValue={'red-design'}
 						onChange={handleDeckChange}>
-						<MenuItem value={'#454545'}>Gray</MenuItem>
-						<MenuItem value={'#16275c'}>Blue</MenuItem>
-						<MenuItem value={'#a30d0d'}>Red</MenuItem>
-						<MenuItem value={'#165c27'}>Green</MenuItem>
-						<MenuItem value={'#171515'}>Black</MenuItem>
+						<MenuItem value={'red-design'}>Red Design</MenuItem>
+						<MenuItem value={'gray-design'}>Gray Design</MenuItem>
+						<MenuItem value={'red-plain'}>Red Plain</MenuItem>
+						<MenuItem value={'gray-plain'}>Gray Plain</MenuItem>
 					</Select>
 				</FormControl>
 			</Menu>

@@ -11,7 +11,6 @@ import WinDisplay from './WinDisplay'
 import Timer from './Timer'
 import Chat from '../Chat/Chat'
 import Options from './Options'
-// import OptionsDialog from './OptionsDialog'
 import woodenFloor from '../../assets/images/floors/wooden-floor.png'
 import greenTable from '../../assets/images/tables/green-table.png'
 import socket from '../../config/socketConfig'
@@ -173,7 +172,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const [opponentsName, setOpponentsName] = useState('')
 	const [floorOption, setFloorOption] = useState(woodenFloor)
 	const [tableOption, setTableOption] = useState(greenTable)
-	const [deckOption, setDeckOption] = useState('black')
+	const [deckOption, setDeckOption] = useState('red-design')
 	const [timeLeft, setTimeLeft] = useState(100)
 	const [playersAction, setPlayersAction] = useState('')
 	const [opponentsAction, setOpponentsAction] = useState('')
