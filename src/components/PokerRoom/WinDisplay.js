@@ -10,7 +10,7 @@ import sixOfHearts from '../../assets/images/cards/6H.png'
 import sevenOfClubs from '../../assets/images/cards/7C.png'
 import eightOfDiamonds from '../../assets/images/cards/8D.png'
 import nineOfSpades from '../../assets/images/cards/9S.png'
-import tenOfHearts from '../../assets/images/cards/TH.png'
+import tenOfHearts from '../../assets/images/cards/10H.png'
 import jackOfClubs from '../../assets/images/cards/JC.png'
 import queenOfDiamonds from '../../assets/images/cards/QD.png'
 import kingOfSpades from '../../assets/images/cards/KS.png'
@@ -19,7 +19,6 @@ const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
 		top: 0,
-		// top: '20px',
 		opacity: 0,
 		width: '5%',
 		'&:nth-child(1)': {
