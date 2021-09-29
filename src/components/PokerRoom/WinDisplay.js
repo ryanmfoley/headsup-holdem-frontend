@@ -19,98 +19,73 @@ const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
 		top: 0,
+		// top: '20px',
 		opacity: 0,
 		width: '5%',
 		'&:nth-child(1)': {
 			left: '7%',
 			transform: 'rotate(-40deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '182ms',
-			'animation-duration': '1416ms',
+			animation: '$makeItRain 2232ms ease-out infinite 182ms',
 		},
 		'&:nth-child(2)': {
 			left: '14%',
-			transform: 'rotate(14deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '161ms',
-			'animation-duration': '1376ms',
+			transform: 'rotate(4deg)',
+			animation: '$makeItRain 2152ms ease-out infinite 161ms',
 		},
 		'&:nth-child(3)': {
 			left: '21%',
 			transform: 'rotate(-51deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '481ms',
-			'animation-duration': '1403ms',
+			animation: '$makeItRain 2206ms ease-out infinite 481ms',
 		},
 		'&:nth-child(4)': {
 			left: '28%',
 			transform: 'rotate(61deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '334ms',
-			'animation-duration': '1308ms',
+			animation: '$makeItRain 1416ms ease-out infinite 334ms',
 		},
 		'&:nth-child(5)': {
 			left: '35%',
 			transform: 'rotate(-52deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '302ms',
-			'animation-duration': '1376ms',
+			animation: '$makeItRain 1376ms ease-out infinite 604ms',
 		},
 		'&:nth-child(6)': {
 			left: '42%',
 			transform: 'rotate(38deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '180ms',
-			'animation-duration': '1468ms',
+			animation: '$makeItRain 2236ms ease-out infinite 180ms',
 		},
 		'&:nth-child(7)': {
 			left: '49%',
 			transform: 'rotate(11deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '395ms',
-			'animation-duration': '1500ms',
+			animation: '$makeItRain 4400ms ease-out infinite 695ms',
 		},
 		'&:nth-child(8)': {
 			left: '56%',
 			transform: 'rotate(49deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '14ms',
-			'animation-duration': '1187ms',
+			animation: '$makeItRain 974ms ease-out infinite 14ms',
 		},
 		'&:nth-child(9)': {
 			left: '63%',
 			transform: 'rotate(-72deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '149ms',
-			'animation-duration': '1105ms',
+			animation: '$makeItRain 1610ms ease-out infinite 149ms',
 		},
 		'&:nth-child(10)': {
 			left: '70%',
 			transform: 'rotate(10deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '351ms',
-			'animation-duration': '1359ms',
+			animation: '$makeItRain 1259ms ease-out infinite 351ms',
 		},
 		'&:nth-child(11)': {
 			left: '77%',
-			transform: 'rotate(-24deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '278ms',
-			'animation-duration': '1333ms',
+			transform: 'rotate(4deg)',
+			animation: '$makeItRain 2264ms ease-out infinite 307ms',
 		},
 		'&:nth-child(12)': {
 			left: '84%',
 			transform: 'rotate(42deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '464ms',
-			'animation-duration': '1076ms',
+			animation: '$makeItRain 852ms ease-out infinite 464ms',
 		},
 		'&:nth-child(13)': {
 			left: '91%',
 			transform: 'rotate(-72deg)',
-			animation: '$makeItRain 1000ms infinite ease-out',
-			'animation-delay': '220ms',
-			'animation-duration': '1318ms',
+			animation: '$makeItRain 1636ms ease-out infinite 429ms',
 		},
 		'&:nth-child(even)': {
 			zIndex: 1,
@@ -119,14 +94,14 @@ const useStyles = makeStyles({
 			width: '28px',
 			height: '40px',
 			margin: '2px',
-			'animation-duration': '2300ms',
+			animationDuration: '4000ms',
 		},
 		'&:nth-child(4n)': {
 			width: '42px',
 			height: '60px',
 			margin: '3px',
-			'animation-delay': '1000ms',
-			'animation-duration': '2800ms',
+			animationDelay: '1000ms',
+			animationDuration: '5000ms',
 		},
 	},
 	winDisplay: {
@@ -153,7 +128,7 @@ const useStyles = makeStyles({
 	'@keyframes makeItRain': {
 		from: { opacity: 0 },
 		'50%': { opacity: 1 },
-		to: { transform: 'translateY(550%)' },
+		to: { transform: 'translateY(40vw)' },
 	},
 	'@keyframes tracking-in-expand-fwd': {
 		'0%': {
@@ -208,6 +183,7 @@ const WinDisplay = ({ winner }) => {
 					src={card}
 					className={classes.root}
 					alt='playing card'
+					draggable='true'
 				/>
 			))}
 			<div className={classes.winDisplay}>

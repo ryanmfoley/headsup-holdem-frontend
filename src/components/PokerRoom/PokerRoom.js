@@ -185,7 +185,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
-	const [showWinnerDisplay, setShowWinnerDisplay] = useState(false)
+	const [showWinDisplay, setShowWinDisplay] = useState(false)
 	const [isTurn, setIsTurn] = useState(false)
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
@@ -652,7 +652,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				if (!playersChipsRef.current || !opponentsChipsRef.current) {
 					// Display winner banner //
 					setWinner(winningPlayer)
-					setTimeout(() => setShowWinnerDisplay(true), 2000)
+					setTimeout(() => setShowWinDisplay(true), 2000)
 					setTimeout(() => setRedirectToLobby(true), 8000)
 					return
 				}
@@ -695,7 +695,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	if (!isLoggedIn || redirectToLobby || showWinnerDisplay)
+	if (!isLoggedIn || redirectToLobby || showWinDisplay)
 		return <Redirect to='/lobby' />
 	// if (redirectToLobby) return <Redirect to='/lobby' />
 
@@ -712,10 +712,10 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					setDeckOption={setDeckOption}
 				/>
 			</Box>
-
 			<img
 				src={floorOption}
 				className={classes.floorBackground}
+				draggable='false'
 				alt='floor background'
 			/>
 			<img
@@ -724,7 +724,6 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				draggable='false'
 				alt='poker table'
 			/>
-
 			{startGame ? (
 				<>
 					<div
@@ -788,8 +787,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 			{winningHand && <h2 className={classes.handResultText}>{winningHand}</h2>}
 
-			{showWinnerDisplay && <WinDisplay winner={winner} />}
-
+			{showWinDisplay && <WinDisplay winner={winner} />}
 			<Box display='flex' alignItems='center' className={classes.hudContainer}>
 				<Grid item xs={6}>
 					<Chat />
