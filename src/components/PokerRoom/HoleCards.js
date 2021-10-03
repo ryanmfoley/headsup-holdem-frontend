@@ -12,9 +12,6 @@ const useStyles = makeStyles({
 		width: '100%',
 		height: '100%',
 		zIndex: 1,
-		fontSize: '1.5vw',
-		fontFamily: 'Bebas Neue',
-		letterSpacing: '0',
 		"& [data-index='1']": {
 			position: 'absolute',
 			left: '6%',
@@ -28,7 +25,6 @@ const useStyles = makeStyles({
 		borderRadius: '10%',
 	},
 	cardFront: {
-		background: 'white',
 		border: '.2vw solid black',
 	},
 })

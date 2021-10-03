@@ -12,6 +12,7 @@ const useStyles = makeStyles({
 		background: '#212121',
 		textAlign: 'center',
 		color: 'white',
+		fontFamily: 'Bangers',
 		fontSize: '1vw',
 		border: '.1vw solid darkgray',
 		borderRadius: '10%/20%',
@@ -39,7 +40,6 @@ const useStyles = makeStyles({
 	winnerText: {
 		'--neon-text-color': '#08f',
 		fontFamily: "'Exo 2', sans-serif",
-		fontSize: '1.7vw',
 		textShadow:
 			'-0.05vw -0.05vw .25vw #fff, 0vw 0vw 0vw #fff, 0 0 0vw var(--neon-text-color), 0 0 1vw var(--neon-text-color), 0 0 .5vw var(--neon-text-color), 0 0 1vw var(--neon-text-color),0 0 1.2vw var(--neon-text-color)',
 	},

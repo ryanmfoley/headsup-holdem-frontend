@@ -20,7 +20,7 @@ const useStyles = makeStyles({
 		position: 'absolute',
 		top: 0,
 		opacity: 0,
-		width: '5%',
+		width: '4vw',
 		'&:nth-child(1)': {
 			left: '7%',
 			transform: 'rotate(-40deg)',
@@ -90,15 +90,11 @@ const useStyles = makeStyles({
 			zIndex: 1,
 		},
 		'&:nth-child(3n)': {
-			width: '28px',
-			height: '40px',
-			margin: '2px',
+			width: '2vw',
 			animationDuration: '4000ms',
 		},
 		'&:nth-child(4n)': {
-			width: '42px',
-			height: '60px',
-			margin: '3px',
+			width: '3vw',
 			animationDelay: '1000ms',
 			animationDuration: '5000ms',
 		},
@@ -129,20 +125,6 @@ const useStyles = makeStyles({
 		'50%': { opacity: 1 },
 		to: { transform: 'translateY(40vw)' },
 	},
-	'@keyframes tracking-in-expand-fwd': {
-		'0%': {
-			letterSpacing: '-0.5em',
-			transform: 'translateZ(-700px)',
-			opacity: 0,
-		},
-		'40%': {
-			opacity: '0.6',
-		},
-		'100%': {
-			transform: 'translateZ(0)',
-			opacity: 1,
-		},
-	},
 	'@keyframes scale-in-ver-center': {
 		'0%': {
 			transform: 'scaleY(0)',
@@ -153,10 +135,25 @@ const useStyles = makeStyles({
 			opacity: 1,
 		},
 	},
+	'@keyframes tracking-in-expand-fwd': {
+		'0%': {
+			letterSpacing: '-0.5em',
+			opacity: 0,
+		},
+		'40%': {
+			opacity: '0.6',
+		},
+		'100%': {
+			opacity: 1,
+		},
+	},
 })
 
 const WinDisplay = ({ winner }) => {
+	// const WinDisplay = () => {
 	const classes = useStyles()
+
+	// const winner = 'Ryan'
 
 	const cards = [
 		aceOfSpades,

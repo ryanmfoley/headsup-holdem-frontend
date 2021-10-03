@@ -26,8 +26,10 @@ import socket from '../../config/socketConfig'
 // isRoundWinner, isRoundOver, showWinnerDisplay
 
 //////////// TODOS ////////////
-// 1.. Add draw display
-// 2. Add sound
+// make boxShadow in timerbar responsive
+// 1. Fix WinDisplay card sizes
+// 2. Fix winningHand alignment // maybe go with other design
+// 3. Add sound
 // is isLogin enough for security or should I use socket.auth?
 // useMemo for setting playersChips?
 // socket.handshake
@@ -64,17 +66,23 @@ const useStyles = makeStyles({
 		width: '100%',
 		padding: 0,
 	},
+	playersHud: {
+		position: 'absolute',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
+		width: '25%',
+		height: '10%',
+	},
 	waitingDisplay: {
 		position: 'absolute',
 		top: '48.8%',
 		left: '50%',
-		width: '35%',
+		width: '30vw',
 		transform: 'translate(-50%, -120%)',
-		borderRadius: '.45vw',
 	},
 	waitingText: {
 		margin: 'auto',
-		padding: '2%',
+		padding: '.8vw',
 		fontSize: '1.7vw',
 		textAlign: 'center',
 		'&::after': {
@@ -82,20 +90,20 @@ const useStyles = makeStyles({
 			display: 'inline-block',
 			width: 0,
 			verticalAlign: 'bottom',
-			animation: '$loading-ellipsis steps(4, end) 3s infinite',
+			animation: '$loading-ellipsis 3s steps(4, end) infinite',
 			content: "'...'",
 		},
 	},
-	handResultText: {
+	winningHandText: {
 		position: 'absolute',
-		top: '50%',
+		top: '51%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
-		color: 'white',
-		fontFamily: 'Arial',
-		fontSize: '2.3vw',
-		fontWeight: '100',
-		textAlign: 'center',
+		fontFamily: 'Ubuntu',
+		fontSize: '1.5vw',
+		fontStyle: 'italic',
+		borderRadius: '1vw',
+		animation: '$tracking-in-expand-fwd .8s both',
 	},
 	pot: {
 		position: 'absolute',
@@ -109,13 +117,6 @@ const useStyles = makeStyles({
 		color: 'white',
 		fontSize: '1.5vw',
 		borderRadius: '10px',
-	},
-	playersHudContainer: {
-		position: 'absolute',
-		left: '50%',
-		transform: 'translate(-50%, -50%)',
-		width: '25%',
-		height: '10%',
 	},
 	dealerBtn: {
 		position: 'absolute',
@@ -152,8 +153,18 @@ const useStyles = makeStyles({
 		top: '70%',
 	},
 	'@keyframes loading-ellipsis': {
-		to: {
-			width: '1em',
+		to: { width: 'clamp(18px, 2.05vw, 27px)' },
+	},
+	'@keyframes tracking-in-expand-fwd': {
+		'0%': {
+			letterSpacing: '-0.5em',
+			opacity: 0,
+		},
+		'40%': {
+			opacity: '0.6',
+		},
+		'100%': {
+			opacity: 1,
 		},
 	},
 })
@@ -704,6 +715,9 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				display='flex'
 				justifyContent='flex-end'
 				className={classes.navBtnGroup}>
+				{/* <button onClick={() => setShowWinDisplay((state) => !state)}>
+					Show Win Display
+				</button> */}
 				<button onClick={() => setRedirectToLobby(true)}>Lobby</button>
 				<Options
 					setFloorOption={setFloorOption}
@@ -731,7 +745,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						<p className={classes.dealerBtnText}>DEALER</p>
 					</div>
 
-					<div className={`${classes.playersHudContainer} ${classes.top}`}>
+					<div className={`${classes.playersHud} ${classes.top}`}>
 						{showHands ? (
 							holeCards && <HoleCards holeCards={opponentsHoleCards} />
 						) : (
@@ -761,7 +775,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						deckOption={deckOption}
 					/>
 
-					<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
+					<div className={`${classes.playersHud} ${classes.bottom}`}>
 						{holeCards && <HoleCards holeCards={holeCards} />}
 						<PlayersHud
 							playersName={playersName}
@@ -784,9 +798,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				</Paper>
 			)}
 
-			{winningHand && <h2 className={classes.handResultText}>{winningHand}</h2>}
+			{winningHand && (
+				<h2 className={classes.winningHandText}>{winningHand}</h2>
+			)}
 
 			{showWinDisplay && <WinDisplay winner={winner} />}
+
 			<Box display='flex' alignItems='center' className={classes.hudContainer}>
 				<Grid item xs={6}>
 					<Chat />
