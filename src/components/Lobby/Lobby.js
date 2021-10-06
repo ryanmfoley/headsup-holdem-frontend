@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, Redirect } from 'react-router-dom'
-import { withStyles, makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import {
 	Button,
 	Paper,
@@ -14,34 +14,106 @@ import {
 import io from 'socket.io-client'
 
 import Header from '../Header/Header'
+import backgroundImage from '../../assets/images/lobby-background.png'
 import ENDPOINT from '../../config/config'
 
 let socket
 
-const StyledTableCell = withStyles((theme) => ({
-	head: {
-		background: '#333333',
-		color: 'white',
-	},
-	body: {
-		fontSize: 14,
-		color: 'black',
-	},
-}))(TableCell)
-
-const StyledTableRow = withStyles((theme) => ({
-	root: {
-		background: '#fafafa',
-	},
-}))(TableRow)
-
 const useStyles = makeStyles({
 	root: {
-		background: 'pink',
+		boxSizing: 'border-box',
+		height: '100%',
+		backgroundImage: `url(${backgroundImage})`,
+		backgroundPosition: 'center',
+		backgroundRepeat: 'no-repeat',
+		backgroundSize: 'cover',
 	},
 	table: {
 		width: 'min(40%, 500px)',
-		margin: '100px auto',
+		margin: '15vh auto',
+		background: 'rgba(0, 0, 0, 0.5)',
+		// border: '.07vw solid gray',
+		borderRadius: '10px',
+	},
+	tableHead: {
+		background: 'black',
+		color: 'white',
+		'& th': {
+			color: 'white',
+			fontSize: '2.5vmin',
+		},
+	},
+	tableBody: {
+		color: 'black',
+		'& th': {
+			height: '3vmin',
+			color: 'white',
+			fontFamily: 'Bangers',
+			fontSize: '3.5vmin',
+		},
+	},
+	tableFooter: {
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	createGameBtn: {
+		width: '100%',
+		height: '7vh',
+		margin: '5px',
+		fontSize: '3vh',
+		position: 'relative',
+		zIndex: 0,
+		background: '#111',
+		color: '#999',
+		cursor: 'pointer',
+		border: 'none',
+		transition: '0.25s',
+		'&:hover': {
+			letterSpacing: '.2vmin',
+			textShadow:
+				'0 0 .125vmin white, 0 0 .25vmin white, 0 0 .325vmin white, 0 0 .5vmin white, 0 0 .75vmin white, 0 0 .1vmin white, 0 0 .125vmin white, 0 0 .185vmin white',
+		},
+		'&::before': {
+			content: "''",
+			background:
+				'linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000)',
+			position: 'absolute',
+			top: '-.2vmin',
+			left: '-.2vmin',
+			backgroundSize: '400%',
+			zIndex: '-1',
+			filter: 'blur(.5vmin)',
+			width: 'calc(100% + 4px)',
+			height: 'calc(100% + 4px)',
+			animation: '$glowing 20s linear infinite',
+			opacity: 0,
+			transition: 'opacity .3s ease-in-out',
+		},
+		'&:active': {
+			color: '#000',
+		},
+		'&:active::after': {
+			background: 'transparent',
+		},
+		'&:hover::before': {
+			opacity: 1,
+		},
+		'&::after': {
+			zIndex: '-1',
+			content: "''",
+			position: 'absolute',
+			width: '100%',
+			height: '100%',
+			background: '#111',
+			left: 0,
+			top: 0,
+			borderRadius: '1vmin',
+		},
+	},
+	'@keyframes glowing': {
+		'0%': { backgroundPosition: '0 0' },
+		'50%': { backgroundPosition: '400% 0' },
+		'100%': { backgroundPosition: '0 0' },
 	},
 })
 
@@ -86,61 +158,56 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 		}
 	}, [])
 
-	// if (!isLoggedIn) return <Redirect to='/login' />
+	if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
 		<div className={classes.root}>
 			<Header />
 			<TableContainer component={Paper} className={classes.table}>
 				<Table>
-					<TableHead>
+					<TableHead className={classes.tableHead}>
 						<TableRow>
-							<StyledTableCell>Name</StyledTableCell>
-							<StyledTableCell align='right'>Invite</StyledTableCell>
+							<TableCell>Player</TableCell>
+							<TableCell align='right'>Invite</TableCell>
 						</TableRow>
 					</TableHead>
-					<TableBody>
+					<TableBody className={classes.tableBody}>
 						{playersWaiting.map((player) => (
-							<StyledTableRow key={player.id}>
-								<StyledTableCell component='th' scope='player'>
+							<TableRow key={player.id}>
+								<TableCell component='th' scope='player'>
 									{player.username}
-								</StyledTableCell>
-								<StyledTableCell align='right'>
+								</TableCell>
+								<TableCell align='right'>
 									<Link
 										to={`/rooms/${player.id}`}
 										style={{ textDecoration: 'none' }}>
-										<Button
-											color='primary'
-											variant='contained'
-											onClick={joinGame}>
+										<Button variant='contained' onClick={joinGame}>
 											<span data-id={player.id}>Play</span>
 										</Button>
 									</Link>
-								</StyledTableCell>
-							</StyledTableRow>
+								</TableCell>
+							</TableRow>
 						))}
-						<StyledTableRow>
-							<StyledTableCell component='th' />
-							<StyledTableCell component='th' />
-						</StyledTableRow>
-						<StyledTableRow>
-							<StyledTableCell component='th' />
-							<StyledTableCell component='th' />
-						</StyledTableRow>
-						<StyledTableRow>
-							<StyledTableCell component='th' />
-							<StyledTableCell component='th' />
-						</StyledTableRow>
+						<TableRow>
+							<TableCell component='th' />
+							<TableCell component='th' />
+						</TableRow>
+						<TableRow>
+							<TableCell component='th' />
+							<TableCell component='th' />
+						</TableRow>
+						<TableRow>
+							<TableCell component='th' />
+							<TableCell component='th' />
+						</TableRow>
 					</TableBody>
 				</Table>
 				<Link to={`/rooms/${player.id}`} style={{ textDecoration: 'none' }}>
-					<Button
-						variant='contained'
-						size='large'
-						onClick={createGame}
-						fullWidth>
-						CREATE GAME
-					</Button>
+					<div className={classes.tableFooter}>
+						<button className={classes.createGameBtn} onClick={createGame}>
+							CREATE GAME
+						</button>
+					</div>
 				</Link>
 			</TableContainer>
 		</div>
