@@ -17,18 +17,13 @@ import blueTable from '../../assets/images/tables/blue-table.png'
 import redTable from '../../assets/images/tables/red-table.png'
 import grayTable from '../../assets/images/tables/gray-table.png'
 
-const useStyles = makeStyles((theme) => ({
-	optionsBtn: {
-		marginLeft: '.4vw',
-	},
+const useStyles = makeStyles({
+	optionsBtn: { marginLeft: '.4vw' },
 	formControl: {
-		margin: theme.spacing(1),
+		margin: '.5vmin',
 		minWidth: 120,
 	},
-	selectEmpty: {
-		marginTop: theme.spacing(2),
-	},
-}))
+})
 
 const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 	const classes = useStyles()
@@ -42,11 +37,11 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 		setAnchorEl(null)
 	}
 
-	const handleFloorChange = (e) => setFloorOption(e.target.value)
+	const handleFloorChange = (e) => setFloorOption(e.target.dataset.value)
 
-	const handleTableChange = (e) => setTableOption(e.target.value)
+	const handleTableChange = (e) => setTableOption(e.target.dataset.value)
 
-	const handleDeckChange = (e) => setDeckOption(e.target.value)
+	const handleDeckChange = (e) => setDeckOption(e.target.dataset.value)
 
 	return (
 		<>
@@ -54,45 +49,59 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 				Options
 			</button>
 			<Menu
-				id='simple-menu'
 				anchorEl={anchorEl}
 				keepMounted
 				open={Boolean(anchorEl)}
 				onClose={handleClose}>
 				<FormControl className={classes.formControl}>
 					<InputLabel id='select-floor-label'>Select Floor</InputLabel>
-					<Select
-						labelId='select-floor-label'
-						defaultValue={woodenFloor}
-						onChange={handleFloorChange}>
-						<MenuItem value={woodenFloor}>Wooden</MenuItem>
-						<MenuItem value={grayFloor}>Gray</MenuItem>
-						<MenuItem value={blueFloor}>Blue</MenuItem>
-						<MenuItem value={redFloor}>Red</MenuItem>
+					<Select labelId='select-floor-label' defaultValue={woodenFloor}>
+						<MenuItem value={woodenFloor} onMouseEnter={handleFloorChange}>
+							Wooden
+						</MenuItem>
+						<MenuItem value={grayFloor} onMouseEnter={handleFloorChange}>
+							Gray
+						</MenuItem>
+						<MenuItem value={blueFloor} onMouseEnter={handleFloorChange}>
+							Blue
+						</MenuItem>
+						<MenuItem value={redFloor} onMouseEnter={handleFloorChange}>
+							Red
+						</MenuItem>
 					</Select>
 				</FormControl>
 				<FormControl className={classes.formControl}>
 					<InputLabel id='select-table-label'>Select Table</InputLabel>
-					<Select
-						labelId='select-table-label'
-						defaultValue={greenTable}
-						onChange={handleTableChange}>
-						<MenuItem value={greenTable}>Green</MenuItem>
-						<MenuItem value={blueTable}>Blue</MenuItem>
-						<MenuItem value={redTable}>Red</MenuItem>
-						<MenuItem value={grayTable}>Gray</MenuItem>
+					<Select labelId='select-table-label' defaultValue={greenTable}>
+						<MenuItem value={greenTable} onMouseEnter={handleTableChange}>
+							Green
+						</MenuItem>
+						<MenuItem value={blueTable} onMouseEnter={handleTableChange}>
+							Blue
+						</MenuItem>
+						<MenuItem value={redTable} onMouseEnter={handleTableChange}>
+							Red
+						</MenuItem>
+						<MenuItem value={grayTable} onMouseEnter={handleTableChange}>
+							Gray
+						</MenuItem>
 					</Select>
 				</FormControl>
 				<FormControl className={classes.formControl}>
 					<InputLabel id='select-deck-label'>Select Deck</InputLabel>
-					<Select
-						labelId='select-deck-label'
-						defaultValue={'red-design'}
-						onChange={handleDeckChange}>
-						<MenuItem value={'red-design'}>Red Design</MenuItem>
-						<MenuItem value={'gray-design'}>Gray Design</MenuItem>
-						<MenuItem value={'red-plain'}>Red Plain</MenuItem>
-						<MenuItem value={'gray-plain'}>Gray Plain</MenuItem>
+					<Select labelId='select-deck-label' defaultValue={'red-design'}>
+						<MenuItem value={'red-design'} onMouseEnter={handleDeckChange}>
+							Red Design
+						</MenuItem>
+						<MenuItem value={'gray-design'} onMouseEnter={handleDeckChange}>
+							Gray Design
+						</MenuItem>
+						<MenuItem value={'red-plain'} onMouseEnter={handleDeckChange}>
+							Red Plain
+						</MenuItem>
+						<MenuItem value={'gray-plain'} onMouseEnter={handleDeckChange}>
+							Gray Plain
+						</MenuItem>
 					</Select>
 				</FormControl>
 			</Menu>
