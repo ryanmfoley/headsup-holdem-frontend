@@ -26,10 +26,11 @@ const useStyles = makeStyles({
 		},
 	},
 	sendButton: {
+		minWidth: '6vw',
+		padding: '.1vw',
 		color: '#878787',
-		padding: 0,
-		fontSize: '1vw',
-		border: '1px solid #878787',
+		fontSize: '1.3vw',
+		border: '.1vw solid #878787',
 	},
 })
 
@@ -53,6 +54,8 @@ const Chat = () => {
 		let isMounted = true
 
 		socket.on('chat-message', (message) => {
+			if (!isMounted) return null
+
 			setMessages((messages) => [...messages, message])
 		})
 

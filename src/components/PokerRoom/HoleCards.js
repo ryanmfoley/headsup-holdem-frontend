@@ -19,8 +19,7 @@ const useStyles = makeStyles({
 		},
 	},
 	card: {
-		width: '16%',
-		height: '100%',
+		width: '4vw',
 		margin: '.1%',
 		borderRadius: '10%',
 	},
@@ -55,7 +54,6 @@ const HoleCards = ({ deckOption, holeCards }) => {
 									.default
 							}
 							className={classes.card}
-							style={{ width: '4vw' }}
 							data-index={index}
 							alt='back of playing card'
 						/>
