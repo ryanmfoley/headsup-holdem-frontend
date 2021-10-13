@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core'
 import io from 'socket.io-client'
 
+import AuthContext from '../Auth/AuthContext'
 import Header from '../Header/Header'
 import backgroundImage from '../../assets/images/lobby-background.png'
 import ENDPOINT from '../../config/config'
@@ -32,7 +33,6 @@ const useStyles = makeStyles({
 		width: 'min(40%, 500px)',
 		margin: '15vh auto',
 		background: 'rgba(0, 0, 0, 0.5)',
-		// border: '.07vw solid gray',
 		borderRadius: '10px',
 	},
 	tableHead: {
@@ -40,6 +40,7 @@ const useStyles = makeStyles({
 		color: 'white',
 		'& th': {
 			color: 'white',
+			fontFamily: 'GraphiqueProNextComp',
 			fontSize: '2.5vmin',
 		},
 	},
@@ -110,6 +111,10 @@ const useStyles = makeStyles({
 			borderRadius: '1vmin',
 		},
 	},
+	joinGameBtn: {
+		color: '#32000C',
+		border: '1px solid #32000C',
+	},
 	'@keyframes glowing': {
 		'0%': { backgroundPosition: '0 0' },
 		'50%': { backgroundPosition: '400% 0' },
@@ -117,12 +122,13 @@ const useStyles = makeStyles({
 	},
 })
 
-const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
-	////////////// TURN REDIRECT BACK ON //////////////
-
-	const classes = useStyles()
+const Lobby = () => {
 	const [player, setPlayer] = useState({})
 	const [playersWaiting, setPlayersWaiting] = useState([])
+
+	const { isLoggedIn } = useContext(AuthContext)
+
+	const classes = useStyles()
 
 	const createGame = () => socket.emit('create-game', player)
 
@@ -181,7 +187,10 @@ const Lobby = ({ isLoggedIn, setIsLoggedIn }) => {
 									<Link
 										to={`/rooms/${player.id}`}
 										style={{ textDecoration: 'none' }}>
-										<Button variant='contained' onClick={joinGame}>
+										<Button
+											variant='contained'
+											color='primary'
+											onClick={joinGame}>
 											<span data-id={player.id}>Play</span>
 										</Button>
 									</Link>

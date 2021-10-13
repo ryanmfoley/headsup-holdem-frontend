@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import {
 	Avatar,
@@ -13,25 +13,16 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
+import AuthContext from './AuthContext'
 import Header from '../Header/Header'
 import ENDPOINT from '../../config/config'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
 	root: {
 		height: '100vh',
 		margin: 'auto',
 	},
-	formControl: {
-		margin: theme.spacing(1),
-		minWidth: 120,
-	},
-	selectEmpty: {
-		marginTop: theme.spacing(2),
-	},
-	loginHeading: {
-		margin: 10,
-		outline: '1px solid red',
-	},
+	loginHeading: { margin: 10 },
 	submitButton: {
 		margin: '15px 0',
 	},
@@ -40,13 +31,17 @@ const useStyles = makeStyles((theme) => ({
 		margin: '100px auto',
 		padding: 20,
 	},
-	avatarStyle: { backgroundColor: 'green' },
-}))
+	lockIcon: {
+		background: '#3f51b5',
+	},
+})
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = () => {
 	const [redirect, setRedirect] = useState(false)
 	const [usernameError, setUsernameError] = useState(false)
 	const [passwordError, setPasswordError] = useState(false)
+
+	const { setIsLoggedIn } = useContext(AuthContext)
 
 	const classes = useStyles()
 
@@ -90,17 +85,15 @@ const Login = ({ setIsLoggedIn }) => {
 			})
 	}
 
-	if (redirect) {
-		return <Redirect to='/lobby' />
-	}
+	if (redirect) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
 			<Header />
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
-					<Avatar color='secondary'>
-						<LockOutlinedIcon />
+					<Avatar className={classes.lockIcon}>
+						<LockOutlinedIcon color='default' />
 					</Avatar>
 					<Typography variant='h5'>Login</Typography>
 				</Grid>
