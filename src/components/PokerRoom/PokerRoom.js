@@ -87,8 +87,6 @@ const useStyles = makeStyles({
 		top: '51%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
-		// fontFamily: 'Ubuntu',
-		// fontFamily: 'Bangers',
 		fontSize: '1.5vw',
 		fontStyle: 'italic',
 		borderRadius: '1vw',

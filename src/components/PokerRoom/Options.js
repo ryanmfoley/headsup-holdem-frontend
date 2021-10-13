@@ -18,7 +18,7 @@ import redTable from '../../assets/images/tables/red-table.png'
 import grayTable from '../../assets/images/tables/gray-table.png'
 
 const useStyles = makeStyles({
-	optionsBtn: { marginLeft: '.4vw' },
+	optionsBtn: { marginLeft: '.4vw' }, 
 	formControl: {
 		margin: '.5vmin',
 		minWidth: 120,

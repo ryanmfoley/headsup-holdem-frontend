@@ -150,10 +150,7 @@ const useStyles = makeStyles({
 })
 
 const WinDisplay = ({ winner }) => {
-	// const WinDisplay = () => {
 	const classes = useStyles()
-
-	// const winner = 'Ryan'
 
 	const cards = [
 		aceOfSpades,
