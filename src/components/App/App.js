@@ -3,8 +3,8 @@ import { Route } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../Auth/AuthContext'
+import HandRankings from '../HandRankings/HandRankings'
 import Home from '../Home/Home'
-import HowToPlay from '../HowToPlay/HowToPlay'
 import Login from '../Auth/Login'
 import Register from '../Auth/Register'
 import Lobby from '../Lobby/Lobby'
@@ -27,7 +27,7 @@ const App = () => {
 				<Route exact path='/'>
 					<Home />
 				</Route>
-				<Route path='/how-to-play' component={HowToPlay} />
+				<Route path='/hand-rankings' component={HandRankings} />
 				<Route path='/register' component={Register} />
 				<Route path='/login'>
 					<Login />
