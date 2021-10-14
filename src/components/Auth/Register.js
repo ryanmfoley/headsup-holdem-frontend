@@ -16,17 +16,10 @@ import axios from 'axios'
 import Header from '../Header/Header'
 import ENDPOINT from '../../config/config'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
 	root: {
 		height: '100vh',
 		margin: 'auto',
-	},
-	formControl: {
-		margin: theme.spacing(1),
-		minWidth: 120,
-	},
-	selectEmpty: {
-		marginTop: theme.spacing(2),
 	},
 	registerHeading: {
 		margin: 10,
@@ -40,8 +33,10 @@ const useStyles = makeStyles((theme) => ({
 		margin: '100px auto',
 		padding: 20,
 	},
-	avatarStyle: { backgroundColor: 'green' },
-}))
+	lockIcon: {
+		background: '#3f51b5',
+	},
+})
 
 const Register = () => {
 	const [redirect, setRedirect] = useState(false)
@@ -74,8 +69,8 @@ const Register = () => {
 			<Header />
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
-					<Avatar color='secondary'>
-						<LockOutlinedIcon />
+					<Avatar className={classes.lockIcon}>
+						<LockOutlinedIcon color='default' />
 					</Avatar>
 					<Typography variant='h5'>Sign Up!</Typography>
 				</Grid>

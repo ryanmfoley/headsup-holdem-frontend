@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { useParams, Redirect } from 'react-router-dom'
 import { Box, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
+import AuthContext from '../Auth/AuthContext'
 import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
@@ -11,31 +12,19 @@ import WinDisplay from './WinDisplay'
 import Timer from './Timer'
 import Chat from '../Chat/Chat'
 import Options from './Options'
-// import OptionsDialog from './OptionsDialog'
 import woodenFloor from '../../assets/images/floors/wooden-floor.png'
 import greenTable from '../../assets/images/tables/green-table.png'
 import socket from '../../config/socketConfig'
 
-// function Switch(i) {
-// 	return arguments[++i]
-// }
-
-// let res = Switch(1, 'dealFlop', 'dealTurn', 'dealRiver')
-// function cleanBeforeRound() {
-//   inRound = false
-// }
-// isRoundWinner, isRoundOver, showWinnerDisplay
-
 //////////// TODOS ////////////
-// 1.. Add draw display
-// 2. Add sound
+// add fold display
+// add sound
+// change buttons to buttons from Poker Game kit
 // is isLogin enough for security or should I use socket.auth?
-// useMemo for setting playersChips?
-// socket.handshake
-// maybe add a hand counter
-// maybe cut off sides with minWidth or maxWidth
-// display draws
 // shake animation for incorrect username and/or password
+// force landscape orientation for mobile devices
+// possibly remove component folders
+// notify player when opponent leaves room
 
 const useStyles = makeStyles({
 	root: {
@@ -65,17 +54,23 @@ const useStyles = makeStyles({
 		width: '100%',
 		padding: 0,
 	},
+	playersHud: {
+		position: 'absolute',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
+		width: '25%',
+		height: '10%',
+	},
 	waitingDisplay: {
 		position: 'absolute',
 		top: '48.8%',
 		left: '50%',
-		width: '35%',
+		width: '30vw',
 		transform: 'translate(-50%, -120%)',
-		borderRadius: '.45vw',
 	},
 	waitingText: {
 		margin: 'auto',
-		padding: '2%',
+		padding: '.8vw',
 		fontSize: '1.7vw',
 		textAlign: 'center',
 		'&::after': {
@@ -83,20 +78,19 @@ const useStyles = makeStyles({
 			display: 'inline-block',
 			width: 0,
 			verticalAlign: 'bottom',
-			animation: '$loading-ellipsis steps(4, end) 3s infinite',
+			animation: '$loading-ellipsis 3s steps(4, end) infinite',
 			content: "'...'",
 		},
 	},
-	handResultText: {
+	winningHandText: {
 		position: 'absolute',
-		top: '50%',
+		top: '51%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
-		color: 'white',
-		fontFamily: 'Arial',
-		fontSize: '2.3vw',
-		fontWeight: '100',
-		textAlign: 'center',
+		fontSize: '1.5vw',
+		fontStyle: 'italic',
+		borderRadius: '1vw',
+		animation: '$tracking-in-expand-fwd .8s both',
 	},
 	pot: {
 		position: 'absolute',
@@ -110,13 +104,6 @@ const useStyles = makeStyles({
 		color: 'white',
 		fontSize: '1.5vw',
 		borderRadius: '10px',
-	},
-	playersHudContainer: {
-		position: 'absolute',
-		left: '50%',
-		transform: 'translate(-50%, -50%)',
-		width: '25%',
-		height: '10%',
 	},
 	dealerBtn: {
 		position: 'absolute',
@@ -153,8 +140,18 @@ const useStyles = makeStyles({
 		top: '70%',
 	},
 	'@keyframes loading-ellipsis': {
-		to: {
-			width: '1em',
+		to: { width: 'clamp(18px, 2.05vw, 27px)' },
+	},
+	'@keyframes tracking-in-expand-fwd': {
+		'0%': {
+			letterSpacing: '-0.5em',
+			opacity: 0,
+		},
+		'40%': {
+			opacity: '0.6',
+		},
+		'100%': {
+			opacity: 1,
 		},
 	},
 })
@@ -163,17 +160,19 @@ const SMALL_BLIND = 10
 const BIG_BLIND = 20
 const TIMER = 100
 
-const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
-	////////////// TURN REDIRECT BACK ON //////////////
-	const classes = useStyles()
+const PokerRoom = () => {
 	const { roomId } = useParams()
+
+	const { isLoggedIn } = useContext(AuthContext)
+
+	const classes = useStyles()
 
 	// Display variables //
 	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
 	const [floorOption, setFloorOption] = useState(woodenFloor)
 	const [tableOption, setTableOption] = useState(greenTable)
-	const [deckOption, setDeckOption] = useState('black')
+	const [deckOption, setDeckOption] = useState('red-design')
 	const [timeLeft, setTimeLeft] = useState(100)
 	const [playersAction, setPlayersAction] = useState('')
 	const [opponentsAction, setOpponentsAction] = useState('')
@@ -185,7 +184,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
-	const [showWinnerDisplay, setShowWinnerDisplay] = useState(false)
+	const [showWinDisplay, setShowWinDisplay] = useState(false)
 	const [isTurn, setIsTurn] = useState(false)
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
@@ -652,7 +651,7 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				if (!playersChipsRef.current || !opponentsChipsRef.current) {
 					// Display winner banner //
 					setWinner(winningPlayer)
-					setTimeout(() => setShowWinnerDisplay(true), 2000)
+					setTimeout(() => setShowWinDisplay(true), 2000)
 					setTimeout(() => setRedirectToLobby(true), 8000)
 					return
 				}
@@ -695,12 +694,12 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
 	// }, [])
 
-	if (!isLoggedIn || redirectToLobby || showWinnerDisplay)
+	if (!isLoggedIn || redirectToLobby || showWinDisplay)
 		return <Redirect to='/lobby' />
-	// if (redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
+			{/* ---------- Nav Links ---------- */}
 			<Box
 				display='flex'
 				justifyContent='flex-end'
@@ -712,10 +711,10 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 					setDeckOption={setDeckOption}
 				/>
 			</Box>
-
 			<img
 				src={floorOption}
 				className={classes.floorBackground}
+				draggable='false'
 				alt='floor background'
 			/>
 			<img
@@ -727,13 +726,15 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 
 			{startGame ? (
 				<>
+					{/* ---------- Dealer Button ---------- */}
 					<div
 						className={classes.dealerBtn}
 						style={{ top: !isPlayerOnBtnRef.current ? '29%' : '55%' }}>
 						<p className={classes.dealerBtnText}>DEALER</p>
 					</div>
 
-					<div className={`${classes.playersHudContainer} ${classes.top}`}>
+					{/* ---------- Opponents HUD ---------- */}
+					<div className={`${classes.playersHud} ${classes.top}`}>
 						{showHands ? (
 							holeCards && <HoleCards holeCards={opponentsHoleCards} />
 						) : (
@@ -754,16 +755,19 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 						)}
 					</div>
 
+					{/* ---------- Pot Total ---------- */}
 					<div className={classes.pot}>
-						<h2 className={classes.potText}>Pot: ${pot}</h2>
+						<h2 className={classes.potText}>Pot: {`$${pot}`}</h2>
 					</div>
 
+					{/* ---------- Community Cards ---------- */}
 					<CommunityCards
 						communityCards={communityCards}
 						deckOption={deckOption}
 					/>
 
-					<div className={`${classes.playersHudContainer} ${classes.bottom}`}>
+					{/* ---------- Players HUD ---------- */}
+					<div className={`${classes.playersHud} ${classes.bottom}`}>
 						{holeCards && <HoleCards holeCards={holeCards} />}
 						<PlayersHud
 							playersName={playersName}
@@ -786,10 +790,15 @@ const PokerRoom = ({ isLoggedIn, setIsLoggedIn }) => {
 				</Paper>
 			)}
 
-			{winningHand && <h2 className={classes.handResultText}>{winningHand}</h2>}
+			{/* ---------- Winning Hand Display ---------- */}
+			{winningHand && (
+				<h2 className={classes.winningHandText}>{winningHand}</h2>
+			)}
 
-			{showWinnerDisplay && <WinDisplay winner={winner} />}
+			{/* ---------- Winning Player Display ---------- */}
+			{showWinDisplay && <WinDisplay winner={winner} />}
 
+			{/* ---------- Chat and Betting Options ---------- */}
 			<Box display='flex' alignItems='center' className={classes.hudContainer}>
 				<Grid item xs={6}>
 					<Chat />

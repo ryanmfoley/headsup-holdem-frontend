@@ -12,9 +12,6 @@ const useStyles = makeStyles({
 		width: '100%',
 		height: '100%',
 		zIndex: 1,
-		fontSize: '1.5vw',
-		fontFamily: 'Bebas Neue',
-		letterSpacing: '0',
 		"& [data-index='1']": {
 			position: 'absolute',
 			left: '6%',
@@ -22,17 +19,12 @@ const useStyles = makeStyles({
 		},
 	},
 	card: {
-		width: '16%',
-		height: '100%',
+		width: '4vw',
 		margin: '.1%',
 		borderRadius: '10%',
 	},
 	cardFront: {
-		background: 'white',
 		border: '.2vw solid black',
-	},
-	cardBack: {
-		border: '.2vw solid white',
 	},
 })
 
@@ -48,18 +40,23 @@ const HoleCards = ({ deckOption, holeCards }) => {
 							key={card.rank + card.suit}
 							className={`${classes.card} ${classes.cardFront}`}
 							data-index={index}>
-							<Card card={card} index={index} />
+							<Card card={card} />
 						</div>
 					))}
 				</>
 			) : (
 				<>
 					{[0, 1].map((index) => (
-						<div
+						<img
 							key={index}
-							className={`${classes.card} ${classes.cardBack}`}
-							style={{ background: deckOption }}
-							data-index={index}></div>
+							src={
+								require(`../../assets/images/cards/${deckOption}-card-back.png`)
+									.default
+							}
+							className={classes.card}
+							data-index={index}
+							alt='back of playing card'
+						/>
 					))}
 				</>
 			)}

@@ -10,21 +10,21 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		width: '35%',
 		height: '20%',
-		padding: '0 5px',
+		padding: '0 2%',
 		background: 'rgba(255,255,255,0.1)',
-		borderRadius: '100px',
+		borderRadius: 500,
 	},
 	timerBar: {
-		boxShadow: '0 10px 40px -10px #fff',
-		borderRadius: '100px',
-		background: '#fff',
 		height: '35%',
+		background: '#fff',
+		borderRadius: 500,
 	},
 })
 
 const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
-	const classes = useStyles()
 	const [showTimer, setShowTimer] = useState(false)
+
+	const classes = useStyles(showTimer)
 
 	useEffect(() => {
 		// Clean up controller //

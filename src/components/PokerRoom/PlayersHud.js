@@ -33,13 +33,15 @@ const useStyles = makeStyles({
 	actionText: {
 		color: 'cyan',
 	},
-	chipStack: {
+	playersNameText: {
+		fontFamily: 'Bangers',
+		letterSpacing: '.15vw',
+	},
+	chipStackValue: {
 		color: 'lightgreen',
 	},
 	winnerText: {
 		'--neon-text-color': '#08f',
-		fontFamily: "'Exo 2', sans-serif",
-		fontSize: '1.7vw',
 		textShadow:
 			'-0.05vw -0.05vw .25vw #fff, 0vw 0vw 0vw #fff, 0 0 0vw var(--neon-text-color), 0 0 1vw var(--neon-text-color), 0 0 .5vw var(--neon-text-color), 0 0 1vw var(--neon-text-color),0 0 1.2vw var(--neon-text-color)',
 	},
@@ -52,8 +54,8 @@ const PlayersHud = ({ playersName, chips, active, action }) => {
 		<div className={`${classes.root} ${active ? classes.active : ''}`}>
 			{!action.type ? (
 				<>
-					<h2>{playersName}</h2>
-					<h2 className={classes.chipStack}>${chips}</h2>
+					<h2 className={classes.playersNameText}>{playersName}</h2>
+					<h2 className={classes.chipStackValue}>${chips}</h2>
 				</>
 			) : (
 				<div className={classes.actionContainer}>
