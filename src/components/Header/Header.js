@@ -106,6 +106,11 @@ const Header = () => {
 							Lobby
 						</Button>
 					</Link>
+					<Link to='/hand-rankings' style={{ textDecoration: 'none' }}>
+						<Button className={classes.navLink} color='secondary' size='small'>
+							Hand Rankings
+						</Button>
+					</Link>
 				</Box>
 
 				{/* ---------- Authorization Buttons ---------- */}

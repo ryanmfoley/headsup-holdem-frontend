@@ -1,11 +1,12 @@
 @font-face {
-	font-family: 'GraphiqueProNextComp';
-	src: url('./assets/fonts/GraphiqueProNextComp.otf');
-}
-@font-face {
 	font-family: 'AmazinglyBeautiful';
 	src: url('./assets/fonts/AmazinglyBeautiful.ttf');
 }
+@font-face {
+	font-family: 'GraphiqueProNextComp';
+	src: url('./assets/fonts/GraphiqueProNextComp.otf');
+}
+@import url('https://fonts.googleapis.com/css2?family=Amatic+SC&family=Bangers&display=swap');
 
 body {
 	margin: 0;
