@@ -11,7 +11,7 @@ import {
 	TableHead,
 	TableRow,
 } from '@material-ui/core'
-import io from 'socket.io-client'
+import { io } from 'socket.io-client'
 
 import AuthContext from '../Auth/AuthContext'
 import Header from '../Header/Header'
@@ -61,7 +61,7 @@ const useStyles = makeStyles({
 		width: '100%',
 		height: '7vh',
 		margin: '5px',
-		fontSize: '3vh',
+		fontSize: '3vw',
 		position: 'relative',
 		zIndex: 0,
 		background: '#111',

@@ -22,7 +22,6 @@ import socket from '../../config/socketConfig'
 // change buttons to buttons from Poker Game kit
 // is isLogin enough for security or should I use socket.auth?
 // shake animation for incorrect username and/or password
-// force landscape orientation for mobile devices
 // possibly remove component folders
 // notify player when opponent leaves room
 
@@ -31,15 +30,33 @@ const useStyles = makeStyles({
 		position: 'relative',
 		userSelect: 'none',
 	},
+	'@media screen and (min-width: 768px), (orientation: landscape)': {
+		screenOrientationWarning: {
+			display: 'none',
+		},
+	},
+	'@media screen and (max-width: 767px) and (orientation: portrait)': {
+		screenOrientationWarning: {
+			position: 'absolute',
+			top: '50%',
+			left: '50%',
+			transform: 'translate(-50%, -50%)',
+			width: '80%',
+			'& h2': {
+				fontSize: '5vw',
+				textAlign: 'center',
+			},
+		},
+	},
 	floorBackground: {
 		width: '100%',
 	},
 	pokerTable: {
-		width: '100%',
 		position: 'absolute',
 		top: '50%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
+		width: '100%',
 	},
 	tableContainer: {
 		position: 'relative',
@@ -65,8 +82,8 @@ const useStyles = makeStyles({
 		position: 'absolute',
 		top: '48.8%',
 		left: '50%',
-		width: '30vw',
 		transform: 'translate(-50%, -120%)',
+		width: '30vw',
 	},
 	waitingText: {
 		margin: 'auto',
@@ -818,6 +835,11 @@ const PokerRoom = () => {
 					</div>
 				</Grid>
 			</Box>
+
+			{/* ---------- Screen Orientation Warning ---------- */}
+			<Paper className={classes.screenOrientationWarning} elevation={6}>
+				<h2>Rotate device to landscape mode</h2>
+			</Paper>
 		</div>
 	)
 }
