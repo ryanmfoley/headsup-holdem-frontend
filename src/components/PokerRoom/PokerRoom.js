@@ -17,13 +17,13 @@ import greenTable from '../../assets/images/tables/green-table.png'
 import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
-// add fold display
-// add sound
+// 1. Add sound
+// 2. Notify player when opponent leaves room
+// check responsiveness on all components
 // change buttons to buttons from Poker Game kit
 // is isLogin enough for security or should I use socket.auth?
 // shake animation for incorrect username and/or password
 // possibly remove component folders
-// notify player when opponent leaves room
 
 const useStyles = makeStyles({
 	root: {
@@ -594,6 +594,8 @@ const PokerRoom = () => {
 
 			alternateTurn()
 		})
+
+		socket.on('fold', () => showActionDisplay({ type: 'FOLD' }))
 
 		socket.on('hand-is-over', () =>
 			socket.emit('showdown', holeCardsRef.current)
