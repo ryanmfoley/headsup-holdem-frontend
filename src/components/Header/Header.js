@@ -46,7 +46,7 @@ const useStyles = makeStyles({
 		margin: '0 1vw',
 		padding: 0,
 		color: 'white',
-		fontSize: 'max(1.5vw, 8px)',
+		fontSize: 'max(1.2vw, 8px)',
 	},
 	authButtons: {
 		position: 'absolute',
@@ -60,11 +60,21 @@ const useStyles = makeStyles({
 		color: 'white',
 		fontSize: '1.3vw',
 		border: '1px solid white',
+		'&:hover, &:focus': {
+			background: 'rgba(255, 255, 255, 0.1)',
+		},
 	},
 	logoutBtn: {
 		margin: 0,
 		color: 'white',
+		'--hover': '#66c887',
+		background: 'inherit',
+		transition: '0.25s linear',
 		border: '1px solid white',
+		'&:hover, &:focus': {
+			color: 'black',
+			boxShadow: 'inset 6.5em 0 0 0 white',
+		},
 	},
 	registerBtn: {
 		minWidth: '6vw',
@@ -114,7 +124,7 @@ const Header = () => {
 				</Box>
 
 				{/* ---------- Authorization Buttons ---------- */}
-				<Box className={classes.authButtons}>
+				<div className={classes.authButtons}>
 					{isLoggedIn ? (
 						<Button
 							className={classes.logoutBtn}
@@ -140,7 +150,7 @@ const Header = () => {
 							</Link>
 						</>
 					)}
-				</Box>
+				</div>
 			</Toolbar>
 		</AppBar>
 	)

@@ -12,6 +12,7 @@ import PokerRoom from '../PokerRoom/PokerRoom'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
+		width: '100%',
 		height: '100vh',
 	},
 }))

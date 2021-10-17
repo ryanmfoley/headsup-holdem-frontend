@@ -17,29 +17,47 @@ import greenTable from '../../assets/images/tables/green-table.png'
 import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
-// add fold display
-// add sound
+// 1. Add sound
+// 2. Add socials
+// check responsiveness on all components
 // change buttons to buttons from Poker Game kit
 // is isLogin enough for security or should I use socket.auth?
 // shake animation for incorrect username and/or password
-// force landscape orientation for mobile devices
 // possibly remove component folders
-// notify player when opponent leaves room
+// fix CREATE GAME button in lobby
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
 		userSelect: 'none',
 	},
+	'@media screen and (min-width: 768px), (orientation: landscape)': {
+		screenOrientationWarning: {
+			display: 'none',
+		},
+	},
+	'@media screen and (max-width: 767px) and (orientation: portrait)': {
+		screenOrientationWarning: {
+			position: 'absolute',
+			top: '50%',
+			left: '50%',
+			transform: 'translate(-50%, -50%)',
+			width: '80%',
+			'& h2': {
+				fontSize: '5vw',
+				textAlign: 'center',
+			},
+		},
+	},
 	floorBackground: {
 		width: '100%',
 	},
 	pokerTable: {
-		width: '100%',
 		position: 'absolute',
 		top: '50%',
 		left: '50%',
 		transform: 'translate(-50%, -50%)',
+		width: '100%',
 	},
 	tableContainer: {
 		position: 'relative',
@@ -65,8 +83,8 @@ const useStyles = makeStyles({
 		position: 'absolute',
 		top: '48.8%',
 		left: '50%',
-		width: '30vw',
 		transform: 'translate(-50%, -120%)',
+		width: '30vw',
 	},
 	waitingText: {
 		margin: 'auto',
@@ -81,6 +99,12 @@ const useStyles = makeStyles({
 			animation: '$loading-ellipsis 3s steps(4, end) infinite',
 			content: "'...'",
 		},
+	},
+	opponentLeftText: {
+		margin: 'auto',
+		padding: '.8vw',
+		fontSize: '1.7vw',
+		textAlign: 'center',
 	},
 	winningHandText: {
 		position: 'absolute',
@@ -193,6 +217,7 @@ const PokerRoom = () => {
 	const [winner, setWinner] = useState('')
 	const [winningHand, setWinningHand] = useState('')
 	const [redirectToLobby, setRedirectToLobby] = useState(false)
+	const [hasOpponentLeft, setHasOpponentLeft] = useState(false)
 
 	// Cards //
 	const holeCardsRef = useRef({})
@@ -578,6 +603,8 @@ const PokerRoom = () => {
 			alternateTurn()
 		})
 
+		socket.on('fold', () => showActionDisplay({ type: 'FOLD' }))
+
 		socket.on('hand-is-over', () =>
 			socket.emit('showdown', holeCardsRef.current)
 		)
@@ -683,16 +710,19 @@ const PokerRoom = () => {
 			}
 		)
 
+		socket.on('opponent-left-game', () => {
+			setHasOpponentLeft(true)
+			setTimeout(() => setRedirectToLobby(true), 2000)
+		})
+
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
+
+			socket.emit('logout', currentPlayer.id)
 			socket.offAny()
 		}
 	}, [roomId])
-
-	// useEffect(() => {
-	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
-	// }, [])
 
 	if (!isLoggedIn || redirectToLobby || showWinDisplay)
 		return <Redirect to='/lobby' />
@@ -818,6 +848,18 @@ const PokerRoom = () => {
 					</div>
 				</Grid>
 			</Box>
+
+			{/* ---------- Screen Orientation Warning ---------- */}
+			<Paper className={classes.screenOrientationWarning} elevation={6}>
+				<h2>Rotate device to landscape mode</h2>
+			</Paper>
+
+			{/* ---------- Opponent Left Notification ---------- */}
+			{hasOpponentLeft && (
+				<Paper className={classes.waitingDisplay} elevation={6}>
+					<h2 className={classes.opponentLeftText}>Opponent left game</h2>
+				</Paper>
+			)}
 		</div>
 	)
 }
