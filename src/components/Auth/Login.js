@@ -16,11 +16,16 @@ import axios from 'axios'
 import AuthContext from './AuthContext'
 import Header from '../Header/Header'
 import ENDPOINT from '../../config/config'
+import backgroundImage from '../../assets/images/lobby-background.png'
 
 const useStyles = makeStyles({
 	root: {
-		height: '100vh',
+		height: '100%',
 		margin: 'auto',
+		backgroundImage: `url(${backgroundImage})`,
+		backgroundPosition: 'center',
+		backgroundRepeat: 'no-repeat',
+		backgroundSize: 'cover',
 	},
 	loginHeading: { margin: 10 },
 	submitButton: {
@@ -28,11 +33,17 @@ const useStyles = makeStyles({
 	},
 	paperStyle: {
 		width: 280,
-		margin: '100px auto',
+		margin: 'min(15%, 150px) auto',
 		padding: 20,
 	},
 	lockIcon: {
 		background: '#3f51b5',
+	},
+	registerLink: {
+		textAlign: 'center',
+		'&:hover': {
+			textDecoration: 'underline',
+		},
 	},
 })
 
@@ -93,7 +104,7 @@ const Login = () => {
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
 					<Avatar className={classes.lockIcon}>
-						<LockOutlinedIcon color='default' />
+						<LockOutlinedIcon />
 					</Avatar>
 					<Typography variant='h5'>Login</Typography>
 				</Grid>
@@ -155,9 +166,11 @@ const Login = () => {
 						Log In
 					</Button>
 				</form>
-				<Typography style={{ textAlign: 'center' }}>
-					New? <Link to='/register'>Sign up - it's FREE!</Link>
-				</Typography>
+				<Link to='/register' style={{ textDecoration: 'none' }}>
+					<Typography className={classes.registerLink}>
+						<span style={{ color: 'black' }}>New?</span> Sign up - it's FREE!
+					</Typography>
+				</Link>
 			</Paper>
 		</div>
 	)

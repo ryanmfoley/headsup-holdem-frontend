@@ -22,7 +22,6 @@ let socket
 
 const useStyles = makeStyles({
 	root: {
-		boxSizing: 'border-box',
 		height: '100%',
 		backgroundImage: `url(${backgroundImage})`,
 		backgroundPosition: 'center',
@@ -59,7 +58,7 @@ const useStyles = makeStyles({
 	},
 	createGameBtn: {
 		width: '100%',
-		height: '7vh',
+		height: '5.5vw',
 		margin: '5px',
 		fontSize: '3vw',
 		position: 'relative',
@@ -93,9 +92,6 @@ const useStyles = makeStyles({
 		'&:active': {
 			color: '#000',
 		},
-		'&:active::after': {
-			background: 'transparent',
-		},
 		'&:hover::before': {
 			opacity: 1,
 		},
@@ -110,10 +106,6 @@ const useStyles = makeStyles({
 			top: 0,
 			borderRadius: '1vmin',
 		},
-	},
-	joinGameBtn: {
-		color: '#32000C',
-		border: '1px solid #32000C',
 	},
 	'@keyframes glowing': {
 		'0%': { backgroundPosition: '0 0' },

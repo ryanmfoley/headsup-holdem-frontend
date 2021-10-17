@@ -18,12 +18,13 @@ import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
 // 1. Add sound
-// 2. Notify player when opponent leaves room
+// 2. Add socials
 // check responsiveness on all components
 // change buttons to buttons from Poker Game kit
 // is isLogin enough for security or should I use socket.auth?
 // shake animation for incorrect username and/or password
 // possibly remove component folders
+// fix CREATE GAME button in lobby
 
 const useStyles = makeStyles({
 	root: {
@@ -98,6 +99,12 @@ const useStyles = makeStyles({
 			animation: '$loading-ellipsis 3s steps(4, end) infinite',
 			content: "'...'",
 		},
+	},
+	opponentLeftText: {
+		margin: 'auto',
+		padding: '.8vw',
+		fontSize: '1.7vw',
+		textAlign: 'center',
 	},
 	winningHandText: {
 		position: 'absolute',
@@ -210,6 +217,7 @@ const PokerRoom = () => {
 	const [winner, setWinner] = useState('')
 	const [winningHand, setWinningHand] = useState('')
 	const [redirectToLobby, setRedirectToLobby] = useState(false)
+	const [hasOpponentLeft, setHasOpponentLeft] = useState(false)
 
 	// Cards //
 	const holeCardsRef = useRef({})
@@ -702,16 +710,19 @@ const PokerRoom = () => {
 			}
 		)
 
+		socket.on('opponent-left-game', () => {
+			setHasOpponentLeft(true)
+			setTimeout(() => setRedirectToLobby(true), 2000)
+		})
+
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
+
+			socket.emit('logout', currentPlayer.id)
 			socket.offAny()
 		}
 	}, [roomId])
-
-	// useEffect(() => {
-	// 	window.addEventListener('beforeunload', () => socket.emit('logout'))
-	// }, [])
 
 	if (!isLoggedIn || redirectToLobby || showWinDisplay)
 		return <Redirect to='/lobby' />
@@ -842,6 +853,13 @@ const PokerRoom = () => {
 			<Paper className={classes.screenOrientationWarning} elevation={6}>
 				<h2>Rotate device to landscape mode</h2>
 			</Paper>
+
+			{/* ---------- Opponent Left Notification ---------- */}
+			{hasOpponentLeft && (
+				<Paper className={classes.waitingDisplay} elevation={6}>
+					<h2 className={classes.opponentLeftText}>Opponent left game</h2>
+				</Paper>
+			)}
 		</div>
 	)
 }

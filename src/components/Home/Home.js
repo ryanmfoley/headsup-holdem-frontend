@@ -12,8 +12,7 @@ const useStyles = makeStyles({
 	},
 	heading: {
 		position: 'absolute',
-		// top: '45%',
-		top: '35%',
+		top: '45%',
 		left: '73%',
 		transform: 'translate(-50%, -50%)',
 		width: '40%',
