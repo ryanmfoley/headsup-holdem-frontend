@@ -31,12 +31,12 @@ const useStyles = makeStyles({
 		position: 'relative',
 		userSelect: 'none',
 	},
-	'@media screen and (min-width: 768px), (orientation: landscape)': {
+	'@media screen and (min-width: 768px)': {
 		screenOrientationWarning: {
 			display: 'none',
 		},
 	},
-	'@media screen and (max-width: 767px) and (orientation: portrait)': {
+	'@media screen and (max-width: 767px)': {
 		screenOrientationWarning: {
 			position: 'absolute',
 			top: '50%',
