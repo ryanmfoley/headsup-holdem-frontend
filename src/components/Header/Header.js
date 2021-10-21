@@ -56,7 +56,11 @@ const useStyles = makeStyles({
 		margin: '0 1vw',
 		padding: 0,
 		color: 'white',
-		fontSize: 'max(1.2vw, 8px)',
+		fontSize: '1.4vw',
+		'&:hover, &:focus': {
+			transform: 'rotate(-5deg)',
+			transformOrigin: 'bottom left',
+		},
 	},
 	authButtons: {
 		position: 'absolute',
