@@ -106,7 +106,9 @@ const Login = () => {
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>
-					<Typography variant='h5'>Login</Typography>
+					<Typography className={classes.loginHeading} variant='h5'>
+						Login
+					</Typography>
 				</Grid>
 				<form onSubmit={handleSubmit}>
 					{usernameError ? (

@@ -4,6 +4,7 @@ import {
 	AppBar,
 	Box,
 	Button,
+	Divider,
 	Drawer,
 	IconButton,
 	List,
@@ -24,16 +25,6 @@ const useStyles = makeStyles({
 		justifyContent: 'center',
 		height: '7vw',
 		background: '#333333',
-	},
-	'@media screen and (min-width: 768px)': {
-		mobileHeader: {
-			display: 'none',
-		},
-	},
-	'@media screen and (max-width: 767px)': {
-		desktopHeader: {
-			display: 'none',
-		},
 	},
 	menuButton: {
 		marginLeft: 'auto',
@@ -100,6 +91,17 @@ const useStyles = makeStyles({
 		margin: 0,
 		fontSize: '1.3vw',
 	},
+	'@media screen and (min-width: 768px)': {
+		mobileHeader: {
+			display: 'none',
+		},
+	},
+	'@media screen and (max-width: 767px)': {
+		desktopHeader: {
+			display: 'none',
+		},
+		title: { fontSize: '5vw' },
+	},
 })
 
 const drawerWidth = 240
@@ -131,6 +133,7 @@ const Header = ({ window }) => {
 						<ListItemText primary={'Hand Rankings'} />
 					</ListItem>
 				</Link>
+				<Divider />
 				<Link to='/login' style={{ textDecoration: 'none' }}>
 					<ListItem button>
 						<ListItemText primary={'Login'} />

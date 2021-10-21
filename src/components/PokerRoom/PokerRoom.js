@@ -31,27 +31,7 @@ const useStyles = makeStyles({
 		position: 'relative',
 		userSelect: 'none',
 	},
-	'@media screen and (min-width: 768px)': {
-		screenOrientationWarning: {
-			display: 'none',
-		},
-	},
-	'@media screen and (max-width: 767px)': {
-		screenOrientationWarning: {
-			position: 'absolute',
-			top: '50%',
-			left: '50%',
-			transform: 'translate(-50%, -50%)',
-			width: '80%',
-			'& h2': {
-				fontSize: '5vw',
-				textAlign: 'center',
-			},
-		},
-	},
-	floorBackground: {
-		width: '100%',
-	},
+	floorBackground: { width: '100%' },
 	pokerTable: {
 		position: 'absolute',
 		top: '50%',
@@ -157,12 +137,8 @@ const useStyles = makeStyles({
 			cursor: 'pointer',
 		},
 	},
-	top: {
-		top: '22%',
-	},
-	bottom: {
-		top: '70%',
-	},
+	top: { top: '22%' },
+	bottom: { top: '70%' },
 	'@keyframes loading-ellipsis': {
 		to: { width: 'clamp(18px, 2.05vw, 27px)' },
 	},
@@ -176,6 +152,24 @@ const useStyles = makeStyles({
 		},
 		'100%': {
 			opacity: 1,
+		},
+	},
+	'@media screen and (min-width: 768px)': {
+		screenOrientationWarning: {
+			display: 'none',
+		},
+	},
+	'@media screen and (max-width: 767px)': {
+		screenOrientationWarning: {
+			position: 'absolute',
+			top: '50%',
+			left: '50%',
+			transform: 'translate(-50%, -50%)',
+			width: '80%',
+			'& h2': {
+				fontSize: '5vw',
+				textAlign: 'center',
+			},
 		},
 	},
 })

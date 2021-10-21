@@ -6,15 +6,20 @@ import pokerHandRankings from '../../assets/images/poker-hand-rankings.jpeg'
 const useStyles = makeStyles({
 	root: {
 		width: '100%',
-		height: '93vh',
-		paddingTop: '3vh',
+		height: '100%',
+		paddingTop: '10%',
 		background:
 			'radial-gradient(circle, rgba(1,165,105,1) 0%, rgba(0,95,89,1) 100%)',
 	},
 	handRankingsImg: {
 		display: 'block',
-		width: '35%',
+		width: '45%',
 		margin: 'auto',
+	},
+	'@media screen and (max-width: 767px)': {
+		handRankingsImg: {
+			width: '85%',
+		},
 	},
 })
 

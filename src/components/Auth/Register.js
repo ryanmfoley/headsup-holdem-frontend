@@ -28,7 +28,6 @@ const useStyles = makeStyles({
 	},
 	registerHeading: {
 		margin: 10,
-		outline: '1px solid red',
 	},
 	submitButton: {
 		margin: '15px 0',
@@ -83,7 +82,9 @@ const Register = () => {
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>
-					<Typography variant='h5'>Sign Up!</Typography>
+					<Typography className={classes.registerHeading} variant='h5'>
+						Sign Up!
+					</Typography>
 				</Grid>
 				<form onSubmit={handleSubmit}>
 					{usernameError ? (
