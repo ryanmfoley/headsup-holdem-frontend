@@ -9,13 +9,20 @@ import {
 	IconButton,
 	List,
 	ListItem,
+	ListItemIcon,
 	ListItemText,
 	Toolbar,
 } from '@material-ui/core'
+import AccountCircleIcon from '@material-ui/icons/AccountCircle'
+import AddToQueueIcon from '@material-ui/icons/AddToQueue'
+import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered'
+import HomeIcon from '@material-ui/icons/Home'
+import loginIcon from '../../assets/icons/login-icon.svg'
+import logoutIcon from '../../assets/icons/logout-icon.svg'
 import MenuIcon from '@material-ui/icons/Menu'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from '../Auth/AuthContext'
+import AuthContext from '../../contexts/AuthContext/AuthContext'
 import acesLogo from '../../assets/images/aces-logo.png'
 
 const useStyles = makeStyles({
@@ -48,9 +55,13 @@ const useStyles = makeStyles({
 		fontSize: '4vw',
 		color: 'white',
 	},
-	navLinksContainer: {
-		marginLeft: '0 1vw',
+	mobileNavLinksContainer: {
+		background: '#333333',
 	},
+	mobileNavLink: {
+		color: 'white',
+	},
+	navLinksContainer: { marginLeft: '0 1vw' },
 	navLink: {
 		minWidth: '3vw',
 		margin: '0 1vw',
@@ -62,6 +73,7 @@ const useStyles = makeStyles({
 			transformOrigin: 'bottom left',
 		},
 	},
+	paper: { background: 'red' },
 	authButtons: {
 		position: 'absolute',
 		top: '50%',
@@ -95,6 +107,7 @@ const useStyles = makeStyles({
 		margin: 0,
 		fontSize: '1.3vw',
 	},
+	divider: { background: 'white' },
 	'@media screen and (min-width: 768px)': {
 		mobileHeader: {
 			display: 'none',
@@ -108,8 +121,6 @@ const useStyles = makeStyles({
 	},
 })
 
-const drawerWidth = 240
-
 const Header = ({ window }) => {
 	const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext)
 
@@ -119,37 +130,72 @@ const Header = ({ window }) => {
 
 	const handleDrawerToggle = () => setDrawerOpen(!drawerOpen)
 
+	const logout = () => setIsLoggedIn(false)
+
 	const drawer = (
-		<>
-			<List>
-				<Link to='/' style={{ textDecoration: 'none' }}>
-					<ListItem button>
-						<ListItemText primary={'Home'} />
-					</ListItem>
-				</Link>
-				<Link to='/lobby' style={{ textDecoration: 'none' }}>
-					<ListItem button>
-						<ListItemText primary={'Lobby'} />
-					</ListItem>
-				</Link>
-				<Link to='/hand-rankings' style={{ textDecoration: 'none' }}>
-					<ListItem button>
-						<ListItemText primary={'Hand Rankings'} />
-					</ListItem>
-				</Link>
-				<Divider />
-				<Link to='/login' style={{ textDecoration: 'none' }}>
-					<ListItem button>
-						<ListItemText primary={'Login'} />
-					</ListItem>
-				</Link>
-				<Link to='/register' style={{ textDecoration: 'none' }}>
-					<ListItem button>
-						<ListItemText primary={'Register'} />
-					</ListItem>
-				</Link>
-			</List>
-		</>
+		<List className={classes.mobileNavLinksContainer}>
+			<Link to='/' style={{ textDecoration: 'none' }}>
+				<ListItem button>
+					<ListItemIcon>
+						<HomeIcon style={{ color: 'white' }} />
+					</ListItemIcon>
+					<ListItemText primary={'Home'} className={classes.mobileNavLink} />
+				</ListItem>
+			</Link>
+			<Link to='/lobby' style={{ textDecoration: 'none' }}>
+				<ListItem button>
+					<ListItemIcon>
+						<AddToQueueIcon style={{ color: 'white' }} />
+					</ListItemIcon>
+					<ListItemText primary={'Lobby'} className={classes.mobileNavLink} />
+				</ListItem>
+			</Link>
+			<Link to='/hand-rankings' style={{ textDecoration: 'none' }}>
+				<ListItem button>
+					<ListItemIcon>
+						<FormatListNumberedIcon style={{ color: 'white' }} />
+					</ListItemIcon>
+					<ListItemText
+						primary={'Hand Rankings'}
+						className={classes.mobileNavLink}
+					/>
+				</ListItem>
+			</Link>
+			<Divider className={classes.divider} />
+			{isLoggedIn ? (
+				<ListItem button onClick={logout}>
+					<ListItemIcon>
+						<img src={logoutIcon} alt='logout icon' />
+					</ListItemIcon>
+					<ListItemText primary={'Logout'} className={classes.mobileNavLink} />
+				</ListItem>
+			) : (
+				<>
+					<Link to='/login' style={{ textDecoration: 'none' }}>
+						<ListItem button>
+							<ListItemIcon>
+								<img src={loginIcon} alt='login icon' />
+							</ListItemIcon>
+							<ListItemText
+								primary={'Login'}
+								className={classes.mobileNavLink}
+							/>
+						</ListItem>
+					</Link>
+					<Link to='/' style={{ textDecoration: 'none' }}>
+						<ListItem button>
+							<ListItemIcon>
+								<AccountCircleIcon style={{ color: 'white' }} />
+							</ListItemIcon>
+							<ListItemText
+								primary={'Register'}
+								className={classes.mobileNavLink}
+							/>
+						</ListItem>
+					</Link>
+				</>
+			)}
+		</List>
 	)
 
 	const container =
@@ -207,7 +253,7 @@ const Header = ({ window }) => {
 							<Button
 								className={classes.logoutBtn}
 								size='small'
-								onClick={() => setIsLoggedIn(false)}>
+								onClick={logout}>
 								Logout
 							</Button>
 						) : (
@@ -255,11 +301,12 @@ const Header = ({ window }) => {
 			{/* ---------- Drawer ---------- */}
 			<Box
 				component='nav'
-				sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+				sx={{ flexShrink: { sm: 0 } }}
 				aria-label='mailbox folders'>
 				<Drawer
 					container={container}
 					variant='temporary'
+					anchor='top'
 					open={drawerOpen}
 					onClose={handleDrawerToggle}
 					ModalProps={{
@@ -269,7 +316,6 @@ const Header = ({ window }) => {
 						display: { xs: 'block', sm: 'none' },
 						'& .MuiDrawer-paper': {
 							boxSizing: 'border-box',
-							width: drawerWidth,
 						},
 					}}>
 					{drawer}
