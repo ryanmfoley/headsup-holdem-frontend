@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core'
 import { io } from 'socket.io-client'
 
-import AuthContext from '../Auth/AuthContext'
+import AuthContext from '../../contexts/AuthContext/AuthContext'
 import Header from '../Header/Header'
 import backgroundImage from '../../assets/images/lobby-background.png'
 import ENDPOINT from '../../config/config'
@@ -29,6 +29,7 @@ const useStyles = makeStyles({
 		backgroundSize: 'cover',
 	},
 	table: {
+		minWidth: '300px',
 		width: 'min(40%, 500px)',
 		margin: '15vh auto',
 		background: 'rgba(0, 0, 0, 0.5)',
@@ -40,16 +41,18 @@ const useStyles = makeStyles({
 		'& th': {
 			color: 'white',
 			fontFamily: 'GraphiqueProNextComp',
-			fontSize: '2.5vmin',
+			fontSize: 'max(2vw, 32px)',
+			border: 'none',
 		},
 	},
 	tableBody: {
 		color: 'black',
 		'& th': {
-			height: '3vmin',
+			height: '5vh',
 			color: 'white',
 			fontFamily: 'Bangers',
-			fontSize: '3.5vmin',
+			fontSize: 'clamp(12px, 3.5vw, 38px)',
+			border: 'none',
 		},
 	},
 	tableFooter: {
@@ -58,13 +61,13 @@ const useStyles = makeStyles({
 	},
 	createGameBtn: {
 		width: '100%',
-		height: '5.5vw',
+		height: '80px',
 		margin: '5px',
-		fontSize: '3vw',
+		fontSize: 'max(3vw, 24px)',
 		position: 'relative',
 		zIndex: 0,
 		background: '#111',
-		color: '#999',
+		color: 'rgb(35, 35, 35)',
 		cursor: 'pointer',
 		border: 'none',
 		transition: '0.25s',
@@ -101,11 +104,16 @@ const useStyles = makeStyles({
 			position: 'absolute',
 			width: '100%',
 			height: '100%',
-			background: '#111',
+			background:
+				'radial-gradient(circle, rgba(196,196,196,1) 0%, rgba(42,42,42,1) 100%)',
 			left: 0,
 			top: 0,
 			borderRadius: '1vmin',
 		},
+	},
+	joinGameBtn: {
+		width: '5%',
+		padding: 0,
 	},
 	'@keyframes glowing': {
 		'0%': { backgroundPosition: '0 0' },
@@ -172,14 +180,15 @@ const Lobby = () => {
 					<TableBody className={classes.tableBody}>
 						{playersWaiting.map((player) => (
 							<TableRow key={player.id}>
-								<TableCell component='th' scope='player'>
+								<TableCell component='th' scope='col'>
 									{player.username}
 								</TableCell>
-								<TableCell align='right'>
+								<TableCell component='th' scope='col' align='right'>
 									<Link
 										to={`/rooms/${player.id}`}
 										style={{ textDecoration: 'none' }}>
 										<Button
+											className={classes.joinGameBtn}
 											variant='contained'
 											color='primary'
 											onClick={joinGame}>
