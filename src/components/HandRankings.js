@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core'
 
-import Header from '../Header/Header'
-import pokerHandRankings from '../../assets/images/poker-hand-rankings.jpeg'
+import Header from './Header'
+import pokerHandRankings from '../assets/images/poker-hand-rankings.jpeg'
 
 const useStyles = makeStyles({
 	root: {

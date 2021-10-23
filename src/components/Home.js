@@ -1,7 +1,7 @@
 import { makeStyles, Box, Grid, Typography } from '@material-ui/core'
 
-import Header from '../Header/Header'
-import pokerBanner from '../../assets/images/poker.png'
+import Header from './Header'
+import pokerBanner from '../assets/images/poker.png'
 
 const useStyles = makeStyles({
 	root: {

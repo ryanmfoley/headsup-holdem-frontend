@@ -17,13 +17,13 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 import AddToQueueIcon from '@material-ui/icons/AddToQueue'
 import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered'
 import HomeIcon from '@material-ui/icons/Home'
-import loginIcon from '../../assets/icons/login-icon.svg'
-import logoutIcon from '../../assets/icons/logout-icon.svg'
+import loginIcon from '../assets/icons/login-icon.svg'
+import logoutIcon from '../assets/icons/logout-icon.svg'
 import MenuIcon from '@material-ui/icons/Menu'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from '../../contexts/AuthContext/AuthContext'
-import acesLogo from '../../assets/images/aces-logo.png'
+import AuthContext from '../contexts/AuthContext/AuthContext'
+import acesLogo from '../assets/images/aces-logo.png'
 
 const useStyles = makeStyles({
 	root: {

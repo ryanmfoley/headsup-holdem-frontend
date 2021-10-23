@@ -13,10 +13,10 @@ import {
 } from '@material-ui/core'
 import { io } from 'socket.io-client'
 
-import AuthContext from '../../contexts/AuthContext/AuthContext'
-import Header from '../Header/Header'
-import backgroundImage from '../../assets/images/lobby-background.png'
-import ENDPOINT from '../../config/config'
+import AuthContext from '../contexts/AuthContext/AuthContext'
+import Header from './Header'
+import backgroundImage from '../assets/images/lobby-background.png'
+import ENDPOINT from '../config/config'
 
 let socket
 
