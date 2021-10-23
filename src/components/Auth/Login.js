@@ -13,7 +13,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
-import AuthContext from './AuthContext'
+import AuthContext from '../../contexts/AuthContext/AuthContext'
 import Header from '../Header/Header'
 import ENDPOINT from '../../config/config'
 import backgroundImage from '../../assets/images/lobby-background.png'

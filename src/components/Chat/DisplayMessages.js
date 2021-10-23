@@ -13,31 +13,30 @@ const useStyles = makeStyles({
 const DisplayMessages = ({ messages }) => {
 	const classes = useStyles()
 
-	if (messages.length) {
-		return (
-			<ScrollToBottom className={classes.root}>
-				{messages.map(({ user, text }, index) => (
-					<Box
-						key={index}
-						display='flex'
-						alignItems='center'
-						style={{ padding: '1.3% 0%' }}>
-						<div
-							style={{
-								marginRight: '3%',
-								color: 'pink',
-							}}>
-							<p style={{ margin: 0, padding: 0 }}>{user}:</p>
-						</div>
-						<Box display='flex'>
-							<p style={{ margin: 0, padding: 0, color: 'white' }}>{text}</p>
-						</Box>
+	return messages.length ? (
+		<ScrollToBottom className={classes.root}>
+			{messages.map(({ user, text }, index) => (
+				<Box
+					key={index}
+					display='flex'
+					alignItems='center'
+					sx={{ padding: '1.3% 0%' }}>
+					<div
+						style={{
+							marginRight: '3%',
+							color: 'teal',
+						}}>
+						<p style={{ margin: 0, padding: 0 }}>{user}:</p>
+					</div>
+					<Box display='flex'>
+						<p style={{ margin: 0, padding: 0, color: 'white' }}>{text}</p>
 					</Box>
-				))}
-			</ScrollToBottom>
-		)
-	}
-	return <div className={classes.root}></div>
+				</Box>
+			))}
+		</ScrollToBottom>
+	) : (
+		<div className={classes.root}></div>
+	)
 }
 
 export default DisplayMessages
