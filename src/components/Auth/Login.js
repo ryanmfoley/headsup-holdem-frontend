@@ -13,8 +13,8 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
-import AuthContext from './AuthContext'
-import Header from '../Header/Header'
+import AuthContext from '../../contexts/AuthContext/AuthContext'
+import Header from '../Header'
 import ENDPOINT from '../../config/config'
 import backgroundImage from '../../assets/images/lobby-background.png'
 
@@ -106,7 +106,9 @@ const Login = () => {
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>
-					<Typography variant='h5'>Login</Typography>
+					<Typography className={classes.loginHeading} variant='h5'>
+						Login
+					</Typography>
 				</Grid>
 				<form onSubmit={handleSubmit}>
 					{usernameError ? (

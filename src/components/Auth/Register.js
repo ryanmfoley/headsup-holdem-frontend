@@ -13,7 +13,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
-import Header from '../Header/Header'
+import Header from '../Header'
 import ENDPOINT from '../../config/config'
 import backgroundImage from '../../assets/images/lobby-background.png'
 
@@ -28,7 +28,6 @@ const useStyles = makeStyles({
 	},
 	registerHeading: {
 		margin: 10,
-		outline: '1px solid red',
 	},
 	submitButton: {
 		margin: '15px 0',
@@ -83,7 +82,9 @@ const Register = () => {
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>
-					<Typography variant='h5'>Sign Up!</Typography>
+					<Typography className={classes.registerHeading} variant='h5'>
+						Sign Up!
+					</Typography>
 				</Grid>
 				<form onSubmit={handleSubmit}>
 					{usernameError ? (

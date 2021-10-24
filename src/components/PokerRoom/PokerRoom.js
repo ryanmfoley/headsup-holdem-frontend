@@ -3,7 +3,7 @@ import { useParams, Redirect } from 'react-router-dom'
 import { Box, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from '../Auth/AuthContext'
+import AuthContext from '../../contexts/AuthContext/AuthContext'
 import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
@@ -14,6 +14,13 @@ import Chat from '../Chat/Chat'
 import Options from './Options'
 import woodenFloor from '../../assets/images/floors/wooden-floor.png'
 import greenTable from '../../assets/images/tables/green-table.png'
+import betRaiseCallAlert from '../../assets/sounds/bet-raise-call-alert.wav'
+import checkAlert from '../../assets/sounds/check-alert.wav'
+import dealCard from '../../assets/sounds/deal-card.wav'
+import dealCards from '../../assets/sounds/deal-cards.wav'
+import foldAlert from '../../assets/sounds/fold-alert.wav'
+import winGame from '../../assets/sounds/win-game.wav'
+import winHand from '../../assets/sounds/win-hand.wav'
 import socket from '../../config/socketConfig'
 
 //////////// TODOS ////////////
@@ -24,34 +31,14 @@ import socket from '../../config/socketConfig'
 // is isLogin enough for security or should I use socket.auth?
 // shake animation for incorrect username and/or password
 // possibly remove component folders
-// fix CREATE GAME button in lobby
+// fix logout button
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
 		userSelect: 'none',
 	},
-	'@media screen and (min-width: 768px), (orientation: landscape)': {
-		screenOrientationWarning: {
-			display: 'none',
-		},
-	},
-	'@media screen and (max-width: 767px) and (orientation: portrait)': {
-		screenOrientationWarning: {
-			position: 'absolute',
-			top: '50%',
-			left: '50%',
-			transform: 'translate(-50%, -50%)',
-			width: '80%',
-			'& h2': {
-				fontSize: '5vw',
-				textAlign: 'center',
-			},
-		},
-	},
-	floorBackground: {
-		width: '100%',
-	},
+	floorBackground: { width: '100%' },
 	pokerTable: {
 		position: 'absolute',
 		top: '50%',
@@ -157,12 +144,8 @@ const useStyles = makeStyles({
 			cursor: 'pointer',
 		},
 	},
-	top: {
-		top: '22%',
-	},
-	bottom: {
-		top: '70%',
-	},
+	top: { top: '22%' },
+	bottom: { top: '70%' },
 	'@keyframes loading-ellipsis': {
 		to: { width: 'clamp(18px, 2.05vw, 27px)' },
 	},
@@ -176,6 +159,24 @@ const useStyles = makeStyles({
 		},
 		'100%': {
 			opacity: 1,
+		},
+	},
+	'@media screen and (min-width: 768px)': {
+		screenOrientationWarning: {
+			display: 'none',
+		},
+	},
+	'@media screen and (max-width: 767px)': {
+		screenOrientationWarning: {
+			position: 'absolute',
+			top: '50%',
+			left: '50%',
+			transform: 'translate(-50%, -50%)',
+			width: '80%',
+			'& h2': {
+				fontSize: '5vw',
+				textAlign: 'center',
+			},
 		},
 	},
 })
@@ -244,6 +245,17 @@ const PokerRoom = () => {
 		currentPlayer.isPlayerOne = currentPlayer.id === roomId
 		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
 
+		// Initialize game sounds //
+		const betRaiseCallAlertAudio = new Audio(betRaiseCallAlert)
+		const checkAlertAudio = new Audio(checkAlert)
+		const dealCardAudio = new Audio(dealCard)
+		const dealCardsAudio = new Audio(dealCards)
+		const foldAlertAudio = new Audio(foldAlert)
+		const winGameAudio = new Audio(winGame)
+		const winHandAudio = new Audio(winHand)
+
+		dealCardAudio.volume = 0.2
+
 		const alternateTurn = () => {
 			isTurnRef.current = !isTurnRef.current
 			setIsTurn(isTurnRef.current)
@@ -254,7 +266,7 @@ const PokerRoom = () => {
 		}
 
 		const setTurn = () => {
-			setIsTurn(null) // allows timer bar display to dissapear //
+			setIsTurn(null) // Allows timer bar display to dissapear //
 
 			isTurnRef.current =
 				!isPlayerAllInRef.current && !isPlayerOnBtnRef.current ? true : false
@@ -304,19 +316,24 @@ const PokerRoom = () => {
 				!isTurnRef.current)
 
 		const dealNextCard = () => {
-			switch (bettingRoundRef.current) {
-				case 'preflop':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-flop')
-					break
-				case 'flop':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-turn')
-					break
-				case 'turn':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-river')
-					break
-				default:
-					if (currentPlayer.isPlayerOne) socket.emit('hand-is-over')
-			}
+			setTimeout(() => {
+				switch (bettingRoundRef.current) {
+					case 'preflop':
+						if (currentPlayer.isPlayerOne) socket.emit('deal-flop')
+						dealCardAudio.play()
+						break
+					case 'flop':
+						if (currentPlayer.isPlayerOne) socket.emit('deal-turn')
+						dealCardAudio.play()
+						break
+					case 'turn':
+						if (currentPlayer.isPlayerOne) socket.emit('deal-river')
+						dealCardAudio.play()
+						break
+					default:
+						if (currentPlayer.isPlayerOne) socket.emit('hand-is-over')
+				}
+			}, 1000)
 		}
 
 		const dealCommunityCards = () => {
@@ -392,6 +409,8 @@ const PokerRoom = () => {
 
 		socket.on('deal-preflop', (holeCards) => {
 			if (!isMounted) return null
+
+			dealCardsAudio.play()
 
 			bettingRoundRef.current = 'preflop'
 
@@ -505,6 +524,10 @@ const PokerRoom = () => {
 			if (!isMounted) return null
 
 			showActionDisplay({ type: 'CHECK' })
+
+			// Play check audio //
+			checkAlertAudio.play()
+
 			isRoundOver('check') ? dealNextCard() : alternateTurn()
 		})
 
@@ -512,6 +535,9 @@ const PokerRoom = () => {
 			if (!isMounted) return null
 
 			showActionDisplay({ type: 'CALL' })
+
+			// Play call audio //
+			betRaiseCallAlertAudio.play()
 
 			// Add chips from players chip total to pot total //
 			if (isTurnRef.current) {
@@ -547,6 +573,9 @@ const PokerRoom = () => {
 
 			showActionDisplay({ type: 'BET', value: betAmount })
 
+			// Play bet audio //
+			betRaiseCallAlertAudio.play()
+
 			if (
 				playersChipsRef.current <= betAmount ||
 				opponentsChipsRef.current <= betAmount
@@ -574,6 +603,9 @@ const PokerRoom = () => {
 			if (!isMounted) return null
 
 			showActionDisplay({ type: 'RAISE', value: raiseAmount })
+
+			// Play raise audio //
+			betRaiseCallAlertAudio.play()
 
 			const totalBetSize = callAmount + raiseAmount
 
@@ -603,7 +635,12 @@ const PokerRoom = () => {
 			alternateTurn()
 		})
 
-		socket.on('fold', () => showActionDisplay({ type: 'FOLD' }))
+		socket.on('fold', () => {
+			showActionDisplay({ type: 'FOLD' })
+
+			// Play fold audio //
+			foldAlertAudio.play()
+		})
 
 		socket.on('hand-is-over', () =>
 			socket.emit('showdown', holeCardsRef.current)
@@ -661,6 +698,9 @@ const PokerRoom = () => {
 					// Player Won //
 					playersChipsRef.current += potRef.current
 					setPlayersChips((chips) => chips + potRef.current)
+
+					// Play win-hand audio //
+					winHandAudio.play()
 				} else {
 					// Opponent Won //
 					opponentsChipsRef.current += potRef.current
@@ -680,6 +720,9 @@ const PokerRoom = () => {
 					setWinner(winningPlayer)
 					setTimeout(() => setShowWinDisplay(true), 2000)
 					setTimeout(() => setRedirectToLobby(true), 8000)
+
+					winGameAudio.play()
+
 					return
 				}
 

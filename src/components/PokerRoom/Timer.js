@@ -1,6 +1,8 @@
 import { useState, useEffect, memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
+import timerAlert from '../../assets/sounds/timer-alert.wav'
+
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
@@ -34,13 +36,19 @@ const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 
 		let currentCount = 30
 		const countDownTo = 0
+		const timerAlertAudio = new Audio(timerAlert)
+		timerAlertAudio.volume = 0.2
 
 		window.timerId = setInterval(() => {
 			if (currentCount < 20) {
 				if (!isMounted) return null
 
+				// Display timer //
 				setShowTimer(true)
 				setTimeLeft((timeLeft) => timeLeft - 5)
+
+				// Play sound when timer starts //
+				if (currentCount === 19) timerAlertAudio.play()
 			}
 
 			if (currentCount === countDownTo) {
