@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from 'react'
 import { useParams, Redirect } from 'react-router-dom'
-import { Box, Grid, Paper } from '@material-ui/core'
+import { Box, Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../../contexts/AuthContext/AuthContext'
@@ -22,16 +22,6 @@ import foldAlert from '../../assets/sounds/fold-alert.wav'
 import winGame from '../../assets/sounds/win-game.wav'
 import winHand from '../../assets/sounds/win-hand.wav'
 import socket from '../../config/socketConfig'
-
-//////////// TODOS ////////////
-// 1. Add sound
-// 2. Add socials
-// check responsiveness on all components
-// change buttons to buttons from Poker Game kit
-// is isLogin enough for security or should I use socket.auth?
-// shake animation for incorrect username and/or password
-// possibly remove component folders
-// fix logout button
 
 const useStyles = makeStyles({
 	root: {
@@ -777,7 +767,9 @@ const PokerRoom = () => {
 				display='flex'
 				justifyContent='flex-end'
 				className={classes.navBtnGroup}>
-				<button onClick={() => setRedirectToLobby(true)}>Lobby</button>
+				<Button variant='contained' onClick={() => setRedirectToLobby(true)}>
+					Lobby
+				</Button>
 				<Options
 					setFloorOption={setFloorOption}
 					setTableOption={setTableOption}

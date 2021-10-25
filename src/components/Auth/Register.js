@@ -13,6 +13,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
+import Footer from '../Footer'
 import Header from '../Header'
 import ENDPOINT from '../../config/config'
 import backgroundImage from '../../assets/images/lobby-background.png'
@@ -28,13 +29,14 @@ const useStyles = makeStyles({
 	},
 	registerHeading: {
 		margin: 10,
+		fontSize: 'max(2vw, 26px)',
 	},
 	submitButton: {
 		margin: '15px 0',
 	},
 	paperStyle: {
-		width: 280,
-		margin: 'min(15%, 150px) auto',
+		width: 'max(25%, 280px)',
+		margin: 'min(10vh, 150px) auto 0',
 		padding: 20,
 	},
 	lockIcon: {
@@ -70,13 +72,14 @@ const Register = () => {
 			.catch(() => setUsernameError(true))
 	}
 
-	if (redirect) {
-		return <Redirect to='/home' />
-	}
+	if (redirect) return <Redirect to='/login' />
 
 	return (
 		<div className={classes.root}>
+			{/* ---------- Header ---------- */}
 			<Header />
+
+			{/* ---------- Register Form ---------- */}
 			<Paper elevation={10} className={classes.paperStyle}>
 				<Grid align='center'>
 					<Avatar className={classes.lockIcon}>
@@ -134,6 +137,9 @@ const Register = () => {
 					</Typography>
 				</Link>
 			</Paper>
+
+			{/* ---------- Footer ---------- */}
+			<Footer />
 		</div>
 	)
 }

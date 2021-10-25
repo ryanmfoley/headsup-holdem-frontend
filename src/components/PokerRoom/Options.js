@@ -1,5 +1,6 @@
 import { useState, memo } from 'react'
 import {
+	Button,
 	Menu,
 	MenuItem,
 	FormControl,
@@ -18,7 +19,9 @@ import redTable from '../../assets/images/tables/red-table.png'
 import grayTable from '../../assets/images/tables/gray-table.png'
 
 const useStyles = makeStyles({
-	optionsBtn: { marginLeft: '.4vw' }, 
+	optionsBtn: {
+		marginLeft: '.4vw',
+	},
 	formControl: {
 		margin: '.5vmin',
 		minWidth: 120,
@@ -45,9 +48,12 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 
 	return (
 		<>
-			<button className={classes.optionsBtn} onClick={handleClick}>
+			<Button
+				className={classes.optionsBtn}
+				variant='contained'
+				onClick={handleClick}>
 				Options
-			</button>
+			</Button>
 			<Menu
 				anchorEl={anchorEl}
 				keepMounted

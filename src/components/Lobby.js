@@ -41,7 +41,7 @@ const useStyles = makeStyles({
 		'& th': {
 			color: 'white',
 			fontFamily: 'GraphiqueProNextComp',
-			fontSize: 'max(2vw, 32px)',
+			fontSize: 'max(2vw, 26px)',
 			border: 'none',
 		},
 	},
@@ -51,7 +51,7 @@ const useStyles = makeStyles({
 			height: '5vh',
 			color: 'white',
 			fontFamily: 'Bangers',
-			fontSize: 'clamp(12px, 3.5vw, 38px)',
+			fontSize: 'clamp(30px, 3.5vw, 38px)',
 			border: 'none',
 		},
 	},
@@ -61,7 +61,7 @@ const useStyles = makeStyles({
 	},
 	createGameBtn: {
 		width: '100%',
-		height: '80px',
+		height: '60px',
 		margin: '5px',
 		fontSize: 'max(3vw, 24px)',
 		position: 'relative',

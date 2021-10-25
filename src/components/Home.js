@@ -41,7 +41,10 @@ const Home = () => {
 
 	return (
 		<>
+			{/* ---------- Header ---------- */}
 			<Header />
+
+			{/* ---------- Landing Page Banner ---------- */}
 			<div className={classes.root}>
 				<Grid container>
 					<Grid container item justifyContent='center' xs={12} md={6}>
