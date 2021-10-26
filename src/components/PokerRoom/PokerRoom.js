@@ -23,6 +23,12 @@ import winGame from '../../assets/sounds/win-game.wav'
 import winHand from '../../assets/sounds/win-hand.wav'
 import socket from '../../config/socketConfig'
 
+// To Do List //
+// fix refresh
+// doesn't allow second game
+// add "Get Started" button
+// fix landscape mode for login/register
+
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
