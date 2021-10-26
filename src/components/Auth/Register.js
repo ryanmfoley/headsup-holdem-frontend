@@ -24,8 +24,12 @@ const useStyles = makeStyles({
 		margin: 'auto',
 		backgroundImage: `url(${backgroundImage})`,
 		backgroundPosition: 'center',
-		backgroundRepeat: 'no-repeat',
 		backgroundSize: 'cover',
+	},
+	registerContainer: {
+		width: 'max(25%, 280px)',
+		margin: 'min(10vh, 150px) auto max(5%, 65px)',
+		padding: 20,
 	},
 	registerHeading: {
 		margin: 10,
@@ -34,11 +38,6 @@ const useStyles = makeStyles({
 	submitButton: {
 		margin: '15px 0',
 	},
-	paperStyle: {
-		width: 'max(25%, 280px)',
-		margin: 'min(10vh, 150px) auto 0',
-		padding: 20,
-	},
 	lockIcon: {
 		background: '#3f51b5',
 	},
@@ -46,6 +45,11 @@ const useStyles = makeStyles({
 		textAlign: 'center',
 		'&:hover': {
 			textDecoration: 'underline',
+		},
+	},
+	'@media screen and (max-height: 620px)': {
+		root: {
+			height: 'auto', // allows background to cover screen //
 		},
 	},
 })
@@ -80,7 +84,7 @@ const Register = () => {
 			<Header />
 
 			{/* ---------- Register Form ---------- */}
-			<Paper elevation={10} className={classes.paperStyle}>
+			<Paper elevation={10} className={classes.registerContainer}>
 				<Grid align='center'>
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
