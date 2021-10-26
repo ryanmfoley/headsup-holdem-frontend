@@ -5,13 +5,6 @@ import GitHubIcon from '@material-ui/icons/GitHub'
 import LinkedInIcon from '@material-ui/icons/LinkedIn'
 
 const useStyles = makeStyles({
-	root: {
-		position: 'absolute',
-		right: 0,
-		bottom: 0,
-		left: 0,
-		margin: 'max(5%, 65px) auto',
-	},
 	roleText: {
 		textAlign: 'center',
 		fontSize: '20px',
@@ -35,7 +28,7 @@ const Footer = () => {
 	const classes = useStyles()
 
 	return (
-		<footer className={classes.root}>
+		<footer>
 			<Typography className={classes.roleText} variant='h2'>
 				Developer
 			</Typography>

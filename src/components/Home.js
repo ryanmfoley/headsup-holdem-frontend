@@ -1,4 +1,5 @@
-import { makeStyles, Box, Grid, Typography } from '@material-ui/core'
+import { Link } from 'react-router-dom'
+import { makeStyles, Box, Button, Grid, Typography } from '@material-ui/core'
 
 import Header from './Header'
 import pokerBanner from '../assets/images/poker.png'
@@ -24,15 +25,24 @@ const useStyles = makeStyles({
 		marginTop: '5%',
 		fontSize: '1.9vw',
 	},
+	getStartedBtn: {
+		display: 'none',
+		margin: '5% auto 0',
+		fontSize: 'max(3vw, 16px)',
+	},
 	'@media screen and (max-width: 959px)': {
 		heading: {
 			'& h1': {
-				fontSize: '7vw',
 				marginTop: 0,
+				fontSize: '5vw',
+				textShadow: '3px 3px 1.5px rgba(50, 50, 50, 1)',
 			},
 		},
 		pokerImage: { width: '40%' },
-		text: { fontSize: '4vw' },
+		text: { fontSize: '3vw' },
+		getStartedBtn: {
+			display: 'block',
+		},
 	},
 })
 
@@ -72,6 +82,14 @@ const Home = () => {
 								may use these cards in conjunction with their own hole cards to
 								make the best five-card poker hand possible.
 							</Typography>
+							<Link to='/login' style={{ textDecoration: 'none' }}>
+								<Button
+									className={classes.getStartedBtn}
+									variant='contained'
+									color='primary'>
+									GET STARTED
+								</Button>
+							</Link>
 						</Box>
 					</Grid>
 				</Grid>
