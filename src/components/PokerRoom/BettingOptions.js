@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import {
 	Box,
 	Button,
@@ -126,6 +126,8 @@ const BettingOptions = ({
 	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
 	const [isRaiseAvailable, setIsRaiseAvailable] = useState(null)
 
+	const _isMounted = useRef(true)
+
 	const handleFold = () => socket.emit('fold')
 
 	const handleCheck = () => socket.emit('check')
@@ -161,6 +163,8 @@ const BettingOptions = ({
 		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 
 	useEffect(() => {
+		if (!_isMounted.current) return null
+
 		setIsRaiseAvailable(
 			(!isPlayerAllIn && callAmount && playersChips > callAmount) ||
 				(!isPlayerAllIn && hasCalledBB)
@@ -173,8 +177,11 @@ const BettingOptions = ({
 	}, [playersChips, isPlayerAllIn, isRaiseAvailable, hasCalledBB, callAmount])
 
 	useEffect(() => {
-		if (!timeLeft) {
-			socket.emit('fold')
+		if (!timeLeft) socket.emit('fold')
+
+		// Cancel subscription to useEffect //
+		return () => {
+			_isMounted.current = false
 		}
 	}, [timeLeft])
 

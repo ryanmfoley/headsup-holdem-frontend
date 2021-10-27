@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -128,6 +128,8 @@ const Lobby = () => {
 
 	const { isLoggedIn } = useContext(AuthContext)
 
+	const _isMounted = useRef(true)
+
 	const classes = useStyles()
 
 	const createGame = () => socket.emit('create-game', player)
@@ -137,7 +139,7 @@ const Lobby = () => {
 
 	useEffect(() => {
 		// Clean up controller //
-		let isMounted = true
+		_isMounted.current = true
 
 		socket = io(ENDPOINT)
 
@@ -146,7 +148,7 @@ const Lobby = () => {
 		socket.emit('enter-lobby', username)
 
 		socket.once('enter-lobby', (player) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			setPlayer(player)
 			localStorage.setItem('player', JSON.stringify(player))
@@ -154,12 +156,13 @@ const Lobby = () => {
 
 		socket.on(
 			'players-waiting',
-			(players) => isMounted && setPlayersWaiting(players)
+			(players) => _isMounted.current && setPlayersWaiting(players)
 		)
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isMounted = false
+			_isMounted.current = false
+
 			socket.disconnect()
 		}
 	}, [])

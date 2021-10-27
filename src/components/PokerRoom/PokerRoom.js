@@ -178,6 +178,8 @@ const PokerRoom = () => {
 
 	const { isLoggedIn } = useContext(AuthContext)
 
+	const _isMounted = useRef(true)
+
 	const classes = useStyles()
 
 	// Display variables //
@@ -226,9 +228,6 @@ const PokerRoom = () => {
 
 	////////// Get Player Info //////////
 	useEffect(() => {
-		// Clean up controller //
-		let isMounted = true
-
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
 		currentPlayer.isPlayerOne = currentPlayer.id === roomId
 		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
@@ -385,7 +384,7 @@ const PokerRoom = () => {
 		)
 
 		socket.once('get-players-info', ({ username }) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			setPlayersName(currentPlayer.username)
 			setOpponentsName(username)
@@ -396,7 +395,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('deal-preflop', (holeCards) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			dealCardsAudio.play()
 
@@ -460,7 +459,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('deal-flop', (flop) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			bettingRoundRef.current = 'flop'
 
@@ -476,7 +475,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('deal-turn', (turn) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			// Change betting round to turn //
 			bettingRoundRef.current = 'turn'
@@ -492,7 +491,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('deal-river', (river) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			// Change betting round to river //
 			bettingRoundRef.current = 'river'
@@ -509,7 +508,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('check', () => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			showActionDisplay({ type: 'CHECK' })
 
@@ -520,7 +519,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('call', (callAmount) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			showActionDisplay({ type: 'CALL' })
 
@@ -557,7 +556,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('bet', (betAmount) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			showActionDisplay({ type: 'BET', value: betAmount })
 
@@ -588,7 +587,7 @@ const PokerRoom = () => {
 		})
 
 		socket.on('raise', ({ callAmount, raiseAmount }) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			showActionDisplay({ type: 'RAISE', value: raiseAmount })
 
@@ -637,7 +636,7 @@ const PokerRoom = () => {
 		socket.on(
 			'determine-winner',
 			({ username: opponentsName, holeCards: opponentsCards }) => {
-				if (!isMounted) return null
+				if (!_isMounted.current) return null
 
 				setOpponentsHoleCards(opponentsCards)
 
@@ -665,7 +664,7 @@ const PokerRoom = () => {
 		socket.on(
 			'hand-results',
 			({ winningPlayer, losingPlayer, winningHand, isDraw }) => {
-				if (!isMounted) return null
+				if (!_isMounted.current) return null
 
 				setIsTurn(false)
 				setShowHands(true)
@@ -742,13 +741,15 @@ const PokerRoom = () => {
 		)
 
 		socket.on('opponent-left-game', () => {
+			if (!_isMounted.current) return null
+
 			setHasOpponentLeft(true)
 			setTimeout(() => setRedirectToLobby(true), 2000)
 		})
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isMounted = false
+			_isMounted.current = false
 
 			socket.emit('logout', currentPlayer.id)
 			socket.offAny()
