@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import {
 	Avatar,
@@ -6,13 +6,17 @@ import {
 	FormHelperText,
 	Grid,
 	Paper,
+	Slide,
+	Snackbar,
 	TextField,
 	Typography,
 } from '@material-ui/core'
+import Alert from '@material-ui/lab/Alert'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
+import AuthContext from '../../contexts/AuthContext/AuthContext'
 import Footer from '../Footer'
 import Header from '../Header'
 import ENDPOINT from '../../config/config'
@@ -47,6 +51,10 @@ const useStyles = makeStyles({
 			textDecoration: 'underline',
 		},
 	},
+	accountCreatedAlert: {
+		background: 'white',
+		color: 'black',
+	},
 	'@media screen and (max-height: 620px)': {
 		root: {
 			height: 'auto', // allows background to cover screen //
@@ -54,11 +62,18 @@ const useStyles = makeStyles({
 	},
 })
 
+const TransitionDown = (props) => <Slide {...props} direction='down' />
+
 const Register = () => {
+	const [openAlert, setOpenAlert] = useState(false)
 	const [redirect, setRedirect] = useState(false)
 	const [usernameError, setUsernameError] = useState(false)
 
+	const { setIsLoggedIn } = useContext(AuthContext)
+
 	const classes = useStyles()
+
+	const handleClose = () => setOpenAlert(false)
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -72,11 +87,19 @@ const Register = () => {
 
 		axios
 			.post(url, data)
-			.then((res) => setRedirect(true))
+			.then((res) => {
+				setOpenAlert(true)
+
+				// Store username to localStorage //
+				localStorage.setItem('username', JSON.stringify(data.username))
+
+				setIsLoggedIn(true)
+				setTimeout(() => setRedirect(true), 1000)
+			})
 			.catch(() => setUsernameError(true))
 	}
 
-	if (redirect) return <Redirect to='/login' />
+	if (redirect) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
@@ -144,6 +167,16 @@ const Register = () => {
 
 			{/* ---------- Footer ---------- */}
 			<Footer />
+
+			{/* ---------- Account Created Alert ---------- */}
+			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				open={openAlert}
+				TransitionComponent={TransitionDown}>
+				<Alert onClose={handleClose} severity='success'>
+					Account created!
+				</Alert>
+			</Snackbar>
 		</div>
 	)
 }
