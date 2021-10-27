@@ -755,8 +755,7 @@ const PokerRoom = () => {
 		}
 	}, [roomId])
 
-	if (!isLoggedIn || redirectToLobby || showWinDisplay)
-		return <Redirect to='/lobby' />
+	if (!isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>
