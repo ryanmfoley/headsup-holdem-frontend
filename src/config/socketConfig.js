@@ -1,7 +1,9 @@
-import { io } from 'socket.io-client'
+// import { io } from 'socket.io-client'
 
-import ENDPOINT from './config'
+// import ENDPOINT from './config'
 
-const socket = io(ENDPOINT, { closeOnBeforeunload: false })
+// const socket = io(ENDPOINT, { closeOnBeforeunload: false })
 
-export default socket
+// console.log('socketConfig', socket)
+
+// export default socket

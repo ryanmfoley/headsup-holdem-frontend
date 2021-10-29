@@ -22,7 +22,7 @@ import logoutIcon from '../assets/icons/logout-icon.svg'
 import MenuIcon from '@material-ui/icons/Menu'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from '../contexts/AuthContext/AuthContext'
+import AuthContext from '../contexts/AuthContext'
 import acesLogo from '../assets/images/aces-logo.png'
 
 const useStyles = makeStyles({
@@ -122,11 +122,11 @@ const useStyles = makeStyles({
 })
 
 const Header = ({ window }) => {
+	const classes = useStyles()
+
 	const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext)
 
 	const [drawerOpen, setDrawerOpen] = useState(false)
-
-	const classes = useStyles()
 
 	const handleDrawerToggle = () => setDrawerOpen(!drawerOpen)
 

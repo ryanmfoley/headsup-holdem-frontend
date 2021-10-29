@@ -24,9 +24,9 @@ const useStyles = makeStyles({
 })
 
 const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
-	const [showTimer, setShowTimer] = useState(false)
+	const classes = useStyles()
 
-	const classes = useStyles(showTimer)
+	const [showTimer, setShowTimer] = useState(false)
 
 	useEffect(() => {
 		// Clean up controller //

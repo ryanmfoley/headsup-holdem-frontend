@@ -33,6 +33,7 @@ const useStyles = makeStyles({
 
 const CommunityCards = ({ communityCards, deckOption }) => {
 	const classes = useStyles()
+
 	const cards = [...communityCards]
 
 	// Add null to display outline for empty cards //

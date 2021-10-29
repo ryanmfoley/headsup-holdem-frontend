@@ -3,7 +3,8 @@ import { useParams, Redirect } from 'react-router-dom'
 import { Box, Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from '../../contexts/AuthContext/AuthContext'
+import AuthContext from '../../contexts/AuthContext'
+import SocketContext from '../../contexts/SocketContext'
 import BettingOptions from './BettingOptions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
@@ -21,7 +22,6 @@ import dealCards from '../../assets/sounds/deal-cards.wav'
 import foldAlert from '../../assets/sounds/fold-alert.wav'
 import winGame from '../../assets/sounds/win-game.wav'
 import winHand from '../../assets/sounds/win-hand.wav'
-import socket from '../../config/socketConfig'
 
 const useStyles = makeStyles({
 	root: {
@@ -174,13 +174,14 @@ const BIG_BLIND = 20
 const TIMER = 100
 
 const PokerRoom = () => {
+	const classes = useStyles()
+
 	const { roomId } = useParams()
 
 	const { isLoggedIn } = useContext(AuthContext)
+	const { socket } = useContext(SocketContext)
 
 	const _isMounted = useRef(true)
-
-	const classes = useStyles()
 
 	// Display variables //
 	const [playersName, setPlayersName] = useState('')
@@ -226,8 +227,10 @@ const PokerRoom = () => {
 	const [pot, setPot] = useState(0)
 	const [callAmount, setCallAmount] = useState(0)
 
-	////////// Get Player Info //////////
 	useEffect(() => {
+		socket.connect()
+
+		// Get Player Info //
 		const currentPlayer = JSON.parse(localStorage.getItem('player'))
 		currentPlayer.isPlayerOne = currentPlayer.id === roomId
 		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
@@ -375,13 +378,11 @@ const PokerRoom = () => {
 			}
 		}
 
-		// Join socket to the roomId //
+		// Join socket to the room //
 		socket.emit('enter-poker-room', { roomId, currentPlayer })
 
 		// Listen for opponent to enter the room //
-		socket.once('start-game', () =>
-			socket.emit('get-players-info', currentPlayer)
-		)
+		socket.once('start-game', () => socket.emit('get-players-info'))
 
 		socket.once('get-players-info', ({ username }) => {
 			if (!_isMounted.current) return null
@@ -754,7 +755,7 @@ const PokerRoom = () => {
 			socket.emit('logout', currentPlayer.id)
 			socket.offAny()
 		}
-	}, [roomId])
+	}, [socket, roomId])
 
 	if (!isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
 

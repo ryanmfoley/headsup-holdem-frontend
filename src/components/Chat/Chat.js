@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { Box, Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
+import SocketContext from '../../contexts/SocketContext'
 import DisplayMessages from './DisplayMessages'
-import socket from '../../config/socketConfig'
 
 const useStyles = makeStyles({
 	root: {
@@ -37,8 +37,12 @@ const useStyles = makeStyles({
 const Chat = () => {
 	const classes = useStyles()
 
+	const { socket } = useContext(SocketContext)
+
 	const [message, setMessage] = useState('')
 	const [messages, setMessages] = useState([])
+
+	const _isMounted = useRef(true)
 
 	const handleSend = (e) => {
 		e.preventDefault()
@@ -50,21 +54,19 @@ const Chat = () => {
 	}
 
 	useEffect(() => {
-		// Clean up controller //
-		let isMounted = true
-
 		socket.on('chat-message', (message) => {
-			if (!isMounted) return null
+			if (!_isMounted.current) return null
 
 			setMessages((messages) => [...messages, message])
 		})
 
 		// Cancel subscription to useEffect //
 		return () => {
-			isMounted = false
+			_isMounted.current = false
+
 			socket.offAny()
 		}
-	}, [])
+	}, [socket])
 
 	return (
 		<Paper className={classes.root}>
