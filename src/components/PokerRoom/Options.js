@@ -30,6 +30,7 @@ const useStyles = makeStyles({
 
 const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 	const classes = useStyles()
+  
 	const [anchorEl, setAnchorEl] = useState(null)
 
 	const handleClick = (e) => {

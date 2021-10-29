@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react'
+import { useState, useEffect, useContext, useRef, memo } from 'react'
 import {
 	Box,
 	Button,
@@ -14,7 +14,7 @@ import {
 	withStyles,
 } from '@material-ui/core/styles'
 
-import socket from '../../config/socketConfig'
+import SocketContext from '../../contexts/SocketContext'
 
 const theme = createTheme({
 	overrides: {
@@ -123,6 +123,9 @@ const BettingOptions = ({
 	timeLeft,
 }) => {
 	const classes = useStyles()
+
+	const { socket } = useContext(SocketContext)
+
 	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
 	const [isRaiseAvailable, setIsRaiseAvailable] = useState(null)
 
@@ -182,8 +185,10 @@ const BettingOptions = ({
 		// Cancel subscription to useEffect //
 		return () => {
 			_isMounted.current = false
+
+			socket.offAny()
 		}
-	}, [timeLeft])
+	}, [socket, timeLeft])
 
 	return (
 		<div className={classes.root}>

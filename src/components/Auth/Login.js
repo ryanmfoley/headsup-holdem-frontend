@@ -13,7 +13,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
-import AuthContext from '../../contexts/AuthContext/AuthContext'
+import AuthContext from '../../contexts/AuthContext'
 import Footer from '../Footer'
 import Header from '../Header'
 import ENDPOINT from '../../config/config'
@@ -56,13 +56,13 @@ const useStyles = makeStyles({
 })
 
 const Login = () => {
-	const [redirect, setRedirect] = useState(false)
-	const [usernameError, setUsernameError] = useState(false)
-	const [passwordError, setPasswordError] = useState(false)
+	const classes = useStyles()
 
 	const { setIsLoggedIn } = useContext(AuthContext)
 
-	const classes = useStyles()
+	const [redirect, setRedirect] = useState(false)
+	const [usernameError, setUsernameError] = useState(false)
+	const [passwordError, setPasswordError] = useState(false)
 
 	const handleSubmit = (e) => {
 		e.preventDefault()

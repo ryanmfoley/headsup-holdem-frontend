@@ -11,14 +11,11 @@ import {
 	TableHead,
 	TableRow,
 } from '@material-ui/core'
-import { io } from 'socket.io-client'
 
-import AuthContext from '../contexts/AuthContext/AuthContext'
+import AuthContext from '../contexts/AuthContext'
+import SocketContext from '../contexts/SocketContext'
 import Header from './Header'
 import backgroundImage from '../assets/images/lobby-background.png'
-import ENDPOINT from '../config/config'
-
-let socket
 
 const useStyles = makeStyles({
 	root: {
@@ -40,7 +37,7 @@ const useStyles = makeStyles({
 		color: 'white',
 		'& th': {
 			color: 'white',
-			fontFamily: 'GraphiqueProNextComp',
+			fontFamily: 'GraphiqueProNextComp, Arial',
 			fontSize: 'max(2vw, 26px)',
 			border: 'none',
 		},
@@ -123,14 +120,15 @@ const useStyles = makeStyles({
 })
 
 const Lobby = () => {
+	const classes = useStyles()
+
+	const { isLoggedIn } = useContext(AuthContext)
+	const { socket } = useContext(SocketContext)
+
 	const [player, setPlayer] = useState({})
 	const [playersWaiting, setPlayersWaiting] = useState([])
 
-	const { isLoggedIn } = useContext(AuthContext)
-
 	const _isMounted = useRef(true)
-
-	const classes = useStyles()
 
 	const createGame = () => socket.emit('create-game', player)
 
@@ -138,34 +136,34 @@ const Lobby = () => {
 		socket.emit('update-players-waiting', e.target.dataset.id)
 
 	useEffect(() => {
-		// Clean up controller //
-		_isMounted.current = true
-
-		socket = io(ENDPOINT)
+		socket.connect()
 
 		const username = JSON.parse(localStorage.getItem('username'))
 
-		socket.emit('enter-lobby', username)
-
-		socket.once('enter-lobby', (player) => {
+		const handleEnterLobby = (player) => {
 			if (!_isMounted.current) return null
 
 			setPlayer(player)
 			localStorage.setItem('player', JSON.stringify(player))
-		})
+		}
 
-		socket.on(
-			'players-waiting',
-			(players) => _isMounted.current && setPlayersWaiting(players)
-		)
+		const fetchPlayersWaiting = (players) =>
+			_isMounted.current && setPlayersWaiting(players)
+
+		socket.emit('enter-lobby', username)
+
+		socket.once('enter-lobby', handleEnterLobby)
+
+		socket.on('players-waiting', fetchPlayersWaiting)
 
 		// Cancel subscription to useEffect //
 		return () => {
 			_isMounted.current = false
 
-			socket.disconnect()
+			socket.close()
+			socket.off()
 		}
-	}, [])
+	}, [socket])
 
 	if (!isLoggedIn) return <Redirect to='/login' />
 

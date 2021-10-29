@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Route } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 
-import AuthContext from './contexts/AuthContext/AuthContext'
+import AuthContext from './contexts/AuthContext'
+import SocketContext, { socket } from './contexts/SocketContext'
 import Home from './components/Home'
 import HandRankings from './components/HandRankings'
 import Lobby from './components/Lobby'
@@ -26,11 +27,13 @@ const App = () => {
 		<div className={classes.root}>
 			<AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
 				<Route exact path='/' component={Home} />
-				<Route path='/lobby' component={Lobby} />
-				<Route path='/hand-rankings' component={HandRankings} />
-				<Route path='/login' component={Login} />
-				<Route path='/register' component={Register} />
-				<Route path='/rooms/:roomId' component={PokerRoom} />
+				<SocketContext.Provider value={{ socket }}>
+					<Route path='/lobby' component={Lobby} />
+					<Route path='/hand-rankings' component={HandRankings} />
+					<Route path='/login' component={Login} />
+					<Route path='/register' component={Register} />
+					<Route path='/rooms/:roomId' component={PokerRoom} />
+				</SocketContext.Provider>
 			</AuthContext.Provider>
 		</div>
 	)
