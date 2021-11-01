@@ -39,17 +39,24 @@ const Chat = () => {
 
 	const { socket } = useContext(SocketContext)
 
-	const [message, setMessage] = useState('')
-	const [messages, setMessages] = useState([])
-
 	const _isMounted = useRef(true)
+
+	const messageRef = useRef('')
+	const [messages, setMessages] = useState([])
 
 	const handleSend = (e) => {
 		e.preventDefault()
 
-		if (message) {
+		// Clear input //
+		e.target.message.value = ''
+
+		if (messageRef.current) {
 			// Send message to server
-			socket.emit('send-chat-message', message, () => setMessage(''))
+			socket.emit(
+				'send-chat-message',
+				messageRef.current,
+				() => (messageRef.current = '')
+			)
 		}
 	}
 
@@ -71,22 +78,23 @@ const Chat = () => {
 	return (
 		<Paper className={classes.root}>
 			<DisplayMessages messages={messages} />
-			<Box display='flex'>
-				<Box flexGrow={1} m={0} p={0}>
-					<input
-						type='text'
-						className={classes.chatInput}
-						value={message}
-						onChange={(e) => setMessage(e.target.value)}
-						onKeyPress={(e) => (e.key === 'Enter' ? handleSend(e) : null)}
-					/>
+			<form onSubmit={handleSend}>
+				<Box display='flex'>
+					<Box flexGrow={1} m={0} p={0}>
+						<input
+							type='text'
+							id='message'
+							className={classes.chatInput}
+							onChange={(e) => (messageRef.current = e.target.value)}
+						/>
+					</Box>
+					<Box display='flex' alignItems='center'>
+						<Button type='submit' className={classes.sendButton}>
+							Send
+						</Button>
+					</Box>
 				</Box>
-				<Box display='flex' alignItems='center'>
-					<Button className={classes.sendButton} onClick={handleSend}>
-						Send
-					</Button>
-				</Box>
-			</Box>
+			</form>
 		</Paper>
 	)
 }
