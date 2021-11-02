@@ -748,6 +748,9 @@ const PokerRoom = () => {
 			setTimeout(() => setRedirectToLobby(true), 2000)
 		})
 
+		// Emit logout when player exits game //
+		window.addEventListener('beforeunload', () => socket.emit('logout'))
+
 		// Cancel subscription to useEffect //
 		return () => {
 			_isMounted.current = false
