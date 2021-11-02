@@ -121,6 +121,7 @@ const BettingOptions = ({
 	isPlayerAllIn,
 	hasCalledBB,
 	timeLeft,
+	setIsTurn,
 }) => {
 	const classes = useStyles()
 
@@ -131,17 +132,31 @@ const BettingOptions = ({
 
 	const _isMounted = useRef(true)
 
-	const handleFold = () => socket.emit('fold')
+	const handleFold = () => {
+		socket.emit('fold')
 
-	const handleCheck = () => socket.emit('check')
+		setIsTurn(false)
+	}
 
-	const handleCall = () => socket.emit('call', callAmount)
+	const handleCheck = () => {
+		socket.emit('check')
+
+		setIsTurn(false)
+	}
+
+	const handleCall = () => {
+		socket.emit('call', callAmount)
+
+		setIsTurn(false)
+	}
 
 	const handleBet = () => {
 		if (betAmount >= BIG_BLIND || betAmount === playersChips)
 			socket.emit('bet', {
 				betAmount: Math.min(playersChips, opponentsChips, betAmount),
 			})
+
+		setIsTurn(false)
 	}
 
 	const handleRaise = () => {
@@ -152,6 +167,8 @@ const BettingOptions = ({
 				callAmount,
 				raiseAmount,
 			})
+
+		setIsTurn(false)
 	}
 
 	const handleSliderChange = (e, newValue) => {

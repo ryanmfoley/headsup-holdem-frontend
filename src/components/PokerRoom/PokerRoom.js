@@ -868,7 +868,7 @@ const PokerRoom = () => {
 					<Chat />
 				</Grid>
 				<Grid item xs={6}>
-					<div>
+					<>
 						{isTurn && (
 							<BettingOptions
 								playersChips={playersChips}
@@ -877,9 +877,10 @@ const PokerRoom = () => {
 								isPlayerAllIn={isPlayerAllIn}
 								hasCalledBB={hasCalledBB}
 								timeLeft={timeLeft}
+								setIsTurn={setIsTurn}
 							/>
 						)}
-					</div>
+					</>
 				</Grid>
 			</Box>
 
