@@ -309,15 +309,16 @@ const PokerRoom = () => {
 			setTimeout(() => {
 				switch (bettingRoundRef.current) {
 					case 'preflop':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-flop')
+						if (currentPlayer.isPlayerOne) socket.emit('deal-flop', true)
+
 						dealCardAudio.play()
 						break
 					case 'flop':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-turn')
+						if (currentPlayer.isPlayerOne) socket.emit('deal-turn', true)
 						dealCardAudio.play()
 						break
 					case 'turn':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-river')
+						if (currentPlayer.isPlayerOne) socket.emit('deal-river', true)
 						dealCardAudio.play()
 						break
 					default:
@@ -330,15 +331,15 @@ const PokerRoom = () => {
 			switch (bettingRoundRef.current) {
 				case 'preflop':
 					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-flop'),
+						() => currentPlayer.isPlayerOne && socket.emit('deal-flop', true),
 						1500
 					)
 					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-turn'),
+						() => currentPlayer.isPlayerOne && socket.emit('deal-turn', true),
 						3000
 					)
 					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
+						() => currentPlayer.isPlayerOne && socket.emit('deal-river', true),
 						4500
 					)
 					setTimeout(
@@ -628,6 +629,23 @@ const PokerRoom = () => {
 
 			// Play fold audio //
 			foldAlertAudio.play()
+
+			// Emit deal events to prevent extra emitting next hand //
+			switch (bettingRoundRef.current) {
+				case 'preflop':
+					if (currentPlayer.isPlayerOne) socket.emit('deal-flop', false)
+					if (currentPlayer.isPlayerOne) socket.emit('deal-turn', false)
+					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					break
+				case 'flop':
+					if (currentPlayer.isPlayerOne) socket.emit('deal-turn', false)
+					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					break
+				case 'turn':
+					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					break
+				default:
+			}
 		})
 
 		socket.on('hand-is-over', () =>
@@ -749,7 +767,9 @@ const PokerRoom = () => {
 		})
 
 		// Emit logout when player exits game //
-		window.addEventListener('beforeunload', () => socket.emit('logout'))
+		window.addEventListener('beforeunload', () =>
+			socket.emit('logout', currentPlayer.id)
+		)
 
 		// Cancel subscription to useEffect //
 		return () => {
