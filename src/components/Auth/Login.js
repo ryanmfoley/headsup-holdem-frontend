@@ -87,13 +87,8 @@ const Login = () => {
 					// Set token to localStorage //
 					localStorage.setItem('jwtToken', token)
 
-					// Set token to Auth header //
-					axios.defaults.headers.common['Authorizatioin'] = token
 					setIsLoggedIn(true)
 					setRedirect(true)
-				} else {
-					// Delete Auth header //
-					delete axios.defaults.headers.common['Authorization']
 				}
 			})
 			.catch((err) => {
