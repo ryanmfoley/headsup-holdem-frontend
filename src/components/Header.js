@@ -182,7 +182,7 @@ const Header = ({ window }) => {
 							/>
 						</ListItem>
 					</Link>
-					<Link to='/' style={{ textDecoration: 'none' }}>
+					<Link to='/register' style={{ textDecoration: 'none' }}>
 						<ListItem button>
 							<ListItemIcon>
 								<AccountCircleIcon style={{ color: 'white' }} />
