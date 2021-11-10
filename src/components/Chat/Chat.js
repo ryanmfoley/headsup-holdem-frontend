@@ -47,17 +47,13 @@ const Chat = () => {
 	const handleSend = (e) => {
 		e.preventDefault()
 
-		// Clear input //
-		e.target.message.value = ''
-
-		if (messageRef.current) {
+		if (messageRef.current.value)
 			// Send message to server
 			socket.emit(
 				'send-chat-message',
-				messageRef.current,
-				() => (messageRef.current = '')
+				messageRef.current.value,
+				() => (messageRef.current.value = '')
 			)
-		}
 	}
 
 	useEffect(() => {
@@ -83,9 +79,10 @@ const Chat = () => {
 					<Box flexGrow={1} m={0} p={0}>
 						<input
 							type='text'
-							id='message'
 							className={classes.chatInput}
-							onChange={(e) => (messageRef.current = e.target.value)}
+							ref={(message) => (messageRef.current = message)}
+							defaultValue={messageRef.current}
+							autoComplete='off'
 						/>
 					</Box>
 					<Box display='flex' alignItems='center'>
