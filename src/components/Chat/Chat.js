@@ -81,7 +81,6 @@ const Chat = () => {
 							type='text'
 							className={classes.chatInput}
 							ref={(message) => (messageRef.current = message)}
-							defaultValue={messageRef.current}
 							autoComplete='off'
 						/>
 					</Box>
