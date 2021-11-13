@@ -91,7 +91,8 @@ const Register = () => {
 				setOpenAlert(true)
 
 				// Store username to localStorage //
-				localStorage.setItem('username', JSON.stringify(data.username))
+				const username = data.username.trim().slice(0, 8)
+				localStorage.setItem('username', JSON.stringify(username))
 
 				setIsLoggedIn(true)
 				setTimeout(() => setRedirect(true), 1000)
