@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useRef } from 'react'
-import { useParams, Redirect } from 'react-router-dom'
+import { Redirect, useParams } from 'react-router-dom'
 import { Box, Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -12,7 +12,7 @@ import PlayersHud from './PlayersHud'
 import WinDisplay from './WinDisplay'
 import Timer from './Timer'
 import Chat from '../Chat/Chat'
-import Options from './Options'
+import Options from './DisplayOptions'
 import woodenFloor from '../../assets/images/floors/wooden-floor.png'
 import greenTable from '../../assets/images/tables/green-table.png'
 import betRaiseCallAlert from '../../assets/sounds/bet-raise-call-alert.wav'
@@ -126,10 +126,18 @@ const useStyles = makeStyles({
 		zIndex: 1,
 		display: 'flex',
 		justifyContent: 'flex-end',
+		boxSizing: 'border-box',
 		margin: '.5vw',
 		'& button': {
 			fontSize: '1.2vw',
 			cursor: 'pointer',
+			padding: '.5vw',
+		},
+	},
+	leaveGameBtn: {
+		'&:hover': {
+			color: 'red',
+			outline: '1px solid red',
 		},
 	},
 	top: { top: '22%' },
@@ -789,8 +797,11 @@ const PokerRoom = () => {
 				display='flex'
 				justifyContent='flex-end'
 				className={classes.navBtnGroup}>
-				<Button variant='contained' onClick={() => setRedirectToLobby(true)}>
-					Lobby
+				<Button
+					className={classes.leaveGameBtn}
+					variant='contained'
+					onClick={() => setRedirectToLobby(true)}>
+					Leave Game
 				</Button>
 				<Options
 					setFloorOption={setFloorOption}

@@ -21,6 +21,10 @@ import grayTable from '../../assets/images/tables/gray-table.png'
 const useStyles = makeStyles({
 	optionsBtn: {
 		marginLeft: '.4vw',
+		'&:hover': {
+			color: 'blue',
+			outline: '1px solid blue',
+		},
 	},
 	formControl: {
 		margin: '.5vmin',
@@ -28,9 +32,9 @@ const useStyles = makeStyles({
 	},
 })
 
-const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
+const DisplayOptions = ({ setFloorOption, setTableOption, setDeckOption }) => {
 	const classes = useStyles()
-  
+
 	const [anchorEl, setAnchorEl] = useState(null)
 
 	const handleClick = (e) => {
@@ -53,7 +57,7 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 				className={classes.optionsBtn}
 				variant='contained'
 				onClick={handleClick}>
-				Options
+				Display Options
 			</Button>
 			<Menu
 				anchorEl={anchorEl}
@@ -116,4 +120,4 @@ const Options = ({ setFloorOption, setTableOption, setDeckOption }) => {
 	)
 }
 
-export default memo(Options)
+export default memo(DisplayOptions)

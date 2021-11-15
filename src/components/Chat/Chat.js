@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext, useRef, memo } from 'react'
 import { Box, Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -95,4 +95,4 @@ const Chat = () => {
 	)
 }
 
-export default Chat
+export default memo(Chat)
