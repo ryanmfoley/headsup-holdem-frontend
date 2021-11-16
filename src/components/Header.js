@@ -17,43 +17,63 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 import AddToQueueIcon from '@material-ui/icons/AddToQueue'
 import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered'
 import HomeIcon from '@material-ui/icons/Home'
-import loginIcon from '../assets/icons/login-icon.svg'
-import logoutIcon from '../assets/icons/logout-icon.svg'
 import MenuIcon from '@material-ui/icons/Menu'
 import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../contexts/AuthContext'
-import acesLogo from '../assets/images/aces-logo.png'
+import playingCardBackground from '../assets/images/playing-card-pattern.jpeg'
+import loginIcon from '../assets/icons/login-icon.svg'
+import logoutIcon from '../assets/icons/logout-icon.svg'
 
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
 		display: 'flex',
 		justifyContent: 'center',
-		height: '7vw',
+		height: '6vw',
 		background: '#333333',
 	},
 	menuButton: {
-		marginLeft: 'auto',
+		marginRight: 'auto',
 		color: 'white',
 	},
 	brandLogo: {
-		width: '7vw',
+		width: '6vw',
+		transform: 'rotate(-10deg)',
 	},
-	title: {
-		margin: '0 2vw',
-		fontFamily: 'AmazinglyBeautiful',
-		fontSize: '3vw',
-		color: 'white',
+	titleWrapper: {
+		display: 'flex',
+		marginLeft: '0.5vw',
+		marginRight: '2vw',
+		padding: '.25vw',
+		boxShadow: '0px 0px .2vw 0px white',
+		border: '.1vw solid white',
+		borderRadius: '.3vw',
 	},
-	mobileViewTitle: {
-		position: 'absolute',
-		left: '50%',
-		transform: 'translateX(-50%)',
-		margin: '0 2vw',
-		fontFamily: 'AmazinglyBeautiful',
-		fontSize: '4vw',
+	titleLeft: {
+		margin: 0,
+		padding: '.15vw',
+		background: 'white',
+		color: '#333333',
+		fontSize: '2.2vw',
+		backgroundImage: `url(${playingCardBackground})`,
+		backgroundSize: '100%',
+	},
+	titleRight: {
+		margin: 0,
+		padding: '.15vw',
 		color: 'white',
+		fontSize: '2.2vw',
+		backgroundImage: `url(${playingCardBackground})`,
+		backgroundSize: '100%',
+		'-webkit-background-clip': 'text',
+		'-webkit-text-fill-color': 'transparent',
+	},
+	mobileTitleLeft: {
+		fontSize: '8vw',
+	},
+	mobileTitleRight: {
+		fontSize: '8vw',
 	},
 	mobileNavLinksContainer: {
 		background: '#333333',
@@ -61,19 +81,20 @@ const useStyles = makeStyles({
 	mobileNavLink: {
 		color: 'white',
 	},
-	navLinksContainer: { marginLeft: '0 1vw' },
+	navLinksContainer: {
+		marginLeft: '0 1vw',
+	},
 	navLink: {
 		minWidth: '3vw',
 		margin: '0 1vw',
 		padding: 0,
 		color: 'white',
-		fontSize: '1.4vw',
+		fontSize: '1.2vw',
 		'&:hover, &:focus': {
 			transform: 'rotate(-5deg)',
 			transformOrigin: 'bottom left',
 		},
 	},
-	paper: { background: 'red' },
 	authButtons: {
 		position: 'absolute',
 		top: '50%',
@@ -107,17 +128,32 @@ const useStyles = makeStyles({
 		margin: 0,
 		fontSize: '1.3vw',
 	},
-	divider: { background: 'white' },
+	divider: {
+		background: 'white',
+	},
 	'@media screen and (min-width: 768px)': {
 		mobileHeader: {
 			display: 'none',
 		},
 	},
 	'@media screen and (max-width: 767px)': {
+		root: {
+			height: '14vw',
+		},
 		desktopHeader: {
 			display: 'none',
 		},
-		title: { fontSize: '5vw' },
+		titleWrapper: {
+			position: 'absolute',
+			left: '50%',
+			transform: 'translateX(-50%)',
+		},
+		titleLeft: {
+			fontSize: '4.5vw',
+		},
+		titleRight: {
+			fontSize: '4.5vw',
+		},
 	},
 })
 
@@ -206,14 +242,11 @@ const Header = ({ window }) => {
 			<AppBar className={classes.root} color='default' position='static'>
 				{/* ---------- Large Screens  ---------- */}
 				<Toolbar className={classes.desktopHeader} variant='dense'>
-					{/* ---------- Brand Logo and Title ---------- */}
-					<img
-						src={acesLogo}
-						className={classes.brandLogo}
-						alt='poker chips icon'
-					/>
-
-					<h1 className={classes.title}>Heads-Up Hold'em</h1>
+					{/* ---------- Title ---------- */}
+					<div className={classes.titleWrapper}>
+						<h1 className={classes.titleLeft}>HEADS-UP</h1>
+						<h1 className={classes.titleRight}>HOLD'EM</h1>
+					</div>
 
 					{/* ---------- Nav Links ---------- */}
 					<Box
@@ -279,14 +312,11 @@ const Header = ({ window }) => {
 
 				{/* ---------- Small Screens ---------- */}
 				<Toolbar className={classes.mobileHeader} variant='dense'>
-					{/* ---------- Brand Logo and Title ---------- */}
-					<img
-						src={acesLogo}
-						className={classes.brandLogo}
-						alt='poker chips icon'
-					/>
-
-					<h1 className={classes.title}>Heads-Up Hold'em</h1>
+					{/* ---------- Title ---------- */}
+					<div className={classes.titleWrapper}>
+						<h1 className={classes.titleLeft}>HEADS-UP</h1>
+						<h1 className={classes.titleRight}>HOLD'EM</h1>
+					</div>
 
 					<IconButton
 						className={classes.menuButton}

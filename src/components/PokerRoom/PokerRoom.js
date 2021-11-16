@@ -28,7 +28,9 @@ const useStyles = makeStyles({
 		position: 'relative',
 		userSelect: 'none',
 	},
-	floorBackground: { width: '100%' },
+	floorBackground: {
+		width: '100%',
+	},
 	pokerTable: {
 		position: 'absolute',
 		top: '50%',
@@ -140,10 +142,16 @@ const useStyles = makeStyles({
 			outline: '1px solid red',
 		},
 	},
-	top: { top: '22%' },
-	bottom: { top: '70%' },
+	top: {
+		top: '22%',
+	},
+	bottom: {
+		top: '70%',
+	},
 	'@keyframes loading-ellipsis': {
-		to: { width: 'clamp(18px, 2.05vw, 27px)' },
+		to: {
+			width: 'clamp(18px, 2.05vw, 27px)',
+		},
 	},
 	'@keyframes tracking-in-expand-fwd': {
 		'0%': {
