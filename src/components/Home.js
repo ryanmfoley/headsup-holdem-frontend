@@ -10,7 +10,9 @@ const useStyles = makeStyles({
 		background:
 			'radial-gradient(circle, rgba(1,165,105,1) 0%, rgba(0,95,89,1) 100%)',
 	},
-	pokerImage: { width: '100%' },
+	pokerImage: {
+		width: '90%',
+	},
 	heading: {
 		padding: '3%',
 		textAlign: 'center',
@@ -38,8 +40,12 @@ const useStyles = makeStyles({
 				textShadow: '3px 3px 1.5px rgba(50, 50, 50, 1)',
 			},
 		},
-		pokerImage: { width: '40%' },
-		text: { fontSize: '3vw' },
+		pokerImage: {
+			width: '40%',
+		},
+		text: {
+			fontSize: '3vw',
+		},
 		getStartedBtn: {
 			display: 'block',
 		},

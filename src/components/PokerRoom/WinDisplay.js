@@ -121,9 +121,15 @@ const useStyles = makeStyles({
 		animation: '$tracking-in-expand-fwd 1s both',
 	},
 	'@keyframes makeItRain': {
-		from: { opacity: 0 },
-		'50%': { opacity: 1 },
-		to: { transform: 'translateY(40vw)' },
+		from: {
+			opacity: 0,
+		},
+		'50%': {
+			opacity: 1,
+		},
+		to: {
+			transform: 'translateY(40vw)',
+		},
 	},
 	'@keyframes scale-in-ver-center': {
 		'0%': {
