@@ -6,8 +6,7 @@ import pokerHandRankings from '../assets/images/poker-hand-rankings.jpeg'
 const useStyles = makeStyles({
 	root: {
 		width: '100%',
-		height: '100%',
-		paddingTop: '10%',
+		paddingTop: '5%',
 		background:
 			'radial-gradient(circle, rgba(1,165,105,1) 0%, rgba(0,95,89,1) 100%)',
 	},
