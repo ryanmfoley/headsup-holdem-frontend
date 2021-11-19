@@ -23,6 +23,8 @@ const useStyles = makeStyles({
 	},
 })
 
+const STARTING_COUNT = 40
+
 const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 	const classes = useStyles()
 
@@ -36,7 +38,7 @@ const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 
 		clearInterval(timerRef.currrent)
 
-		let currentCount = 30
+		let currentCount = STARTING_COUNT
 		const countDownTo = 0
 		const timerAlertAudio = new Audio(timerAlert)
 		timerAlertAudio.volume = 0.2

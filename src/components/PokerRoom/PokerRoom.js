@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../../contexts/AuthContext'
 import SocketContext from '../../contexts/SocketContext'
-import BettingOptions from './BettingOptions'
+import PlayerActions from './PlayerActions'
 import CommunityCards from './CommunityCards'
 import HoleCards from './HoleCards'
 import PlayersHud from './PlayersHud'
@@ -128,7 +128,6 @@ const useStyles = makeStyles({
 		zIndex: 1,
 		display: 'flex',
 		justifyContent: 'flex-end',
-		boxSizing: 'border-box',
 		margin: '.5vw',
 		'& button': {
 			fontSize: '1.2vw',
@@ -137,9 +136,10 @@ const useStyles = makeStyles({
 		},
 	},
 	leaveGameBtn: {
+		border: '.12vw solid transparent',
 		'&:hover': {
 			color: 'red',
-			outline: '1px solid red',
+			border: '.12vw solid red',
 		},
 	},
 	top: {
@@ -187,7 +187,6 @@ const useStyles = makeStyles({
 
 const SMALL_BLIND = 10
 const BIG_BLIND = 20
-const TIMER = 100
 
 const PokerRoom = () => {
 	const classes = useStyles()
@@ -268,7 +267,7 @@ const PokerRoom = () => {
 
 			// Reset timer //
 			setResetTimer((timer) => !timer)
-			setTimeLeft(TIMER)
+			setTimeLeft(100)
 		}
 
 		const setTurn = () => {
@@ -280,7 +279,7 @@ const PokerRoom = () => {
 
 			// Reset timer //
 			setResetTimer((timer) => !timer)
-			setTimeLeft(TIMER)
+			setTimeLeft(100)
 		}
 
 		const showActionDisplay = ({
@@ -912,7 +911,7 @@ const PokerRoom = () => {
 				<Grid item xs={6}>
 					<>
 						{isTurn && (
-							<BettingOptions
+							<PlayerActions
 								playersChips={playersChips}
 								opponentsChips={opponentsChips}
 								callAmount={callAmount}
