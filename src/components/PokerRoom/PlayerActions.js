@@ -48,17 +48,38 @@ const useStyles = makeStyles({
 		fontSize: '1.3vw',
 		borderRadius: '.8vw',
 	},
-	foldBtn: {
+	actionBtn: {
+		padding: '10px 25px',
 		background:
-			'linear-gradient(0deg, hsl(9, 100%, 23%) 0%, hsl(9, 100%, 53%) 100%)',
+			'-webkit-gradient(linear, left top, left bottom, from(#000), to(#333))',
+		borderBottom: '2px solid transparent',
+		'& p': {
+			color: '#7c7c7c',
+		},
+	},
+	foldBtn: {
+		'&:hover': {
+			borderBottom: '2px solid #a71d31',
+			'& p': {
+				color: '#a71d31',
+			},
+		},
 	},
 	checkOrcallBtn: {
-		background:
-			'linear-gradient(0deg, hsl(43, 92%, 43%) 0%, hsl(43, 92%, 73%) 100%)',
+		'&:hover': {
+			borderBottom: '2px solid #fea',
+			'& p': {
+				color: '#fea',
+			},
+		},
 	},
 	betOrRaiseBtn: {
-		background:
-			'linear-gradient(0deg, hsl(120, 60%, 30%) 0%, hsl(120, 60%, 50%) 100%)',
+		'&:hover': {
+			borderBottom: '2px solid #52af77',
+			'& p': {
+				color: '#52af77',
+			},
+		},
 	},
 })
 
@@ -114,7 +135,7 @@ const ValueLabelComponent = (props) => {
 
 const BIG_BLIND = 20
 
-const BettingOptions = ({
+const PlayerActions = ({
 	playersChips,
 	opponentsChips,
 	callAmount,
@@ -211,14 +232,18 @@ const BettingOptions = ({
 		<div className={classes.root}>
 			<ThemeProvider theme={theme}>
 				{callAmount || hasCalledBB ? (
-					<ButtonGroup variant='contained' fullWidth>
-						<Button className={classes.foldBtn} onClick={handleFold}>
+					<ButtonGroup fullWidth>
+						<Button
+							className={`${classes.actionBtn} ${classes.foldBtn}`}
+							onClick={handleFold}>
 							<p>
 								<strong>Fold</strong>
 							</p>
 						</Button>
 						{callAmount ? (
-							<Button className={classes.checkOrcallBtn} onClick={handleCall}>
+							<Button
+								className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
+								onClick={handleCall}>
 								<p style={{ margin: 0 }}>
 									<strong>Call</strong>
 								</p>
@@ -227,14 +252,18 @@ const BettingOptions = ({
 								</p>
 							</Button>
 						) : (
-							<Button className={classes.checkOrcallBtn} onClick={handleCheck}>
+							<Button
+								className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
+								onClick={handleCheck}>
 								<p>
 									<strong>CHECK</strong>
 								</p>
 							</Button>
 						)}
 						{isRaiseAvailable && (
-							<Button className={classes.betOrRaiseBtn} onClick={handleRaise}>
+							<Button
+								className={`${classes.actionBtn} ${classes.betOrRaiseBtn}`}
+								onClick={handleRaise}>
 								<p style={{ margin: 0 }}>
 									<strong>Raise To</strong>
 								</p>
@@ -253,18 +282,24 @@ const BettingOptions = ({
 						)}
 					</ButtonGroup>
 				) : (
-					<ButtonGroup variant='contained' fullWidth>
-						<Button className={classes.foldBtn} onClick={handleFold}>
+					<ButtonGroup fullWidth>
+						<Button
+							className={`${classes.actionBtn} ${classes.foldBtn}`}
+							onClick={handleFold}>
 							<p>
 								<strong>FOLD</strong>
 							</p>
 						</Button>
-						<Button className={classes.checkOrcallBtn} onClick={handleCheck}>
+						<Button
+							className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
+							onClick={handleCheck}>
 							<p>
 								<strong>CHECK</strong>
 							</p>
 						</Button>
-						<Button className={classes.betOrRaiseBtn} onClick={handleBet}>
+						<Button
+							className={`${classes.actionBtn} ${classes.betOrRaiseBtn}`}
+							onClick={handleBet}>
 							<p style={{ margin: 0 }}>
 								<strong>Bet</strong>
 							</p>
@@ -310,4 +345,4 @@ const BettingOptions = ({
 	)
 }
 
-export default memo(BettingOptions)
+export default memo(PlayerActions)

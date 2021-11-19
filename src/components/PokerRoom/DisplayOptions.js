@@ -21,9 +21,10 @@ import grayTable from '../../assets/images/tables/gray-table.png'
 const useStyles = makeStyles({
 	optionsBtn: {
 		marginLeft: '.4vw',
+		border: '.12vw solid transparent',
 		'&:hover': {
 			color: 'blue',
-			outline: '1px solid blue',
+			border: '.12vw solid blue',
 		},
 	},
 	formControl: {
