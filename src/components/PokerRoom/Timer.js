@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, memo } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
-import timerAlert from '../../assets/sounds/timer-alert.wav'
+import useAudio from './useAudio'
 
 const useStyles = makeStyles({
 	root: {
@@ -28,25 +28,21 @@ const STARTING_COUNT = 40
 const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 	const classes = useStyles()
 
-	const timerRef = useRef()
-
 	const [showTimer, setShowTimer] = useState(false)
+
+	const { timerAlertAudio } = useAudio()
 
 	useEffect(() => {
 		// Clean up controller //
 		let isMounted = true
 
-		clearInterval(timerRef.currrent)
-
 		let currentCount = STARTING_COUNT
 		const countDownTo = 0
-		const timerAlertAudio = new Audio(timerAlert)
-		timerAlertAudio.volume = 0.2
 
-		timerRef.current = setInterval(() => {
+		const timer = setInterval(() => {
+			if (!isMounted) return null
+
 			if (currentCount < 20) {
-				if (!isMounted) return null
-
 				// Display timer //
 				setShowTimer(true)
 				setTimeLeft((timeLeft) => timeLeft - 5)
@@ -55,7 +51,7 @@ const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 				if (currentCount === 19) timerAlertAudio.play()
 			}
 
-			if (currentCount === countDownTo) clearInterval(timerRef.current)
+			if (currentCount === countDownTo) clearInterval(timer)
 
 			currentCount--
 		}, 1000)
@@ -63,9 +59,10 @@ const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
-			clearInterval(timerRef.current)
+
+			clearInterval(timer)
 		}
-	}, [setTimeLeft, resetTimer]) // resetTimer dependency allows the count to reset //
+	}, [setTimeLeft, resetTimer, timerAlertAudio]) // resetTimer dependency allows the count to reset //
 
 	return (
 		<div

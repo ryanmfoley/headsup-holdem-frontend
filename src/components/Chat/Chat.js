@@ -39,8 +39,6 @@ const Chat = () => {
 
 	const { socket } = useContext(SocketContext)
 
-	const _isMounted = useRef(true)
-
 	const messageRef = useRef('')
 	const [messages, setMessages] = useState([])
 
@@ -57,15 +55,17 @@ const Chat = () => {
 	}
 
 	useEffect(() => {
+		let isMounted = true
+
 		socket.on('chat-message', (message) => {
-			if (!_isMounted.current) return null
+			if (!isMounted) return null
 
 			setMessages((messages) => [...messages, message])
 		})
 
 		// Cancel subscription to useEffect //
 		return () => {
-			_isMounted.current = false
+			isMounted = false
 
 			socket.offAny()
 		}
