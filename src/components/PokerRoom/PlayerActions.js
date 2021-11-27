@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef, memo } from 'react'
+import { useState, useEffect, useContext, memo } from 'react'
 import {
 	Box,
 	Button,
@@ -49,37 +49,60 @@ const useStyles = makeStyles({
 		borderRadius: '.8vw',
 	},
 	actionBtn: {
-		padding: '10px 25px',
+		borderRadius: '5px',
+		padding: '1vw',
+		boxShadow: 'inset 0px 1px 0px gray',
 		background:
 			'-webkit-gradient(linear, left top, left bottom, from(#000), to(#333))',
-		borderBottom: '2px solid transparent',
+		borderBottom: '3px solid transparent',
 		'& p': {
-			color: '#7c7c7c',
+			fontSize: '12px',
+			margin: 0,
+		},
+	},
+	betSizingBtn: {
+		boxShadow: 'inset 0px 1px 0px gray',
+		background:
+			'-webkit-linear-gradient(top,  #000, #222 15%, #333 28%, #000  63%, #2f2f2f 87%, #000)',
+
+		'& p': {
+			color: 'white',
+		},
+		'&:hover': {
+			boxShadow: 'inset 0px 1px 0px gray',
+			'& p': {
+				color: 'white',
+			},
 		},
 	},
 	foldBtn: {
+		'& p': {
+			color: '#a71d31',
+		},
 		'&:hover': {
-			borderBottom: '2px solid #a71d31',
-			'& p': {
-				color: '#a71d31',
-			},
+			borderBottom: '3px solid #a71d31',
 		},
 	},
 	checkOrcallBtn: {
+		'& p': {
+			color: '#fea',
+		},
 		'&:hover': {
-			borderBottom: '2px solid #fea',
-			'& p': {
-				color: '#fea',
-			},
+			borderBottom: '3px solid #fea',
 		},
 	},
 	betOrRaiseBtn: {
-		'&:hover': {
-			borderBottom: '2px solid #52af77',
-			'& p': {
-				color: '#52af77',
-			},
+		'& p': {
+			color: '#52af77',
 		},
+		'&:hover': {
+			borderBottom: '3px solid #52af77',
+		},
+	},
+	betSizingGroup: {
+		height: '30px',
+		padding: 0,
+		color: 'blue',
 	},
 })
 
@@ -138,6 +161,7 @@ const BIG_BLIND = 20
 const PlayerActions = ({
 	playersChips,
 	opponentsChips,
+	pot,
 	callAmount,
 	isPlayerAllIn,
 	hasCalledBB,
@@ -148,10 +172,14 @@ const PlayerActions = ({
 
 	const { socket } = useContext(SocketContext)
 
-	const [betAmount, setBetAmount] = useState(Math.min(playersChips, BIG_BLIND))
-	const [isRaiseAvailable, setIsRaiseAvailable] = useState(null)
+	const [betAmount, setBetAmount] = useState(0)
+	const [isRaiseAvailable, setIsRaiseAvailable] = useState(true)
 
-	const _isMounted = useRef(true)
+	const smallestChipStack = Math.min(playersChips, opponentsChips)
+	const minBet = isRaiseAvailable
+		? Math.min(playersChips, opponentsChips, callAmount * 2)
+		: Math.min(smallestChipStack, BIG_BLIND)
+	const maxBet = Math.min(playersChips, opponentsChips + callAmount)
 
 	const handleFold = () => {
 		socket.emit('fold')
@@ -192,10 +220,49 @@ const PlayerActions = ({
 		setIsTurn(false)
 	}
 
+	const halfPotBet = () => {
+		const halfPot = pot / 2
+
+		smallestChipStack >= halfPot
+			? setBetAmount(halfPot)
+			: setBetAmount(smallestChipStack)
+	}
+
+	const fullPotBet = () =>
+		smallestChipStack >= pot
+			? setBetAmount(pot)
+			: setBetAmount(smallestChipStack)
+
+	const doublePotBet = () => {
+		const doublePot = pot * 2
+
+		smallestChipStack >= doublePot
+			? setBetAmount(doublePot)
+			: setBetAmount(smallestChipStack)
+	}
+
+	const halfPotRaise = () => {
+		const raiseAmount = (pot + callAmount) / 2
+
+		setBetAmount(raiseAmount + callAmount)
+	}
+
+	const fullPotRaise = () => {
+		const raiseAmount = pot + callAmount
+
+		setBetAmount(raiseAmount + callAmount)
+	}
+
+	const doublePotRaise = () => {
+		const raiseAmount = (pot + callAmount) * 2
+
+		setBetAmount(raiseAmount + callAmount)
+	}
+
 	const handleSliderChange = (e, newValue) => {
 		const minBetSize = isRaiseAvailable
 			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
-			: Math.min(playersChips, BIG_BLIND)
+			: minBet
 
 		if (newValue >= minBetSize) setBetAmount(newValue)
 	}
@@ -204,26 +271,24 @@ const PlayerActions = ({
 		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
 
 	useEffect(() => {
-		if (!_isMounted.current) return null
-
 		setIsRaiseAvailable(
 			(!isPlayerAllIn && callAmount && playersChips > callAmount) ||
 				(!isPlayerAllIn && hasCalledBB)
 		)
+	}, [playersChips, isPlayerAllIn, hasCalledBB, callAmount])
+
+	useEffect(() => {
 		const minBetSize = isRaiseAvailable
 			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
-			: Math.min(playersChips, BIG_BLIND)
+			: minBet
 
 		setBetAmount(minBetSize)
-	}, [playersChips, isPlayerAllIn, isRaiseAvailable, hasCalledBB, callAmount])
+	}, [playersChips, callAmount, minBet, isRaiseAvailable])
 
 	useEffect(() => {
 		if (!timeLeft) socket.emit('fold')
 
-		// Cancel subscription to useEffect //
 		return () => {
-			_isMounted.current = false
-
 			socket.offAny()
 		}
 	}, [socket, timeLeft])
@@ -231,53 +296,53 @@ const PlayerActions = ({
 	return (
 		<div className={classes.root}>
 			<ThemeProvider theme={theme}>
+				<ButtonGroup className={classes.betSizingGroup} fullWidth>
+					<Button
+						variant='contained'
+						className={classes.betSizingBtn}
+						onClick={isRaiseAvailable ? halfPotRaise : halfPotBet}>
+						<p>1/2 Pot</p>
+					</Button>
+					<Button
+						variant='contained'
+						className={classes.betSizingBtn}
+						onClick={isRaiseAvailable ? fullPotRaise : fullPotBet}>
+						<p>Pot</p>
+					</Button>
+					<Button
+						variant='contained'
+						className={classes.betSizingBtn}
+						onClick={isRaiseAvailable ? doublePotRaise : doublePotBet}>
+						<p>2X Pot</p>
+					</Button>
+				</ButtonGroup>
 				{callAmount || hasCalledBB ? (
 					<ButtonGroup fullWidth>
 						<Button
 							className={`${classes.actionBtn} ${classes.foldBtn}`}
 							onClick={handleFold}>
-							<p>
-								<strong>Fold</strong>
-							</p>
+							<p>Fold</p>
 						</Button>
 						{callAmount ? (
 							<Button
 								className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
 								onClick={handleCall}>
-								<p style={{ margin: 0 }}>
-									<strong>Call</strong>
-								</p>
-								<p style={{ margin: 0 }}>
-									<strong>${callAmount}</strong>
-								</p>
+								<p>Call</p>
+								<p>${callAmount}</p>
 							</Button>
 						) : (
 							<Button
 								className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
 								onClick={handleCheck}>
-								<p>
-									<strong>CHECK</strong>
-								</p>
+								<p>Check</p>
 							</Button>
 						)}
 						{isRaiseAvailable && (
 							<Button
 								className={`${classes.actionBtn} ${classes.betOrRaiseBtn}`}
 								onClick={handleRaise}>
-								<p style={{ margin: 0 }}>
-									<strong>Raise To</strong>
-								</p>
-								<p style={{ margin: 0 }}>
-									<strong>
-										$
-										{Math.max(
-											betAmount,
-											isRaiseAvailable
-												? Math.min(playersChips, callAmount * 2)
-												: Math.min(playersChips, BIG_BLIND)
-										)}
-									</strong>
-								</p>
+								<p>Raise To</p>
+								<p>${betAmount}</p>
 							</Button>
 						)}
 					</ButtonGroup>
@@ -286,26 +351,18 @@ const PlayerActions = ({
 						<Button
 							className={`${classes.actionBtn} ${classes.foldBtn}`}
 							onClick={handleFold}>
-							<p>
-								<strong>FOLD</strong>
-							</p>
+							<p>Fold</p>
 						</Button>
 						<Button
 							className={`${classes.actionBtn} ${classes.checkOrcallBtn}`}
 							onClick={handleCheck}>
-							<p>
-								<strong>CHECK</strong>
-							</p>
+							<p>Check</p>
 						</Button>
 						<Button
 							className={`${classes.actionBtn} ${classes.betOrRaiseBtn}`}
 							onClick={handleBet}>
-							<p style={{ margin: 0 }}>
-								<strong>Bet</strong>
-							</p>
-							<p style={{ margin: 0 }}>
-								<strong>${betAmount}</strong>
-							</p>
+							<p>Bet</p>
+							<p>${betAmount}</p>
 						</Button>
 					</ButtonGroup>
 				)}
@@ -314,12 +371,8 @@ const PlayerActions = ({
 						<BetSlider
 							value={betAmount}
 							step={20}
-							min={
-								isRaiseAvailable
-									? Math.min(playersChips, callAmount * 2)
-									: Math.min(playersChips, BIG_BLIND)
-							}
-							max={Math.min(playersChips, opponentsChips + callAmount)}
+							min={minBet}
+							max={maxBet}
 							valueLabelDisplay='auto'
 							ValueLabelComponent={ValueLabelComponent}
 							onChange={handleSliderChange}
@@ -331,10 +384,8 @@ const PlayerActions = ({
 							onChange={handleInputChange}
 							inputProps={{
 								step: 20,
-								min: isRaiseAvailable
-									? Math.min(playersChips, callAmount * 2)
-									: Math.min(playersChips, BIG_BLIND),
-								max: Math.min(playersChips, opponentsChips + callAmount),
+								min: minBet,
+								max: maxBet,
 								type: 'number',
 							}}
 						/>
