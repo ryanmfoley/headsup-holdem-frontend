@@ -67,7 +67,7 @@ const TransitionDown = (props) => <Slide {...props} direction='down' />
 const Register = () => {
 	const classes = useStyles()
 
-	const { setIsLoggedIn } = useContext(AuthContext)
+	const { setPlayer } = useContext(AuthContext)
 
 	const [openAlert, setOpenAlert] = useState(false)
 	const [redirect, setRedirect] = useState(false)
@@ -90,11 +90,9 @@ const Register = () => {
 			.then((res) => {
 				setOpenAlert(true)
 
-				// Store username to localStorage //
 				const username = data.username.trim().slice(0, 8)
-				localStorage.setItem('username', JSON.stringify(username))
 
-				setIsLoggedIn(true)
+				setPlayer({ username, isLoggedIn: true })
 				setTimeout(() => setRedirect(true), 1000)
 			})
 			.catch(() => setUsernameError(true))

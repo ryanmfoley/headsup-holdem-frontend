@@ -19,13 +19,17 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const App = () => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false)
+	const [player, setPlayer] = useState({
+		id: null,
+		username: '',
+		isLoggedIn: false,
+	})
 
 	const classes = useStyles()
 
 	return (
 		<div className={classes.root}>
-			<AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+			<AuthContext.Provider value={{ player, setPlayer }}>
 				<Route exact path='/' component={Home} />
 				<SocketContext.Provider value={{ socket }}>
 					<Route path='/lobby' component={Lobby} />

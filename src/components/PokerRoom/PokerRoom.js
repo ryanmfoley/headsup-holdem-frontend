@@ -184,7 +184,7 @@ const PokerRoom = () => {
 
 	const { roomId } = useParams()
 
-	const { isLoggedIn } = useContext(AuthContext)
+	const { player } = useContext(AuthContext)
 	const { socket } = useContext(SocketContext)
 
 	// Display variables //
@@ -248,10 +248,8 @@ const PokerRoom = () => {
 
 		socket.connect()
 
-		// Get Player Info //
-		const currentPlayer = JSON.parse(localStorage.getItem('player'))
-		currentPlayer.isPlayerOne = currentPlayer.id === roomId
-		isPlayerOnBtnRef.current = currentPlayer.isPlayerOne ? true : false
+		const isPlayerOne = player.id === roomId
+		isPlayerOnBtnRef.current = isPlayerOne ? true : false
 
 		const alternateTurn = () => {
 			isTurnRef.current = !isTurnRef.current
@@ -284,8 +282,8 @@ const PokerRoom = () => {
 				setPlayersAction({ type, value })
 				setOpponentsAction({ type, value })
 			} else if (type === 'WINNER') {
-				winningPlayer === currentPlayer.username ||
-				(losingPlayer && losingPlayer !== currentPlayer.username)
+				winningPlayer === player.username ||
+				(losingPlayer && losingPlayer !== player.username)
 					? setPlayersAction({ type, value })
 					: setOpponentsAction({ type, value })
 			} else {
@@ -316,20 +314,20 @@ const PokerRoom = () => {
 			setTimeout(() => {
 				switch (bettingRoundRef.current) {
 					case 'preflop':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-flop', true)
+						if (isPlayerOne) socket.emit('deal-flop', true)
 
 						dealCardAudio.play()
 						break
 					case 'flop':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-turn', true)
+						if (isPlayerOne) socket.emit('deal-turn', true)
 						dealCardAudio.play()
 						break
 					case 'turn':
-						if (currentPlayer.isPlayerOne) socket.emit('deal-river', true)
+						if (isPlayerOne) socket.emit('deal-river', true)
 						dealCardAudio.play()
 						break
 					default:
-						if (currentPlayer.isPlayerOne) socket.emit('hand-is-over')
+						if (isPlayerOne) socket.emit('hand-is-over')
 				}
 			}, 1000)
 		}
@@ -337,57 +335,27 @@ const PokerRoom = () => {
 		const dealCommunityCards = () => {
 			switch (bettingRoundRef.current) {
 				case 'preflop':
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-flop', true),
-						1500
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-turn', true),
-						3000
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-river', true),
-						4500
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
-						6000
-					)
+					setTimeout(() => isPlayerOne && socket.emit('deal-flop', true), 1500)
+					setTimeout(() => isPlayerOne && socket.emit('deal-turn', true), 3000)
+					setTimeout(() => isPlayerOne && socket.emit('deal-river', true), 4500)
+					setTimeout(() => isPlayerOne && socket.emit('hand-is-over'), 6000)
 					break
 				case 'flop':
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-turn'),
-						1500
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
-						3000
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
-						4500
-					)
+					setTimeout(() => isPlayerOne && socket.emit('deal-turn'), 1500)
+					setTimeout(() => isPlayerOne && socket.emit('deal-river'), 3000)
+					setTimeout(() => isPlayerOne && socket.emit('hand-is-over'), 4500)
 					break
 				case 'turn':
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('deal-river'),
-						1500
-					)
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
-						3000
-					)
+					setTimeout(() => isPlayerOne && socket.emit('deal-river'), 1500)
+					setTimeout(() => isPlayerOne && socket.emit('hand-is-over'), 3000)
 					break
 				default:
-					setTimeout(
-						() => currentPlayer.isPlayerOne && socket.emit('hand-is-over'),
-						1500
-					)
+					setTimeout(() => isPlayerOne && socket.emit('hand-is-over'), 1500)
 			}
 		}
 
 		// Join socket to the room //
-		socket.emit('enter-poker-room', { roomId, currentPlayer })
+		socket.emit('enter-poker-room', { roomId, player })
 
 		// Listen for opponent to enter the room //
 		socket.once('start-game', () => socket.emit('get-players-info'))
@@ -395,12 +363,12 @@ const PokerRoom = () => {
 		socket.once('get-players-info', ({ username }) => {
 			if (!isMounted) return null
 
-			setPlayersName(currentPlayer.username)
+			setPlayersName(player.username)
 			setOpponentsName(username)
 			setStartGame(true)
 
 			// Player 1 emits deal to server //
-			if (currentPlayer.isPlayerOne) socket.emit('deal')
+			if (isPlayerOne) socket.emit('deal')
 		})
 
 		socket.on('deal-preflop', (holeCards) => {
@@ -611,16 +579,16 @@ const PokerRoom = () => {
 			// Emit deal events to prevent extra emitting next hand //
 			switch (bettingRoundRef.current) {
 				case 'preflop':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-flop', false)
-					if (currentPlayer.isPlayerOne) socket.emit('deal-turn', false)
-					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					if (isPlayerOne) socket.emit('deal-flop', false)
+					if (isPlayerOne) socket.emit('deal-turn', false)
+					if (isPlayerOne) socket.emit('deal-river', false)
 					break
 				case 'flop':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-turn', false)
-					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					if (isPlayerOne) socket.emit('deal-turn', false)
+					if (isPlayerOne) socket.emit('deal-river', false)
 					break
 				case 'turn':
-					if (currentPlayer.isPlayerOne) socket.emit('deal-river', false)
+					if (isPlayerOne) socket.emit('deal-river', false)
 					break
 				default:
 			}
@@ -649,7 +617,7 @@ const PokerRoom = () => {
 					opponentsCards[1],
 				]
 
-				if (currentPlayer.isPlayerOne)
+				if (isPlayerOne)
 					socket.emit('determine-winner', {
 						opponentsName,
 						playerOnesHand,
@@ -676,8 +644,8 @@ const PokerRoom = () => {
 					opponentsChipsRef.current += halfPot
 					setOpponentsChips((chips) => chips + halfPot)
 				} else if (
-					winningPlayer === currentPlayer.username ||
-					(losingPlayer && losingPlayer !== currentPlayer.username)
+					winningPlayer === player.username ||
+					(losingPlayer && losingPlayer !== player.username)
 				) {
 					// Player Won //
 					playersChipsRef.current += potRef.current
@@ -732,8 +700,7 @@ const PokerRoom = () => {
 					hasCalledSBRef.current = false
 				}, 3000)
 
-				if (currentPlayer.isPlayerOne)
-					setTimeout(() => socket.emit('deal'), 4500)
+				if (isPlayerOne) setTimeout(() => socket.emit('deal'), 4500)
 			}
 		)
 
@@ -746,14 +713,14 @@ const PokerRoom = () => {
 
 		// Emit logout when player exits game //
 		window.addEventListener('beforeunload', () =>
-			socket.emit('logout', currentPlayer.id)
+			socket.emit('logout', player.id)
 		)
 
 		// Cancel subscription to useEffect //
 		return () => {
 			isMounted = false
 
-			socket.emit('logout', currentPlayer.id)
+			socket.emit('logout', player.id)
 			socket.offAny()
 		}
 	}, [
@@ -768,7 +735,7 @@ const PokerRoom = () => {
 		winGameAudio,
 	])
 
-	if (!isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
+	if (!player.isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>

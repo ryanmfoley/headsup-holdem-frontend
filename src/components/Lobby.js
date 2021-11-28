@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useRef, useContext } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -128,13 +128,14 @@ const useStyles = makeStyles({
 const Lobby = () => {
 	const classes = useStyles()
 
-	const { isLoggedIn } = useContext(AuthContext)
+	const { player, setPlayer } = useContext(AuthContext)
 	const { socket } = useContext(SocketContext)
 
-	const [player, setPlayer] = useState({})
+	const playerRef = useRef()
+
 	const [playersWaiting, setPlayersWaiting] = useState([])
 
-	const createGame = () => socket.emit('create-game', player)
+	const createGame = () => socket.emit('create-game', playerRef.current)
 
 	const joinGame = (e) =>
 		socket.emit('update-players-waiting', e.target.dataset.id)
@@ -145,19 +146,17 @@ const Lobby = () => {
 
 		socket.connect()
 
-		const username = JSON.parse(localStorage.getItem('username'))
-
-		const handleEnterLobby = (player) => {
+		const handleEnterLobby = (playerObj) => {
 			if (!isMounted) return null
 
-			setPlayer(player)
-			localStorage.setItem('player', JSON.stringify(player))
+			playerRef.current = playerObj
+			setPlayer((player) => ({ ...player, id: playerObj.id }))
 		}
 
 		const fetchPlayersWaiting = (players) =>
 			isMounted && setPlayersWaiting(players)
 
-		socket.emit('enter-lobby', username)
+		socket.emit('enter-lobby', player.username)
 
 		socket.once('enter-lobby', handleEnterLobby)
 
@@ -170,9 +169,9 @@ const Lobby = () => {
 			socket.close()
 			socket.off()
 		}
-	}, [socket])
+	}, [socket, player.username, setPlayer])
 
-	if (!isLoggedIn) return <Redirect to='/login' />
+	if (!player.isLoggedIn) return <Redirect to='/login' />
 
 	return (
 		<div className={classes.root}>
