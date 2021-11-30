@@ -58,7 +58,7 @@ const useStyles = makeStyles({
 const Login = () => {
 	const classes = useStyles()
 
-	const { setIsLoggedIn } = useContext(AuthContext)
+	const { setPlayer } = useContext(AuthContext)
 
 	const [redirect, setRedirect] = useState(false)
 	const [usernameError, setUsernameError] = useState(false)
@@ -81,14 +81,12 @@ const Login = () => {
 				const { token } = res.data
 
 				if (token) {
-					// Store username to localStorage //
-					const username = data.username.trim().slice(0, 8)
-					localStorage.setItem('username', JSON.stringify(username))
-
 					// Set token to localStorage //
 					localStorage.setItem('jwtToken', token)
 
-					setIsLoggedIn(true)
+					const username = data.username.trim().slice(0, 8)
+
+					setPlayer({ username, isLoggedIn: true })
 					setRedirect(true)
 				}
 			})
