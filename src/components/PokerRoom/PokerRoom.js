@@ -1,10 +1,11 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useRef, useState, useContext, useEffect } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import { Box, Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../../contexts/AuthContext'
 import SocketContext from '../../contexts/SocketContext'
+import useActionReducer from '../../hooks/useActionReducer'
 import useAudio from './useAudio'
 import PlayerActions from './PlayerActions'
 import CommunityCards from './CommunityCards'
@@ -187,8 +188,9 @@ const PokerRoom = () => {
 	const { player } = useContext(AuthContext)
 	const { socket } = useContext(SocketContext)
 
+	const [state, dispatch] = useActionReducer()
+
 	// Display variables //
-	const [playersName, setPlayersName] = useState('')
 	const [opponentsName, setOpponentsName] = useState('')
 	const [floorOption, setFloorOption] = useState(woodenFloor)
 	const [tableOption, setTableOption] = useState(greenTable)
@@ -226,10 +228,6 @@ const PokerRoom = () => {
 	const playersChipsRef = useRef(STARTING_CHIP_STACK)
 	const opponentsChipsRef = useRef(STARTING_CHIP_STACK)
 	const potRef = useRef(0)
-	const [playersChips, setPlayersChips] = useState(STARTING_CHIP_STACK)
-	const [opponentsChips, setOpponentsChips] = useState(STARTING_CHIP_STACK)
-	const [pot, setPot] = useState(0)
-	const [callAmount, setCallAmount] = useState(0)
 
 	// Sounds //
 	const {
@@ -363,7 +361,6 @@ const PokerRoom = () => {
 		socket.once('get-players-info', ({ username }) => {
 			if (!isMounted) return null
 
-			setPlayersName(player.username)
 			setOpponentsName(username)
 			setStartGame(true)
 
@@ -401,21 +398,20 @@ const PokerRoom = () => {
 						playersChipsRef.current,
 						opponentsChipsRef.current
 				  )
+			const callAmount = isPlayerOnBtnRef.current
+				? Math.max(opponentsBlindAmount - SMALL_BLIND, 0)
+				: 0
 
 			playersChipsRef.current -= playersBlindAmount
-			setPlayersChips((chips) => chips - playersBlindAmount)
-
 			opponentsChipsRef.current -= opponentsBlindAmount
-			setOpponentsChips((chips) => chips - opponentsBlindAmount)
-
 			potRef.current = playersBlindAmount + opponentsBlindAmount
-			setPot(playersBlindAmount + opponentsBlindAmount)
 
-			setCallAmount(
-				isPlayerOnBtnRef.current
-					? Math.max(opponentsBlindAmount - SMALL_BLIND, 0)
-					: 0
-			)
+			dispatch({
+				type: 'postBlinds',
+				playersBlindAmount,
+				opponentsBlindAmount,
+				callAmount,
+			})
 
 			// Set to true so BB has raise option instead of bet preflop //
 			setHasCalledBB(true)
@@ -440,7 +436,7 @@ const PokerRoom = () => {
 
 			bettingRoundRef.current = 'flop'
 
-			// Reset hasCalledBBRef variable //
+			// Reset hasCalledBB variable //
 			setHasCalledBB(false)
 
 			// Add Flop cards to communityCards //
@@ -507,17 +503,14 @@ const PokerRoom = () => {
 			if (isTurnRef.current) {
 				// Current Player is calling //
 				playersChipsRef.current -= callAmount
-				setPlayersChips((chips) => chips - callAmount)
+				dispatch({ type: 'playerCalls' })
 			} else {
 				// Opponent is calling //
 				opponentsChipsRef.current -= callAmount
-				setOpponentsChips((chips) => chips - callAmount)
+				dispatch({ type: 'opponentCalls' })
 			}
 
 			potRef.current += callAmount
-			setPot((pot) => pot + callAmount)
-
-			setCallAmount(0)
 
 			// Deal all cards if player is all-in //
 			if (!playersChipsRef.current || !opponentsChipsRef.current) {
@@ -553,19 +546,20 @@ const PokerRoom = () => {
 			)
 				setIsPlayerAllIn(true)
 
+			// All calls but first SB call end betting round //
+			hasCalledSBRef.current = true
+
 			if (isTurnRef.current) {
 				// Current Player is betting //
 				playersChipsRef.current -= totalBetSize
-				setPlayersChips((chips) => chips - totalBetSize)
+				dispatch({ type: 'playerBets', betAmount: totalBetSize })
 			} else {
 				// Opponent is betting //
 				opponentsChipsRef.current -= totalBetSize
-				setOpponentsChips((chips) => chips - totalBetSize)
-				setCallAmount(isRaise ? raiseAmount : betAmount)
+				dispatch({ type: 'opponentBets', betAmount: totalBetSize })
 			}
 
 			potRef.current = potRef.current + totalBetSize
-			setPot((pot) => pot + totalBetSize)
 
 			alternateTurn()
 		})
@@ -591,6 +585,7 @@ const PokerRoom = () => {
 					if (isPlayerOne) socket.emit('deal-river', false)
 					break
 				default:
+					throw new Error()
 			}
 		})
 
@@ -639,24 +634,23 @@ const PokerRoom = () => {
 					const halfPot = potRef.current / 2
 
 					playersChipsRef.current += halfPot
-					setPlayersChips((chips) => chips + halfPot)
-
 					opponentsChipsRef.current += halfPot
-					setOpponentsChips((chips) => chips + halfPot)
+
+					dispatch({ type: 'draw' })
 				} else if (
 					winningPlayer === player.username ||
 					(losingPlayer && losingPlayer !== player.username)
 				) {
 					// Player Won //
 					playersChipsRef.current += potRef.current
-					setPlayersChips((chips) => chips + potRef.current)
+					dispatch({ type: 'playerWinsHand' })
 
 					// Play win-hand audio //
 					winHandAudio.play()
 				} else {
 					// Opponent Won //
 					opponentsChipsRef.current += potRef.current
-					setOpponentsChips((chips) => chips + potRef.current)
+					dispatch({ type: 'opponentWinsHand' })
 				}
 
 				showActionDisplay({
@@ -666,9 +660,8 @@ const PokerRoom = () => {
 				})
 				setWinningHand(winningHand)
 
-				// Send players to lobby if game is over //
 				if (!playersChipsRef.current || !opponentsChipsRef.current) {
-					// Display winner banner //
+					// Game is over //
 					setWinner(winningPlayer)
 					setTimeout(() => setShowWinDisplay(true), 2000)
 					setTimeout(() => setRedirectToLobby(true), 8000)
@@ -691,8 +684,6 @@ const PokerRoom = () => {
 					communityCardsRef.current = null
 					setCommunityCards([])
 					potRef.current = 0
-					setPot(0)
-					setCallAmount(0)
 					isPlayerAllInRef.current = false
 					setIsPlayerAllIn(false)
 					setShowHands(false)
@@ -725,7 +716,9 @@ const PokerRoom = () => {
 		}
 	}, [
 		socket,
+		player,
 		roomId,
+		dispatch,
 		betRaiseCallAlertAudio,
 		checkAlertAudio,
 		dealCardAudio,
@@ -788,7 +781,7 @@ const PokerRoom = () => {
 						)}
 						<PlayersHud
 							playersName={opponentsName}
-							chips={opponentsChips}
+							chips={state.opponentsChips}
 							active={!isTurn}
 							action={opponentsAction}
 						/>
@@ -803,7 +796,7 @@ const PokerRoom = () => {
 
 					{/* ---------- Pot Total ---------- */}
 					<div className={classes.pot}>
-						<h2 className={classes.potText}>Pot: {`$${pot}`}</h2>
+						<h2 className={classes.potText}>Pot: {`$${state.pot}`}</h2>
 					</div>
 
 					{/* ---------- Community Cards ---------- */}
@@ -813,8 +806,8 @@ const PokerRoom = () => {
 					<div className={`${classes.playersHud} ${classes.bottom}`}>
 						{holeCards && <HoleCards holeCards={holeCards} />}
 						<PlayersHud
-							playersName={playersName}
-							chips={playersChips}
+							playersName={player.username}
+							chips={state.playersChips}
 							active={isTurn}
 							action={playersAction}
 						/>
@@ -850,10 +843,10 @@ const PokerRoom = () => {
 					<>
 						{isTurn && (
 							<PlayerActions
-								playersChips={playersChips}
-								opponentsChips={opponentsChips}
-								pot={pot}
-								callAmount={callAmount}
+								playersChips={state.playersChips}
+								opponentsChips={state.opponentsChips}
+								pot={state.pot}
+								callAmount={state.betAmount}
 								isPlayerAllIn={isPlayerAllIn}
 								hasCalledBB={hasCalledBB}
 								timeLeft={timeLeft}
