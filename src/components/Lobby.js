@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core'
 
 import AuthContext from '../contexts/AuthContext'
+import PlayerContext from '../contexts/PlayerContext'
 import SocketContext from '../contexts/SocketContext'
 import Header from './Header'
 import backgroundImage from '../assets/images/lobby-background.png'
@@ -128,7 +129,8 @@ const useStyles = makeStyles({
 const Lobby = () => {
 	const classes = useStyles()
 
-	const { player, setPlayer } = useContext(AuthContext)
+	const { isLoggedIn } = useContext(AuthContext)
+	const { player, setPlayer } = useContext(PlayerContext)
 	const { socket } = useContext(SocketContext)
 
 	const playerRef = useRef()
@@ -171,7 +173,7 @@ const Lobby = () => {
 		}
 	}, [socket, player.username, setPlayer])
 
-	if (!player.isLoggedIn) return <Redirect to='/login' />
+	if (!isLoggedIn) return <Redirect to='/login' />
 
 	return (
 		<div className={classes.root}>
