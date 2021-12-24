@@ -4,6 +4,7 @@ import { Box, Button, Grid, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import AuthContext from '../../contexts/AuthContext'
+import PlayerContext from '../../contexts/PlayerContext'
 import SocketContext from '../../contexts/SocketContext'
 import useActionReducer from '../../hooks/useActionReducer'
 import useAudio from './useAudio'
@@ -185,7 +186,8 @@ const PokerRoom = () => {
 
 	const { roomId } = useParams()
 
-	const { player } = useContext(AuthContext)
+	const { isLoggedIn } = useContext(AuthContext)
+	const { player } = useContext(PlayerContext)
 	const { socket } = useContext(SocketContext)
 
 	const [state, dispatch] = useActionReducer()
@@ -728,7 +730,7 @@ const PokerRoom = () => {
 		winGameAudio,
 	])
 
-	if (!player.isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
+	if (!isLoggedIn || redirectToLobby) return <Redirect to='/lobby' />
 
 	return (
 		<div className={classes.root}>

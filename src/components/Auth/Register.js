@@ -17,6 +17,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
 import AuthContext from '../../contexts/AuthContext'
+import PlayerContext from '../../contexts/PlayerContext'
 import Footer from '../Footer'
 import Header from '../Header'
 import ENDPOINT from '../../config/config'
@@ -67,7 +68,8 @@ const TransitionDown = (props) => <Slide {...props} direction='down' />
 const Register = () => {
 	const classes = useStyles()
 
-	const { setPlayer } = useContext(AuthContext)
+	const { setIsLoggedIn } = useContext(AuthContext)
+	const { setPlayer } = useContext(PlayerContext)
 
 	const [openAlert, setOpenAlert] = useState(false)
 	const [redirect, setRedirect] = useState(false)
@@ -92,7 +94,8 @@ const Register = () => {
 
 				const username = data.username.trim().slice(0, 8)
 
-				setPlayer({ username, isLoggedIn: true })
+				setPlayer({ username })
+				setIsLoggedIn(true)
 				setTimeout(() => setRedirect(true), 1000)
 			})
 			.catch(() => setUsernameError(true))

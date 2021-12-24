@@ -279,7 +279,6 @@ const Header = ({ window }) => {
 							</Button>
 						</Link>
 					</Box>
-
 					{/* ---------- Authorization Buttons ---------- */}
 					<div className={classes.authButtons}>
 						{isLoggedIn ? (
