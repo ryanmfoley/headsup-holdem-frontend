@@ -3,6 +3,12 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import useAudio from './useAudio'
 
+interface IProps {
+	timeLeft: number
+	setTimeLeft: React.Dispatch<React.SetStateAction<number>>
+	resetTimer: boolean
+}
+
 const useStyles = makeStyles({
 	root: {
 		position: 'relative',
@@ -25,7 +31,7 @@ const useStyles = makeStyles({
 
 const STARTING_COUNT = 40
 
-const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
+const Timer = ({ timeLeft, setTimeLeft, resetTimer }: IProps) => {
 	const classes = useStyles()
 
 	const [showTimer, setShowTimer] = useState(false)

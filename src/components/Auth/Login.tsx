@@ -14,7 +14,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import axios from 'axios'
 
 import AuthContext from '../../contexts/AuthContext'
-import PlayerContext from '../../contexts/PlayerContext'
 import Footer from '../Footer'
 import Header from '../Header'
 import ENDPOINT from '../../config/config'
@@ -60,18 +59,17 @@ const Login = () => {
 	const classes = useStyles()
 
 	const { setIsLoggedIn } = useContext(AuthContext)
-	const { setPlayer } = useContext(PlayerContext)
 
 	const [redirect, setRedirect] = useState(false)
 	const [usernameError, setUsernameError] = useState(false)
 	const [passwordError, setPasswordError] = useState(false)
 
-	const handleSubmit = (e) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 
 		const data = {
-			username: e.target.username.value,
-			password: e.target.password.value,
+			username: (e.target as HTMLFormElement).username.value,
+			password: (e.target as HTMLFormElement).password.value,
 		}
 
 		const url = ENDPOINT + '/api/users/login'
@@ -86,9 +84,6 @@ const Login = () => {
 					// Set token to localStorage //
 					localStorage.setItem('jwtToken', token)
 
-					const username = data.username.trim().slice(0, 8)
-
-					setPlayer({ username })
 					setIsLoggedIn(true)
 					setRedirect(true)
 				}
@@ -110,7 +105,7 @@ const Login = () => {
 
 			{/* ---------- Login Form ---------- */}
 			<Paper elevation={10} className={classes.loginContainer}>
-				<Grid align='center'>
+				<Grid justifyContent='center'>
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>

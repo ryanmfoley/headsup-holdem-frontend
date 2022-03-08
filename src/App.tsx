@@ -19,8 +19,13 @@ const useStyles = makeStyles((theme) => ({
 	},
 }))
 
+interface IPlayer {
+	id: number | null
+	username: string
+}
+
 const App = () => {
-	const [player, setPlayer] = useState({
+	const [player, setPlayer] = useState<IPlayer>({
 		id: null,
 		username: '',
 	})
@@ -33,7 +38,7 @@ const App = () => {
 			<AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
 				<PlayerContext.Provider value={{ player, setPlayer }}>
 					<Route exact path='/' component={Home} />
-					<SocketContext.Provider value={{ socket }}>
+					<SocketContext.Provider value={socket}>
 						<Route path='/lobby' component={Lobby} />
 						<Route path='/hand-rankings' component={HandRankings} />
 						<Route path='/login' component={Login} />

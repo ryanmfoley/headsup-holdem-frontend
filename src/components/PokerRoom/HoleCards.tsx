@@ -1,7 +1,14 @@
 import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
-import Card from './Card'
+import Card, { ICard } from './Card'
+
+export type IHoleCards = [ICard, ICard]
+
+interface IProps {
+	deckOption?: string
+	holeCards?: IHoleCards | []
+}
 
 const useStyles = makeStyles({
 	root: {
@@ -28,7 +35,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const HoleCards = ({ deckOption, holeCards }) => {
+const HoleCards = ({ deckOption, holeCards }: IProps) => {
 	const classes = useStyles()
 
 	return (

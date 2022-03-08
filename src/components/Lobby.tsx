@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -126,6 +126,11 @@ const useStyles = makeStyles({
 	},
 })
 
+interface IPlayer {
+	id: number
+	username: string
+}
+
 const Lobby = () => {
 	const classes = useStyles()
 
@@ -133,14 +138,15 @@ const Lobby = () => {
 	const { player, setPlayer } = useContext(PlayerContext)
 	const { socket } = useContext(SocketContext)
 
-	const playerRef = useRef()
+	const [playersWaiting, setPlayersWaiting] = useState<IPlayer[] | []>([])
 
-	const [playersWaiting, setPlayersWaiting] = useState([])
+	const createGame = () => socket.emit('create-game', player)
 
-	const createGame = () => socket.emit('create-game', playerRef.current)
-
-	const joinGame = (e) =>
-		socket.emit('update-players-waiting', e.target.dataset.id)
+	const joinGame = (e: React.MouseEvent<HTMLButtonElement>) =>
+		socket.emit(
+			'update-players-waiting',
+			(e.target as HTMLButtonElement).dataset.id
+		)
 
 	useEffect(() => {
 		// Clean up controller //
@@ -148,14 +154,13 @@ const Lobby = () => {
 
 		socket.connect()
 
-		const handleEnterLobby = (playerObj) => {
+		const handleEnterLobby = (playerObj: IPlayer) => {
 			if (!isMounted) return null
 
-			playerRef.current = playerObj
-			setPlayer((player) => ({ ...player, id: playerObj.id }))
+			setPlayer(playerObj)
 		}
 
-		const fetchPlayersWaiting = (players) =>
+		const fetchPlayersWaiting = (players: IPlayer[]) =>
 			isMounted && setPlayersWaiting(players)
 
 		socket.emit('enter-lobby', player.username)

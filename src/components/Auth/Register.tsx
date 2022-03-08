@@ -63,7 +63,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const TransitionDown = (props) => <Slide {...props} direction='down' />
+const TransitionDown = (props: object) => <Slide {...props} direction='down' />
 
 const Register = () => {
 	const classes = useStyles()
@@ -77,12 +77,12 @@ const Register = () => {
 
 	const handleClose = () => setOpenAlert(false)
 
-	const handleSubmit = (e) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 
 		const data = {
-			username: e.target.username.value,
-			password: e.target.password.value,
+			username: (e.target as HTMLFormElement).username.value,
+			password: (e.target as HTMLFormElement).password.value,
 		}
 
 		const url = ENDPOINT + '/api/users/register'
@@ -94,7 +94,7 @@ const Register = () => {
 
 				const username = data.username.trim().slice(0, 8)
 
-				setPlayer({ username })
+				setPlayer({ id: null, username })
 				setIsLoggedIn(true)
 				setTimeout(() => setRedirect(true), 1000)
 			})
@@ -110,7 +110,7 @@ const Register = () => {
 
 			{/* ---------- Register Form ---------- */}
 			<Paper elevation={10} className={classes.registerContainer}>
-				<Grid align='center'>
+				<Grid justifyContent='center'>
 					<Avatar className={classes.lockIcon}>
 						<LockOutlinedIcon />
 					</Avatar>

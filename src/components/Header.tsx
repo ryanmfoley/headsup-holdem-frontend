@@ -33,6 +33,12 @@ const useStyles = makeStyles({
 		height: '6vw',
 		background: '#333333',
 	},
+	mobileHeader: {
+		display: 'flex',
+	},
+	desktopHeader: {
+		display: 'flex',
+	},
 	menuButton: {
 		marginRight: 'auto',
 		color: 'white',
@@ -157,7 +163,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const Header = ({ window }) => {
+const Header = () => {
 	const classes = useStyles()
 
 	const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext)
@@ -233,9 +239,6 @@ const Header = ({ window }) => {
 			)}
 		</List>
 	)
-
-	const container =
-		window !== undefined ? () => window().document.body : undefined
 
 	return (
 		<>
@@ -333,7 +336,6 @@ const Header = ({ window }) => {
 				sx={{ flexShrink: { sm: 0 } }}
 				aria-label='mailbox folders'>
 				<Drawer
-					container={container}
 					variant='temporary'
 					anchor='top'
 					open={drawerOpen}
@@ -341,12 +343,13 @@ const Header = ({ window }) => {
 					ModalProps={{
 						keepMounted: true, // Better open performance on mobile.
 					}}
-					sx={{
-						display: { xs: 'block', sm: 'none' },
-						'& .MuiDrawer-paper': {
-							boxSizing: 'border-box',
-						},
-					}}>
+					// sx={{
+					// 	display: { xs: 'block', sm: 'none' },
+					// 	'& .MuiDrawer-paper': {
+					// 		boxSizing: 'border-box',
+					// 	},
+					// }}
+				>
 					{drawer}
 				</Drawer>
 			</Box>

@@ -1,4 +1,4 @@
-import { useState, memo } from 'react'
+import React, { useState, memo } from 'react'
 import {
 	Button,
 	Menu,
@@ -18,6 +18,12 @@ import blueTable from '../../assets/images/tables/blue-table.png'
 import redTable from '../../assets/images/tables/red-table.png'
 import grayTable from '../../assets/images/tables/gray-table.png'
 
+interface IProps {
+	setFloorOption: React.Dispatch<React.SetStateAction<string>>
+	setTableOption: React.Dispatch<React.SetStateAction<string>>
+	setDeckOption: React.Dispatch<React.SetStateAction<string>>
+}
+
 const useStyles = makeStyles({
 	optionsBtn: {
 		marginLeft: '.4vw',
@@ -33,33 +39,43 @@ const useStyles = makeStyles({
 	},
 })
 
-const DisplayOptions = ({ setFloorOption, setTableOption, setDeckOption }) => {
+const DisplayOptions = ({
+	setFloorOption,
+	setTableOption,
+	setDeckOption,
+}: IProps) => {
 	const classes = useStyles()
 
-	const [anchorEl, setAnchorEl] = useState(null)
+	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-	const handleClick = (e) => {
+	const handleClick = (e: React.MouseEvent<HTMLButtonElement>) =>
 		setAnchorEl(e.currentTarget)
-	}
 
 	const handleClose = () => {
 		setAnchorEl(null)
 	}
 
-	const handleFloorChange = (e) => setFloorOption(e.target.dataset.value)
+	const handleFloorChange = (e: React.MouseEvent<HTMLLIElement>) => {
+		const { value } = (e.target as HTMLLIElement).dataset
+		setFloorOption(value ? value : woodenFloor)
+	}
 
-	const handleTableChange = (e) => setTableOption(e.target.dataset.value)
+	const handleTableChange = (e: React.MouseEvent<HTMLLIElement>) => {
+		const { value } = (e.target as HTMLLIElement).dataset
+		setTableOption(value ? value : greenTable)
+	}
 
-	const handleDeckChange = (e) => setDeckOption(e.target.dataset.value)
+	const handleDeckChange = (e: React.MouseEvent<HTMLLIElement>) => {
+		const { value } = (e.target as HTMLLIElement).dataset
+		setDeckOption(value ? value : 'red-design')
+	}
 
 	return (
 		<>
 			<Button
 				className={classes.optionsBtn}
 				variant='contained'
-				onClick={handleClick}>
-				Display Options
-			</Button>
+				onClick={handleClick}></Button>
 			<Menu
 				anchorEl={anchorEl}
 				keepMounted

@@ -3,7 +3,7 @@ import { Box, Button, Paper } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 import SocketContext from '../../contexts/SocketContext'
-import DisplayMessages from './DisplayMessages'
+import DisplayMessages, { IMessage } from './DisplayMessages'
 
 const useStyles = makeStyles({
 	root: {
@@ -39,10 +39,10 @@ const Chat = () => {
 
 	const { socket } = useContext(SocketContext)
 
-	const messageRef = useRef('')
-	const [messages, setMessages] = useState([])
+	const messageRef = useRef<any>(null)
+	const [messages, setMessages] = useState<IMessage[] | []>([])
 
-	const handleSend = (e) => {
+	const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 
 		if (messageRef.current.value)
@@ -57,7 +57,7 @@ const Chat = () => {
 	useEffect(() => {
 		let isMounted = true
 
-		socket.on('chat-message', (message) => {
+		socket.on('chat-message', (message: IMessage) => {
 			if (!isMounted) return null
 
 			setMessages((messages) => [...messages, message])

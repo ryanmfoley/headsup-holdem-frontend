@@ -16,6 +16,23 @@ import {
 
 import SocketContext from '../../contexts/SocketContext'
 
+interface IProps {
+	playersChips: number
+	opponentsChips: number
+	pot: number
+	callAmount: number
+	isPlayerAllIn: boolean
+	hasCalledBB: boolean
+	timeLeft: number
+	setIsTurn: React.Dispatch<React.SetStateAction<boolean | null>>
+}
+
+interface IValueLabel {
+	children: React.ReactElement
+	open: boolean
+	value: string
+}
+
 const theme = createTheme({
 	overrides: {
 		MuiButton: {
@@ -141,7 +158,7 @@ const LightTooltip = withStyles((theme) => ({
 	},
 }))(Tooltip)
 
-const ValueLabelComponent = (props) => {
+const ValueLabelComponent: any = (props: IValueLabel) => {
 	const { children, open, value } = props
 
 	return (
@@ -158,7 +175,7 @@ const ValueLabelComponent = (props) => {
 
 const BIG_BLIND = 20
 
-const PlayerActions = ({
+const PlayerActions: React.FC<IProps> = ({
 	playersChips,
 	opponentsChips,
 	pot,
@@ -181,6 +198,7 @@ const PlayerActions = ({
 		: Math.min(smallestChipStack, BIG_BLIND)
 	const maxBet = Math.min(playersChips, opponentsChips + callAmount)
 
+	// Player options //
 	const handleFold = () => {
 		socket.emit('fold')
 
@@ -220,6 +238,7 @@ const PlayerActions = ({
 		setIsTurn(false)
 	}
 
+	// Bet sizings //
 	const halfPotBet = () => {
 		const halfPot = pot / 2
 
@@ -259,16 +278,23 @@ const PlayerActions = ({
 		setBetAmount(raiseAmount + callAmount)
 	}
 
-	const handleSliderChange = (e, newValue) => {
+	const handleSliderChange = (
+		event: React.ChangeEvent<{}>,
+		value: number | number[]
+	) => {
 		const minBetSize = isRaiseAvailable
 			? Math.min(playersChips, callAmount ? callAmount * 2 : BIG_BLIND)
 			: minBet
 
-		if (newValue >= minBetSize) setBetAmount(newValue)
+		if (value >= minBetSize) setBetAmount(value as number)
 	}
 
-	const handleInputChange = (e) =>
-		setBetAmount(e.target.value === '' ? '' : Number(e.target.value))
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setBetAmount(
+			(e.target as HTMLInputElement).value === ''
+				? 0
+				: Number((e.target as HTMLInputElement).value)
+		)
 
 	useEffect(() => {
 		setIsRaiseAvailable(
