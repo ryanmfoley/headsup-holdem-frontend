@@ -1,6 +1,16 @@
 import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
+interface IProps {
+	playersName: string
+	chips: number
+	active: boolean | null
+	action: {
+		type: string
+		value: number
+	}
+}
+
 const useStyles = makeStyles({
 	root: {
 		position: 'absolute',
@@ -47,7 +57,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const PlayersHud = ({ playersName, chips, active, action }) => {
+const PlayersHud = ({ playersName, chips, active, action }: IProps) => {
 	const classes = useStyles()
 
 	return (

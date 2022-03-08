@@ -1,6 +1,11 @@
 import { Box } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import ScrollToBottom from 'react-scroll-to-bottom'
+const ScrollToBottom = require('react-scroll-to-bottom') // Silences Typescript warning
+
+export interface IMessage {
+	user: string
+	text: string
+}
 
 const useStyles = makeStyles({
 	root: {
@@ -10,7 +15,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const DisplayMessages = ({ messages }) => {
+const DisplayMessages = ({ messages }: { messages: IMessage[] }) => {
 	const classes = useStyles()
 
 	return messages.length ? (

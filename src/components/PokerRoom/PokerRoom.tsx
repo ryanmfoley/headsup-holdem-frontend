@@ -6,11 +6,12 @@ import { makeStyles } from '@material-ui/core/styles'
 import AuthContext from '../../contexts/AuthContext'
 import PlayerContext from '../../contexts/PlayerContext'
 import SocketContext from '../../contexts/SocketContext'
-import useActionReducer from '../../hooks/useActionReducer'
+import useActionReducer, { ActionType } from '../../hooks/useActionReducer'
 import useAudio from './useAudio'
 import PlayerActions from './PlayerActions'
 import CommunityCards from './CommunityCards'
-import HoleCards from './HoleCards'
+import HoleCards, { IHoleCards } from './HoleCards'
+import { ICard } from './Card'
 import PlayersHud from './PlayersHud'
 import WinDisplay from './WinDisplay'
 import Timer from './Timer'
@@ -140,6 +141,9 @@ const useStyles = makeStyles({
 	bottom: {
 		top: '70%',
 	},
+	screenOrientationWarning: {
+		display: 'none',
+	},
 	'@keyframes loading-ellipsis': {
 		to: {
 			width: 'clamp(18px, 2.05vw, 27px)',
@@ -157,11 +161,6 @@ const useStyles = makeStyles({
 			opacity: 1,
 		},
 	},
-	'@media screen and (min-width: 768px)': {
-		screenOrientationWarning: {
-			display: 'none',
-		},
-	},
 	'@media screen and (max-width: 767px)': {
 		screenOrientationWarning: {
 			position: 'absolute',
@@ -177,14 +176,14 @@ const useStyles = makeStyles({
 	},
 })
 
-const STARTING_CHIP_STACK = 10000
+export const STARTING_CHIP_STACK = 10000
 const SMALL_BLIND = 10
 const BIG_BLIND = 20
 
 const PokerRoom = () => {
 	const classes = useStyles()
 
-	const { roomId } = useParams()
+	const { roomId } = useParams<{ roomId: string }>()
 
 	const { isLoggedIn } = useContext(AuthContext)
 	const { player } = useContext(PlayerContext)
@@ -198,18 +197,18 @@ const PokerRoom = () => {
 	const [tableOption, setTableOption] = useState(greenTable)
 	const [deckOption, setDeckOption] = useState('red-design')
 	const [timeLeft, setTimeLeft] = useState(100)
-	const [playersAction, setPlayersAction] = useState('')
-	const [opponentsAction, setOpponentsAction] = useState('')
+	const [playersAction, setPlayersAction] = useState({ type: '', value: 0 })
+	const [opponentsAction, setOpponentsAction] = useState({ type: '', value: 0 })
 
 	// Gameplay variables //
-	const bettingRoundRef = useRef(null)
-	const isPlayerOnBtnRef = useRef(null)
-	const isTurnRef = useRef(null)
+	const bettingRoundRef = useRef('')
+	const isPlayerOnBtnRef = useRef(false)
+	const isTurnRef = useRef(false)
 	const isPlayerAllInRef = useRef(false)
 	const hasCalledSBRef = useRef(false)
 	const [startGame, setStartGame] = useState(false)
 	const [showWinDisplay, setShowWinDisplay] = useState(false)
-	const [isTurn, setIsTurn] = useState(false)
+	const [isTurn, setIsTurn] = useState<boolean | null>(false)
 	const [resetTimer, setResetTimer] = useState(true)
 	const [isPlayerAllIn, setIsPlayerAllIn] = useState(false)
 	const [hasCalledBB, setHasCalledBB] = useState(false)
@@ -220,11 +219,13 @@ const PokerRoom = () => {
 	const [hasOpponentLeft, setHasOpponentLeft] = useState(false)
 
 	// Cards //
-	const holeCardsRef = useRef({})
-	const communityCardsRef = useRef([])
-	const [holeCards, setHoleCards] = useState([])
-	const [opponentsHoleCards, setOpponentsHoleCards] = useState([])
-	const [communityCards, setCommunityCards] = useState([])
+	const holeCardsRef = useRef<IHoleCards | []>([])
+	const communityCardsRef = useRef<ICard[] | []>([])
+	const [holeCards, setHoleCards] = useState<IHoleCards | []>([])
+	const [opponentsHoleCards, setOpponentsHoleCards] = useState<IHoleCards | []>(
+		[]
+	)
+	const [communityCards, setCommunityCards] = useState<ICard[] | []>([])
 
 	// Chips //
 	const playersChipsRef = useRef(STARTING_CHIP_STACK)
@@ -248,7 +249,7 @@ const PokerRoom = () => {
 
 		socket.connect()
 
-		const isPlayerOne = player.id === roomId
+		const isPlayerOne = player.id === +roomId
 		isPlayerOnBtnRef.current = isPlayerOne ? true : false
 
 		const alternateTurn = () => {
@@ -277,6 +278,11 @@ const PokerRoom = () => {
 			winningPlayer,
 			losingPlayer,
 			value = 0,
+		}: {
+			type: string
+			winningPlayer?: string
+			losingPlayer?: string
+			value?: number
 		}) => {
 			if (type === 'DRAW') {
 				setPlayersAction({ type, value })
@@ -298,7 +304,7 @@ const PokerRoom = () => {
 			}, 2000)
 		}
 
-		const isRoundOver = (action) =>
+		const isRoundOver = (action: string) =>
 			(bettingRoundRef.current === 'preflop' && hasCalledSBRef.current) ||
 			(bettingRoundRef.current !== 'preflop' && action === 'call') ||
 			(bettingRoundRef.current !== 'preflop' &&
@@ -360,7 +366,7 @@ const PokerRoom = () => {
 		// Listen for opponent to enter the room //
 		socket.once('start-game', () => socket.emit('get-players-info'))
 
-		socket.once('get-players-info', ({ username }) => {
+		socket.once('get-players-info', ({ username }: { username: string }) => {
 			if (!isMounted) return null
 
 			setOpponentsName(username)
@@ -370,7 +376,7 @@ const PokerRoom = () => {
 			if (isPlayerOne) socket.emit('deal')
 		})
 
-		socket.on('deal-preflop', (holeCards) => {
+		socket.on('deal-preflop', (holeCards: IHoleCards) => {
 			if (!isMounted) return null
 
 			dealCardsAudio.play()
@@ -409,7 +415,7 @@ const PokerRoom = () => {
 			potRef.current = playersBlindAmount + opponentsBlindAmount
 
 			dispatch({
-				type: 'postBlinds',
+				type: ActionType.postBlinds,
 				playersBlindAmount,
 				opponentsBlindAmount,
 				callAmount,
@@ -433,7 +439,7 @@ const PokerRoom = () => {
 			setHoleCards(holeCards)
 		})
 
-		socket.on('deal-flop', (flop) => {
+		socket.on('deal-flop', (flop: [ICard, ICard, ICard]) => {
 			if (!isMounted) return null
 
 			bettingRoundRef.current = 'flop'
@@ -449,14 +455,14 @@ const PokerRoom = () => {
 			setTurn()
 		})
 
-		socket.on('deal-turn', (turn) => {
+		socket.on('deal-turn', (turn: [ICard]) => {
 			if (!isMounted) return null
 
 			// Change betting round to turn //
 			bettingRoundRef.current = 'turn'
 
 			communityCardsRef.current = [...communityCardsRef.current, turn[0]]
-			setCommunityCards((prevCommunityCards) => [
+			setCommunityCards((prevCommunityCards: ICard[]) => [
 				...prevCommunityCards,
 				turn[0],
 			])
@@ -465,7 +471,7 @@ const PokerRoom = () => {
 			setTurn()
 		})
 
-		socket.on('deal-river', (river) => {
+		socket.on('deal-river', (river: [ICard]) => {
 			if (!isMounted) return null
 
 			// Change betting round to river //
@@ -493,7 +499,7 @@ const PokerRoom = () => {
 			isRoundOver('check') ? dealNextCard() : alternateTurn()
 		})
 
-		socket.on('call', (callAmount) => {
+		socket.on('call', (callAmount: number) => {
 			if (!isMounted) return null
 
 			showActionDisplay({ type: 'CALL' })
@@ -505,11 +511,11 @@ const PokerRoom = () => {
 			if (isTurnRef.current) {
 				// Current Player is calling //
 				playersChipsRef.current -= callAmount
-				dispatch({ type: 'playerCalls' })
+				dispatch({ type: ActionType.playerCalls })
 			} else {
 				// Opponent is calling //
 				opponentsChipsRef.current -= callAmount
-				dispatch({ type: 'opponentCalls' })
+				dispatch({ type: ActionType.opponentCalls })
 			}
 
 			potRef.current += callAmount
@@ -527,44 +533,55 @@ const PokerRoom = () => {
 			hasCalledSBRef.current = true
 		})
 
-		socket.on('bet-or-raise', ({ betAmount, callAmount, raiseAmount }) => {
-			if (!isMounted) return null
+		socket.on(
+			'bet-or-raise',
+			({
+				betAmount,
+				callAmount,
+				raiseAmount,
+			}: {
+				betAmount: number
+				callAmount: number
+				raiseAmount: number
+			}) => {
+				if (!isMounted) return null
 
-			const isRaise = !betAmount
+				const isRaise = !betAmount
 
-			const totalBetSize = isRaise ? callAmount + raiseAmount : betAmount
+				const totalBetSize = isRaise ? callAmount + raiseAmount : betAmount
 
-			showActionDisplay({
-				type: isRaise ? 'RAISE' : 'BET',
-				value: totalBetSize,
-			})
+				showActionDisplay({
+					type: isRaise ? 'RAISE' : 'BET',
+					value: totalBetSize,
+				})
 
-			// Play bet audio //
-			betRaiseCallAlertAudio.play()
+				// Play bet audio //
+				betRaiseCallAlertAudio.play()
 
-			if (
-				playersChipsRef.current <= totalBetSize ||
-				opponentsChipsRef.current <= totalBetSize
-			)
-				setIsPlayerAllIn(true)
+				if (
+					playersChipsRef.current <= totalBetSize ||
+					opponentsChipsRef.current <= totalBetSize
+				)
+					setIsPlayerAllIn(true)
 
-			// All calls but first SB call end betting round //
-			hasCalledSBRef.current = true
+				// All calls but first SB call end betting round //
+				hasCalledSBRef.current = true
 
-			if (isTurnRef.current) {
-				// Current Player is betting //
-				playersChipsRef.current -= totalBetSize
-				dispatch({ type: 'playerBets', betAmount: totalBetSize })
-			} else {
-				// Opponent is betting //
-				opponentsChipsRef.current -= totalBetSize
-				dispatch({ type: 'opponentBets', betAmount: totalBetSize })
+				if (isTurnRef.current) {
+					// Current Player is betting //
+					playersChipsRef.current -= totalBetSize
+					dispatch({ type: ActionType.playerBets, betAmount: totalBetSize })
+				} else {
+					// Opponent is betting //
+					opponentsChipsRef.current -= totalBetSize
+					dispatch({ type: ActionType.opponentBets, betAmount: totalBetSize })
+				}
+
+				potRef.current = potRef.current + totalBetSize
+
+				alternateTurn()
 			}
-
-			potRef.current = potRef.current + totalBetSize
-
-			alternateTurn()
-		})
+		)
 
 		socket.on('fold', () => {
 			showActionDisplay({ type: 'FOLD' })
@@ -597,7 +614,13 @@ const PokerRoom = () => {
 
 		socket.on(
 			'determine-winner',
-			({ username: opponentsName, holeCards: opponentsCards }) => {
+			({
+				username: opponentsName,
+				holeCards: opponentsCards,
+			}: {
+				username: string
+				holeCards: IHoleCards
+			}) => {
 				if (!isMounted) return null
 
 				setOpponentsHoleCards(opponentsCards)
@@ -625,7 +648,17 @@ const PokerRoom = () => {
 
 		socket.on(
 			'hand-results',
-			({ winningPlayer, losingPlayer, winningHand, isDraw }) => {
+			({
+				winningPlayer,
+				losingPlayer,
+				winningHand,
+				isDraw,
+			}: {
+				winningPlayer: string
+				losingPlayer: string
+				winningHand: string
+				isDraw: boolean
+			}) => {
 				if (!isMounted) return null
 
 				setIsTurn(false)
@@ -638,21 +671,21 @@ const PokerRoom = () => {
 					playersChipsRef.current += halfPot
 					opponentsChipsRef.current += halfPot
 
-					dispatch({ type: 'draw' })
+					dispatch({ type: ActionType.draw })
 				} else if (
 					winningPlayer === player.username ||
 					(losingPlayer && losingPlayer !== player.username)
 				) {
 					// Player Won //
 					playersChipsRef.current += potRef.current
-					dispatch({ type: 'playerWinsHand' })
+					dispatch({ type: ActionType.playerWinsHand })
 
 					// Play win-hand audio //
 					winHandAudio.play()
 				} else {
 					// Opponent Won //
 					opponentsChipsRef.current += potRef.current
-					dispatch({ type: 'opponentWinsHand' })
+					dispatch({ type: ActionType.opponentWinsHand })
 				}
 
 				showActionDisplay({
@@ -683,7 +716,7 @@ const PokerRoom = () => {
 					holeCardsRef.current = []
 					setHoleCards([])
 					setOpponentsHoleCards([])
-					communityCardsRef.current = null
+					communityCardsRef.current = []
 					setCommunityCards([])
 					potRef.current = 0
 					isPlayerAllInRef.current = false

@@ -155,7 +155,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const WinDisplay = ({ winner }) => {
+const WinDisplay = ({ winner }: { winner: string }) => {
 	const classes = useStyles()
 
 	const cards = [

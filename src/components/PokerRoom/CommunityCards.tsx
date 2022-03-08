@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
-import Card from './Card'
+import Card, { ICard } from './Card'
 
 const useStyles = makeStyles({
 	root: {
@@ -31,14 +31,14 @@ const useStyles = makeStyles({
 	},
 })
 
-const CommunityCards = ({ communityCards, deckOption }) => {
+const CommunityCards = ({ communityCards }: { communityCards: ICard[] }) => {
 	const classes = useStyles()
 
 	const cards = [...communityCards]
 
 	// Add null to display outline for empty cards //
 	for (let i = 0; i <= 5 - communityCards.length; i++) {
-		cards.push({ id: i, rank: null })
+		cards.push({ id: i, rank: null, suit: '', value: null })
 	}
 
 	return (
@@ -49,7 +49,7 @@ const CommunityCards = ({ communityCards, deckOption }) => {
 						key={card.rank + card.suit}
 						className={`${classes.card} ${classes.cardFront}`}
 						data-index={index}>
-						<Card card={card} index={index + 1} />
+						<Card card={card} />
 					</div>
 				) : (
 					<div

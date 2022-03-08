@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
-import betRaiseCallAlert from '../../assets/sounds/bet-raise-call-alert.wav'
-import checkAlert from '../../assets/sounds/check-alert.wav'
-import dealCard from '../../assets/sounds/deal-card.wav'
-import dealCards from '../../assets/sounds/deal-cards.wav'
-import foldAlert from '../../assets/sounds/fold-alert.wav'
-import timerAlert from '../../assets/sounds/timer-alert.wav'
-import winGame from '../../assets/sounds/win-game.wav'
-import winHand from '../../assets/sounds/win-hand.wav'
+// Using require silences TypeScript warning //
+const betRaiseCallAlert = require('../../assets/sounds/bet-raise-call-alert.wav')
+const checkAlert = require('../../assets/sounds/check-alert.wav')
+const dealCard = require('../../assets/sounds/deal-card.wav')
+const dealCards = require('../../assets/sounds/deal-cards.wav')
+const foldAlert = require('../../assets/sounds/fold-alert.wav')
+const timerAlert = require('../../assets/sounds/timer-alert.wav')
+const winGame = require('../../assets/sounds/win-game.wav')
+const winHand = require('../../assets/sounds/win-hand.wav')
 
 const useAudio = () => {
 	const [betRaiseCallAlertAudio] = useState(new Audio(betRaiseCallAlert))
