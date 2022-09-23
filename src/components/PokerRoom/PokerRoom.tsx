@@ -176,7 +176,7 @@ const useStyles = makeStyles({
 	},
 })
 
-export const STARTING_CHIP_STACK = 10000
+const STARTING_CHIP_STACK = 10000
 const SMALL_BLIND = 10
 const BIG_BLIND = 20
 
