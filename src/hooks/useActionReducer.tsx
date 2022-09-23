@@ -1,5 +1,4 @@
 import { useReducer } from 'react'
-import { STARTING_CHIP_STACK } from '../components/PokerRoom/PokerRoom'
 
 export enum ActionType {
 	postBlinds,
@@ -26,6 +25,8 @@ interface IAction {
 	playersBlindAmount?: number
 	opponentsBlindAmount?: number
 }
+
+const STARTING_CHIP_STACK = 10000
 
 const reducer = (state: IState, action: IAction): any => {
 	switch (action.type) {
