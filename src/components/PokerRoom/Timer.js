@@ -23,7 +23,7 @@ const useStyles = makeStyles({
 	},
 })
 
-const STARTING_COUNT = 40
+const STARTING_COUNT = 60
 
 const Timer = ({ timeLeft, setTimeLeft, resetTimer }) => {
 	const classes = useStyles()

@@ -179,7 +179,7 @@ const PlayerActions = ({
 	const minBet = isRaiseAvailable
 		? Math.min(playersChips, opponentsChips, callAmount * 2)
 		: Math.min(smallestChipStack, BIG_BLIND)
-	const maxBet = Math.min(playersChips, opponentsChips + callAmount)
+	const maxBet = Math.min(playersChips, opponentsChips)
 
 	const handleFold = () => {
 		socket.emit('fold')
